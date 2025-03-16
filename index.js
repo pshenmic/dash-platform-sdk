@@ -11,7 +11,7 @@ const DEFAULT_OPTIONS = {
   dapiUrls: ['https://52.33.28.47:1443'],
 }
 
-export class DashPlatformSDK {
+export default class DashPlatformSDK {
 
   constructor (options = DEFAULT_OPTIONS) {
     this.network = options.network;

@@ -2,10 +2,38 @@
 
 This is an experimental alternative SDK for Dash Platform chain to access basic actions.
 
-The features of this package highly limited, addition
 
-TBD
+Features implemented:
+
+* getStatus (retrieve node status)
+
 
 # How to use
 
-TBD
+`npm install git:pshenmic/dash-platform-sdk`
+
+
+EcmaScript:
+```javascript
+import DashPlatformSDK from 'dash-platform-sdk'
+
+const sdk = new DashPlatformSDK()
+
+// Retrieve node status
+const status = await sdk.utils.getStatus()
+
+console.log(status)
+```
+
+CommonJS:
+```javascript
+const DashPlatformSDK = require('dash-platform-sdk')
+
+
+const sdk = new DashPlatformSDK()
+
+// Retrieve node status
+const status = await sdk.utils.getStatus()
+
+console.log(status)
+```
