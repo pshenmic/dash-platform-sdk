@@ -29,7 +29,6 @@ CommonJS:
 ```javascript
 const DashPlatformSDK = require('dash-platform-sdk')
 
-
 const sdk = new DashPlatformSDK()
 
 // Retrieve node status
