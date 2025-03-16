@@ -55,4 +55,10 @@ describe('DashPlatformSDK', () => {
     expect(status.time.genesis).toEqual(expect.any(String))
     expect(status.time.epoch).toEqual(expect.any(Number))
   })
+
+  test('should be able to call getDocuments()', async () => {
+    const documents = await sdk.documents.get('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec', 'domain')
+
+    expect(documents.length).toEqual(100)
+  })
 })

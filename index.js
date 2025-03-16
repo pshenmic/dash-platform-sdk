@@ -3,6 +3,7 @@ import {
 } from './proto/generated/platform.js';
 import {createChannel, createClient} from 'nice-grpc-web';
 import getStatus from './src/dapi/getStatus'
+import getDocuments from './src/dapi/getDocuments'
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
@@ -26,8 +27,12 @@ export default class DashPlatformSDK {
       channel,
     );
 
+    this.documents = {
+      get: getDocuments.bind(this)
+    }
+
     this.utils = {
-      getStatus: getStatus.bind(this)
+      getStatus: getStatus.bind(this),
     }
 
     /*

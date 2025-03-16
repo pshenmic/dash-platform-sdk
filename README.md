@@ -13,26 +13,26 @@ Features implemented:
 `npm install git:pshenmic/dash-platform-sdk`
 
 
-EcmaScript:
+1) Import:
 ```javascript
+// ES6 / EcmaScript
 import DashPlatformSDK from 'dash-platform-sdk'
 
-const sdk = new DashPlatformSDK()
-
-// Retrieve node status
-const status = await sdk.utils.getStatus()
-
-console.log(status)
+// CommonJS
+const DashPlatformSDK = require('dash-platform-sdk')
 ```
 
-CommonJS:
+2) Run:
 ```javascript
-const DashPlatformSDK = require('dash-platform-sdk')
-
-const sdk = new DashPlatformSDK()
+const sdk = new DashPlatformSDK() // new DashPlatformSDK({ network: 'testnet', dapiUrls: ['https://52.33.28.47:1443']}) 
 
 // Retrieve node status
 const status = await sdk.utils.getStatus()
 
 console.log(status)
+
+// Get Documents
+const documents = await sdk.utils.getStatus()
+
+console.log(documents)
 ```

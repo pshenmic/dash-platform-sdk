@@ -26,5 +26,9 @@
     "test:debug": "node --inspect-brk ./node_modules/.bin/jest",
     "proto:generate": "grpc_tools_node_protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./proto/generated --ts_proto_opt=forceLong=string,env=browser,outputServices=nice-grpc,outputServices=generic-definitions,outputJsonMethods=false,useExactTypes=false --proto_path=./proto ./proto/platform.proto",
     "proto:transpile": "tsc ./proto/generated/platform.ts"
+  },
+  "dependencies": {
+    "@scure/base": "^1.2.4",
+    "cbor": "^10.0.3"
   }
 }
