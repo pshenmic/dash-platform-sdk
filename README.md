@@ -33,7 +33,7 @@ const status = await sdk.utils.getStatus()
 console.log(status)
 
 // Get Documents
-const documents = await sdk.utils.getStatus()
+const documents = await sdk.documents.get('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec', 'domain')
 
 console.log(documents)
 ```
