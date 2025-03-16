@@ -2,11 +2,12 @@
 
 This is an experimental alternative SDK for Dash Platform chain to access basic actions.
 
+#### Development is ongoing, breaking changes may be each release
 
 Features implemented:
 
 * getStatus (retrieve node status)
-
+* getDocuments (without deserialization atm)
 
 # How to use
 
