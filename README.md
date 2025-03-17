@@ -1,4 +1,4 @@
-# dash-platform-sdk
+# dash-platform-sdk v1.0.1
 
 This is an experimental alternative SDK for Dash Platform chain to access basic actions.
 
@@ -12,9 +12,9 @@ Features implemented:
 # How to use
 
 
-1) Install NPM package (by GitHub ATM)
+1) Install NPM package
 ```bash
-$ npm install pshenmic/dash-platform-sdk
+$ npm install dash-platform-sdk
 ```
 
 
