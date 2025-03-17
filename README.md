@@ -11,19 +11,23 @@ Features implemented:
 
 # How to use
 
-`npm install git:pshenmic/dash-platform-sdk`
+
+1) Install NPM package (by GitHub ATM)
+```bash
+$ npm install pshenmic/dash-platform-sdk
+```
 
 
-1) Import:
+2) Import:
 ```javascript
 // ES6 / EcmaScript
 import DashPlatformSDK from 'dash-platform-sdk'
 
 // CommonJS
-const DashPlatformSDK = require('dash-platform-sdk')
+const { default: DashPlatformSDK } = require('dash-platform-sdk')
 ```
 
-2) Run:
+3) Run:
 ```javascript
 const sdk = new DashPlatformSDK() // new DashPlatformSDK({ network: 'testnet', dapiUrls: ['https://52.33.28.47:1443']}) 
 
