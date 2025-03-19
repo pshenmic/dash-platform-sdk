@@ -9,7 +9,7 @@ import wasmBytes from 'pshenmic-dpp/dist/wasm/pshenmic_dpp_bg'
 import getIdentityContractNonce from './identities/getIdentityContractNonce'
 import getIdentityNonce from './identities/getIdentityNonce'
 import getIdentityPublicKeys from './identities/getIdentityPublicKeys'
-import search from './identities/search'
+import search from './names/search'
 import GRPCConnectionPool from './grpcConnectionPool'
 
 const DEFAULT_OPTIONS = {
