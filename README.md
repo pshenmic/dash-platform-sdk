@@ -148,6 +148,17 @@ console.log(identityPublicKeys)
 ```
 
 ### State Transition
+#### From Document
+Creates a StateTransitionWASM instance that you can use to sign with your private key and later broadcast
+
+```javascript
+const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+
+const stateTransition = await sdk.stateTransitions.fromDocument(document, "CREATE", identityContractNonce)
+
+console.log(stateTransition)
+```
+
 #### Broadcast state transition
 
 Broadcasts your state transition in the Dash Platform network
