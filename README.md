@@ -1,4 +1,6 @@
 # dash-platform-sdk v1.0.2
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pshenmic/dash-platform-sdk/blob/master/LICENSE) ![npm version](https://img.shields.io/npm/v/react.svg?style=flat) ![a](https://github.com/pshenmic/platform-explorer/actions/workflows/build.yml/badge.svg)
+
 
 This is an experimental alternative lightweight SDK for Dash Platform chain that let you make queries, create, and sign state
 transitions locally and broadcast them into network
@@ -38,7 +40,6 @@ const sdk = new DashPlatformSDK({network: 'testnet'})
 ```
 
 ## API Documentation
-
 
 ###  Data Contracts
 
