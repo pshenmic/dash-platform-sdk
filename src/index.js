@@ -14,7 +14,7 @@ import getIdentityContractNonce from './identities/getIdentityContractNonce'
 import getIdentityNonce from './identities/getIdentityNonce'
 import getIdentityPublicKeys from './identities/getIdentityPublicKeys'
 import search from './identities/search'
-import { PrivateKeyWASM } from 'pshenmic-dpp'
+import GRPCConnectionPool from './grpcConnectionPool'
 
 const DEFAULT_OPTIONS = {
   network: 'testnet',
@@ -32,12 +32,9 @@ export default class DashPlatformSDK {
 
     const channel = createChannel(dapiUrl);
 
-    this.wasm = wasm
+    this.grpcPool = new GRPCConnectionPool(this.network)
 
-    this.client = createClient(
-      PlatformDefinition,
-      channel,
-    );
+    this.wasm = wasm
 
     this.dataContracts = {
       getByIdentifier: getDataContractByIdentifier.bind(this),

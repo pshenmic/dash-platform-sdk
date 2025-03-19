@@ -9,7 +9,7 @@ export default async function getIdentityPublicKeys (identifier) {
     }
   })
 
-  const { v0 } = await this.client.getIdentityKeys(getIdentityKeysRequest)
+  const { v0 } = await this.grpcPool.getClient().getIdentityKeys(getIdentityKeysRequest)
 
   const { keys } = v0
   const { keysBytes } = keys

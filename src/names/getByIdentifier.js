@@ -11,7 +11,7 @@ export default async function getByIdentifier(identifier) {
     }
   })
 
-  const { v0 } = await this.client.getDataContract(getDataContractRequest)
+  const { v0 } = await this.grpcPool.getClient().getDataContract(getDataContractRequest)
 
   const {dataContract} = v0
 

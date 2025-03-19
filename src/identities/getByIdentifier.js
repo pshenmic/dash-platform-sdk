@@ -9,7 +9,7 @@ export default async function getByIdentifier (identifier) {
     }
   })
 
-  const { v0 } = await this.client.getIdentity(getIdentityRequest)
+  const { v0 } = await this.grpcPool.getClient().getIdentity(getIdentityRequest)
 
   const { identity } = v0
 

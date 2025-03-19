@@ -11,7 +11,7 @@ export default async function getByPublicKeyHash (hex) {
     }
   })
 
-  const { v0 } = await this.client.getIdentityByPublicKeyHash(getIdentityByPublicKeyHashRequest)
+  const { v0 } = await this.grpcPool.getClient().getIdentityByPublicKeyHash(getIdentityByPublicKeyHashRequest)
 
   const { identity } = v0
 

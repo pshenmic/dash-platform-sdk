@@ -19,7 +19,7 @@ export default async function get(dataContractId, documentType, where, orderBy, 
 
   const dataContract = await getByIdentifier.bind(this)(dataContractId)
 
-  const { v0 } = await this.client.getDocuments(getDocumentsRequest)
+  const { v0 } = await this.grpcPool.getClient().getDocuments(getDocumentsRequest)
 
   return v0.documents.documents.map(document => DocumentWASM.fromBytes(document, dataContract, documentType, PlatformVersionWASM.PLATFORM_V1))
 }

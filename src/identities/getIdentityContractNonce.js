@@ -13,7 +13,7 @@ export default async function getIdentityContractNonce (identity, dataContract) 
     }
   })
 
-  const { v0 } = await this.client.getIdentityContractNonce(getIdentityContractNonceRequest)
+  const { v0 } = await this.grpcPool.getClient().getIdentityContractNonce(getIdentityContractNonceRequest)
 
   const { identityContractNonce } = v0
 

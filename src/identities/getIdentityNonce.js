@@ -12,7 +12,7 @@ export default async function getIdentityNonce (identifier) {
     }
   })
 
-  const { v0 } = await this.client.getIdentityNonce(getIdentityNonceRequest)
+  const { v0 } = await this.grpcPool.getClient().getIdentityNonce(getIdentityNonceRequest)
 
   const { identityNonce } = v0
 

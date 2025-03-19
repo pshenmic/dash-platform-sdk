@@ -141,4 +141,5 @@ describe('DashPlatformSDK', () => {
 
     expect(identityPublicKeys.every(identityPublicKey => identityPublicKey instanceof IdentityPublicKeyWASM)).toBeTruthy();
   })
+
 })

@@ -7,5 +7,5 @@ export default async function broadcastTransaction(stateTransition) {
     }
   })
 
-  await this.client.broadcastStateTransition(broadcastStateTransitionRequest)
+  await this.grpcPool.getClient().broadcastStateTransition(broadcastStateTransitionRequest)
 }

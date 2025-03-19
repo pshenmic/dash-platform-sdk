@@ -7,7 +7,7 @@ export default async function waitForStateTransitionResult(stateTransitionHash) 
     }
   })
 
-  const {v0} = await this.client.waitForStateTransitionResult(waitForStateTransitionResultRequest)
+  const {v0} = await this.grpcPool.getClient().waitForStateTransitionResult(waitForStateTransitionResultRequest)
 
   const {error} = v0
 
