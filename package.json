@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@scure/base": "^1.2.4",
-    "cbor": "^10.0.3"
+    "cbor": "^10.0.3",
+    "pshenmic-dpp": "^1.0.3"
   }
 }

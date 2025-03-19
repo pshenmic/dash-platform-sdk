@@ -1,8 +1,10 @@
 import { GetDocumentsRequest } from '../../proto/generated/platform.js'
 import { base58 } from '@scure/base'
 import cbor from 'cbor'
+import { DocumentWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import getByIdentifier from '../dataContracts/getByIdentifier'
 
-export default async function getDocuments(dataContractId, documentType, where, orderBy, limit = 100, startAt, startAfter, prove = false) {
+export default async function get(dataContractId, documentType, where, orderBy, limit = 100, startAt, startAfter) {
   const getDocumentsRequest = new GetDocumentsRequest.fromPartial({
     v0: {
       dataContractId: base58.decode(dataContractId),
@@ -12,22 +14,12 @@ export default async function getDocuments(dataContractId, documentType, where, 
       limit,
       startAt : startAt ? startAt : undefined,
       startAfter : startAfter ? startAfter : undefined,
-      prove
     }
   })
 
+  const dataContract = await getByIdentifier.bind(this)(dataContractId)
+
   const { v0 } = await this.client.getDocuments(getDocumentsRequest)
 
-  return v0.documents.documents
+  return v0.documents.documents.map(document => DocumentWASM.fromBytes(document, dataContract, documentType, PlatformVersionWASM.PLATFORM_V1))
 }
-
-//*
-//
-//   message GetDocumentsRequestV0 {
-//     // Specifies the starting point for the document retrieval
-//     oneof start {
-//       bytes start_after = 6;  // Start retrieval after this document
-//       bytes start_at = 7;     // Start retrieval at this document
-//     }
-//     bool prove = 8;  // Flag to request a proof as the response
-//   }*/

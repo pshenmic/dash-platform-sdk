@@ -1,6 +1,6 @@
 import { GetStatusRequest } from '../../proto/generated/platform.js'
 
-export default async function getStatus() {
+export default async function status() {
   const getStatusRequest = new GetStatusRequest.fromPartial({v0: {}});
 
   const response  = await this.client.getStatus(getStatusRequest)

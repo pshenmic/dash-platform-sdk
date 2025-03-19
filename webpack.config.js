@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   mode: 'production',
-  entry: './index.js',
+  entry: './src/index.js',
   resolve: {
     fallback: {
       "stream":  require.resolve("stream-browserify"),

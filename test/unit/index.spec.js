@@ -1,4 +1,5 @@
-import DashPlatformSDK from '../../index'
+import DashPlatformSDK from '../../src/index'
+import { DataContractWASM, DocumentWASM, IdentityPublicKeyWASM, IdentityWASM } from 'pshenmic-dpp'
 
 let sdk
 
@@ -12,7 +13,7 @@ describe('DashPlatformSDK', () => {
   })
 
   test('should be able to call getStatus', async () => {
-    const status = await sdk.utils.getStatus()
+    const status = await sdk.node.status()
 
     expect(status.version.software.dapi).toEqual(expect.any(String))
     expect(status.version.software.drive).toEqual(expect.any(String))
@@ -56,9 +57,88 @@ describe('DashPlatformSDK', () => {
     expect(status.time.epoch).toEqual(expect.any(Number))
   })
 
-  test('should be able to call getDocuments()', async () => {
-    const documents = await sdk.documents.get('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec', 'domain')
+  test('should be able to create document', async () => {
+    const dataContract = '6QMfQTdKpC3Y9uWBcTwXeY3KdzRLDqASUsDnQ4MEc9XC'
+    const identity = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+    const identityContractNonce = BigInt(1)
+    const documentType = 'pool'
+    const data = {
+      "name": "MyPool",
+      "type": "EVONODE",
+      "status": "INACTIVE",
+      "description": "test pool"
+    }
 
-    expect(documents.length).toEqual(100)
+    const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+
+    expect(document).toEqual(expect.any(DocumentWASM))
+  })
+
+  test('should be able to get data contract', async () => {
+    const dataContractIdentifier = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+
+    const dataContract = await sdk.dataContracts.getByIdentifier(dataContractIdentifier)
+
+    expect(dataContract).toEqual(expect.any(DataContractWASM))
+  })
+
+
+  test('should be able to get documents', async () => {
+    const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+    const documentType = 'domain'
+
+    const [document] = await sdk.documents.query(dataContract, documentType)
+
+    expect(document).toEqual(expect.any(DocumentWASM))
+  })
+
+  test('should be able to search names by DPNS name', async () => {
+    const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+    const documentType = 'domain'
+
+    const [document] = await sdk.names.search('xyz.dash')
+
+    expect(document).toEqual(expect.any(DocumentWASM))
+  })
+
+  test('should be able to get identity by identifier', async () => {
+    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+
+    const identity = await sdk.identities.getByIdentifier(identifier)
+
+    expect(identity).toEqual(expect.any(IdentityWASM))
+  })
+
+  test('should be able to get identity by public key hash', async () => {
+    const publicKeyHash = 'c5b7fdfa5731e1b31b1b42c13959756e8db22b3b'
+
+    const identity = await sdk.identities.getByPublicKeyHash(publicKeyHash)
+
+    expect(identity).toEqual(expect.any(IdentityWASM))
+  })
+
+  test('should be able to get identity contract nonce', async () => {
+    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+    const dataContract = '6QMfQTdKpC3Y9uWBcTwXeY3KdzRLDqASUsDnQ4MEc9XC'
+
+    const identity = await sdk.identities.getIdentityContractNonce(identifier, dataContract)
+
+    expect(identity).toEqual(expect.any(BigInt))
+  })
+
+  test('should be able to get identity nonce', async () => {
+    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+
+    const identity = await sdk.identities.getIdentityNonce(identifier)
+
+    expect(identity).toEqual(expect.any(BigInt))
+  })
+
+  test('should be able to get identity public keys', async () => {
+    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+
+    const identityPublicKeys = await sdk.identities.getIdentityPublicKeys(identifier)
+
+    expect(identityPublicKeys.every(identityPublicKey => identityPublicKey instanceof IdentityPublicKeyWASM)).toBeTruthy();
   })
 })
