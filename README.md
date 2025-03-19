@@ -1,4 +1,4 @@
-# dash-platform-sdk v1.0.1
+# dash-platform-sdk v1.0.2
 
 This is an experimental alternative lightweight SDK for Dash Platform chain that let you make queries, create, and sign state transition locally and broadcast them into network.
 
@@ -21,7 +21,7 @@ $ npm install dash-platform-sdk
 
 Alternatively, you could simply include the library from the CDN:
 
-https://unpkg.com/dash-platform-sdk@1.0.1/dist/main.js
+https://unpkg.com/dash-platform-sdk@1.0.2/dist/main.js
 
 ## Quickstart
 
@@ -48,8 +48,6 @@ Queries a DAPI for data contract and returns a IdentityWASM instance
 const dataContractIdentifier = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
 const dataContract = await sdk.dataContracts.getByIdentifier(dataContractIdentifier)
-
-console.log(dataContract)
 ```
 
 ###  Documents
@@ -119,6 +117,8 @@ Returns a current BigInt identity nonce for a given Identity
 const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
 
 const idenityNonce = await sdk.identities.getIdentityNonce(identifier)
+
+console.log(identityNonce)
 ```
 
 #### Get identity contract nonce
@@ -129,6 +129,8 @@ const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
 const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
 const idenityContractNonce = await sdk.identities.idenityContractNonce(identifier, dataContract)
+
+console.log(idenityContractNonce)
 ```
 
 #### Get identity public keys
@@ -138,6 +140,8 @@ Return an array of IdentityPublicKeyWASM for a given identity if found
 const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
 
 const identityPublicKeys = await sdk.identities.getIdentityPublicKeys(identifier)
+
+console.log(identityPublicKeys)
 ```
 
 ### State Transition
@@ -160,6 +164,8 @@ await sdk.stateTransitions.broadcastStateTransition(stateTransitionHash)
 #### Search domain by name (ex. xyz.dash)
 ```javascript
 const [document] = await sdk.names.search('xyz.dash')
+
+console.log(document)
 ```
 
 ### Node Status
