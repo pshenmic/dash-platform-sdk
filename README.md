@@ -25,7 +25,7 @@ Alternatively, you could simply include the library from the CDN:
 https://unpkg.com/dash-platform-sdk@1.0.2/dist/main.js
 
 ## Quickstart
-
+To use the SDK, simply import the library and instantiate an instance of DashPlatformSDK:
 ```javascript
 // ES6 / EcmaScript
 import DashPlatformSDK from 'dash-platform-sdk'
@@ -36,7 +36,7 @@ const { default: DashPlatformSDK } = require('dash-platform-sdk')
 const sdk = new DashPlatformSDK({network: 'testnet'}) 
 ```
 
-# API
+## API Documentation
 
 
 ###  Data Contracts
