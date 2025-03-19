@@ -26,13 +26,13 @@ jobs:
       run: |
         yarn
 
-    - name: Run tests
-      run: |
-        yarn test
-
     - name: Generate GRPC client
       run: |
         yarn build:grpc
+
+    - name: Run tests
+      run: |
+        yarn test
 
     - name: Build with Webpack
       run: |
