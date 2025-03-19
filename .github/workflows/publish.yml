@@ -14,6 +14,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: yarn
       - run: yarn build:grpc
+      - run: yarn test
       - run: yarn build
       - run: yarn publish
         env:
