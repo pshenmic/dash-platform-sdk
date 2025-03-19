@@ -1,3 +1,5 @@
+/* global describe, test, beforeAll, expect */
+
 import DashPlatformSDK from '../../src/index'
 import { DataContractWASM, DocumentWASM, IdentityPublicKeyWASM, IdentityWASM } from 'pshenmic-dpp'
 
@@ -63,10 +65,10 @@ describe('DashPlatformSDK', () => {
     const identityContractNonce = BigInt(1)
     const documentType = 'pool'
     const data = {
-      "name": "MyPool",
-      "type": "EVONODE",
-      "status": "INACTIVE",
-      "description": "test pool"
+      name: 'MyPool',
+      type: 'EVONODE',
+      status: 'INACTIVE',
+      description: 'test pool'
     }
 
     const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
@@ -82,7 +84,6 @@ describe('DashPlatformSDK', () => {
     expect(dataContract).toEqual(expect.any(DataContractWASM))
   })
 
-
   test('should be able to get documents', async () => {
     const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
     const documentType = 'domain'
@@ -93,9 +94,6 @@ describe('DashPlatformSDK', () => {
   })
 
   test('should be able to search names by DPNS name', async () => {
-    const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
-    const documentType = 'domain'
-
     const [document] = await sdk.names.search('xyz.dash')
 
     expect(document).toEqual(expect.any(DocumentWASM))
@@ -139,7 +137,6 @@ describe('DashPlatformSDK', () => {
 
     const identityPublicKeys = await sdk.identities.getIdentityPublicKeys(identifier)
 
-    expect(identityPublicKeys.every(identityPublicKey => identityPublicKey instanceof IdentityPublicKeyWASM)).toBeTruthy();
+    expect(identityPublicKeys.every(identityPublicKey => identityPublicKey instanceof IdentityPublicKeyWASM)).toBeTruthy()
   })
-
 })

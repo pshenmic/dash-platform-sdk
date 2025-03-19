@@ -1,23 +1,21 @@
-import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/platform'
-import parseIdentifier from '../utils/parseIdentifier'
 import convertToHomographSafeChars from '../utils/convertToHomographSafeChars'
 import query from '../documents/get'
 
 const DPNS_DATA_CONTRACT_ID = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
 export default async function search (name) {
-  const [label, parentDomainName]  = name.split('.')
+  const [label, parentDomainName] = name.split('.')
 
-  const normalizedParentDomainName = convertToHomographSafeChars(parentDomainName);
-  const normalizedLabelPrefix = convertToHomographSafeChars(label);
+  const normalizedParentDomainName = convertToHomographSafeChars(parentDomainName)
+  const normalizedLabelPrefix = convertToHomographSafeChars(label)
 
   const where = [
     ['normalizedParentDomainName', '==', normalizedParentDomainName],
-    ['normalizedLabel', 'startsWith', normalizedLabelPrefix],
+    ['normalizedLabel', 'startsWith', normalizedLabelPrefix]
   ]
 
   const orderBy = [
-    ['normalizedLabel', 'asc'],
+    ['normalizedLabel', 'asc']
   ]
 
   return query.bind(this)(DPNS_DATA_CONTRACT_ID, 'domain', where, orderBy)

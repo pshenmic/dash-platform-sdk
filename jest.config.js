@@ -1,5 +1,5 @@
 module.exports = {
-  "transformIgnorePatterns": [
-    "node_modules/(?!pshenmic-dpp)",
+  transformIgnorePatterns: [
+    'node_modules/(?!pshenmic-dpp)'
   ]
 }

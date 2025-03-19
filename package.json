@@ -12,6 +12,7 @@
     "isomorphic-ws": "^5.0.0",
     "jest": "^29.7.0",
     "nice-grpc-web": "^3.3.6",
+    "standard": "^17.1.2",
     "stream-browserify": "^3.0.0",
     "ts-node": "^10.9.2",
     "ts-proto": "^2.6.1",
@@ -24,6 +25,7 @@
   "scripts": {
     "build": "webpack",
     "build:grpc": "yarn proto:generate && yarn proto:transpile",
+    "lint": "standard",
     "test": "jest",
     "test:debug": "node --inspect-brk ./node_modules/.bin/jest",
     "proto:generate": "grpc_tools_node_protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./proto/generated --ts_proto_opt=forceLong=string,env=browser,outputServices=nice-grpc,outputServices=generic-definitions,outputJsonMethods=false,useExactTypes=false --proto_path=./proto ./proto/platform.proto",

@@ -1,11 +1,12 @@
-import { GetIdentityKeysRequest, GetIdentityRequest, KeyRequestType } from '../../proto/generated/platform'
+import { GetIdentityRequest } from '../../proto/generated/platform'
 import parseIdentifier from '../utils/parseIdentifier'
 import { IdentityWASM } from 'pshenmic-dpp'
 
 export default async function getByIdentifier (identifier) {
+  // eslint-disable-next-line new-cap
   const getIdentityRequest = new GetIdentityRequest.fromPartial({
     v0: {
-      id: parseIdentifier(identifier),
+      id: parseIdentifier(identifier)
     }
   })
 
