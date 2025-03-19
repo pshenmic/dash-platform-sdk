@@ -119,17 +119,17 @@ describe('DashPlatformSDK', () => {
     const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
     const dataContract = '6QMfQTdKpC3Y9uWBcTwXeY3KdzRLDqASUsDnQ4MEc9XC'
 
-    const identity = await sdk.identities.getIdentityContractNonce(identifier, dataContract)
+    const identityContractNonce = await sdk.identities.getIdentityContractNonce(identifier, dataContract)
 
-    expect(identity).toEqual(expect.any(BigInt))
+    expect(identityContractNonce).toEqual(expect.any(BigInt))
   })
 
   test('should be able to get identity nonce', async () => {
     const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
 
-    const identity = await sdk.identities.getIdentityNonce(identifier)
+    const identityNonce = await sdk.identities.getIdentityNonce(identifier)
 
-    expect(identity).toEqual(expect.any(BigInt))
+    expect(identityNonce).toEqual(expect.any(BigInt))
   })
 
   test('should be able to get identity public keys', async () => {
