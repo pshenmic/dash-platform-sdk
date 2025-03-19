@@ -11,6 +11,9 @@ import getIdentityNonce from './identities/getIdentityNonce'
 import getIdentityPublicKeys from './identities/getIdentityPublicKeys'
 import search from './names/search'
 import GRPCConnectionPool from './grpcConnectionPool'
+import fromDocument from './stateTransitions/fromDocument'
+import broadcastStateTransition from './stateTransitions/broadcast'
+import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
 
 const DEFAULT_OPTIONS = {
   network: 'testnet'
@@ -37,6 +40,12 @@ export default class DashPlatformSDK {
 
     this.names = {
       search: search.bind(this)
+    }
+
+    this.stateTransitions = {
+      fromDocument: fromDocument.bind(this),
+      broadcast: broadcastStateTransition.bind(this),
+      waitForStateTransitionResult: waitForStateTransitionResult.bind(this),
     }
 
     this.identities = {

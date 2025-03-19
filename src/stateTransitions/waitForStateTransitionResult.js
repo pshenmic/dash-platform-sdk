@@ -1,6 +1,6 @@
 import { WaitForStateTransitionResultRequest } from '../../proto/generated/platform'
 
-export default async function WaitForStateTransitionResult (stateTransitionHash) {
+export default async function waitForStateTransitionResult (stateTransitionHash) {
   // eslint-disable-next-line new-cap
   const waitForStateTransitionResultRequest = new WaitForStateTransitionResultRequest.fromPartial({
     v0: {
