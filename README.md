@@ -2,13 +2,14 @@
 
 This is an experimental alternative lightweight SDK for Dash Platform chain that let you make queries, create, and sign state transition locally and broadcast them into network.
 
-It uses an alternative WASM bindings layer to a Dash Platform Protocol, and alternative GRPC Client solution, that allowed us to minimize the final build to around 3 megabytes.
+It uses an alternative WASM bindings layer to a Dash Platform Protocol, and other GRPC Client solution, that allowed us to minimize the final build to around 3 megabytes.
 
-SDK uses a pre-defined set of seed nodes (public RPC) and fetches a latest lis of available DAPI hosts from the Dash network through https://rpc.digitalcash.dev.
+SDK uses a pre-defined set of seed nodes (public RPC) at the start, and then tries to switch to the latest list of nodes fetched from the Dash network through https://rpc.digitalcash.dev.
 
 #### This is development version, breaking changes may be each release
 
-Currently, only minimal features are included, such as querying and submitting a documents, and related functions to do that, and without any validation and error handling. This all going to be finished in next versions.
+Currently, only minimal features are included, such as document querying and creation of the documents, and all necessary related functions to do that. 
+There is no input validation and error handling implemented yet relying on a happy path, this is going to be fixed in next versions.
 
 This library is isomorphic and works in both Node.js and Web browsers without polyfilling
 
