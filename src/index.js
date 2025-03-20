@@ -14,6 +14,7 @@ import GRPCConnectionPool from './grpcConnectionPool'
 import fromDocument from './stateTransitions/fromDocument'
 import broadcastStateTransition from './stateTransitions/broadcast'
 import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
+import { base64 } from "rfc4648";
 
 const DEFAULT_OPTIONS = {
   network: 'testnet'
@@ -21,7 +22,8 @@ const DEFAULT_OPTIONS = {
 
 export default class DashPlatformSDK {
   constructor (options = DEFAULT_OPTIONS) {
-    wasm.initSync({ module: Buffer.from(wasmBytes, 'base64') })
+    const uint8array = base64.parse(wasmBytes.replaceAll(' ', ''));
+    wasm.initSync({ module: uint8array })
 
     this.network = options.network
 
