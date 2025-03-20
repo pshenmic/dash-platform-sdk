@@ -1,4 +1,4 @@
-# dash-platform-sdk v1.0.2
+# dash-platform-sdk v1.0.3
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pshenmic/dash-platform-sdk/blob/master/LICENSE) ![npm version](https://img.shields.io/npm/v/react.svg?style=flat) ![a](https://github.com/pshenmic/platform-explorer/actions/workflows/build.yml/badge.svg)
 
 
@@ -25,7 +25,7 @@ $ npm install dash-platform-sdk
 
 Alternatively, you could simply include the library from the CDN:
 
-https://unpkg.com/dash-platform-sdk@1.0.2/dist/main.js
+https://unpkg.com/dash-platform-sdk@1.0.3/dist/main.js
 
 ## Quickstart
 To use the SDK, simply import the library and instantiate an instance of DashPlatformSDK:
@@ -34,10 +34,20 @@ To use the SDK, simply import the library and instantiate an instance of DashPla
 import DashPlatformSDK from 'dash-platform-sdk'
 
 // CommonJS
-const { default: DashPlatformSDK } = require('dash-platform-sdk')
+const DashPlatformSDK = require('dash-platform-sdk')
 
-const sdk = new DashPlatformSDK({network: 'testnet'}) 
+const sdk = new DashPlatformSDK({network: 'testnet'})
 ```
+
+Or load it straight from the web page:
+
+```html
+<script src="https://unpkg.com/dash-platform-sdk@1.0.3/dist/main.js"></script>
+<script>
+    const sdk = new DashPlatformSDK({network: 'testnet'})
+</script>
+```
+
 
 ## API Documentation
 
