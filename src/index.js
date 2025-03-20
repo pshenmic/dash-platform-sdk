@@ -15,6 +15,10 @@ import fromDocument from './stateTransitions/fromDocument'
 import broadcastStateTransition from './stateTransitions/broadcast'
 import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
 import { base64 } from "rfc4648";
+import hexToUint8Array from './utils/hexToUint8Array'
+import base58ToUint8Array from './utils/base58ToUint8Array'
+import convertToHomographSafeChars from './utils/convertToHomographSafeChars'
+import uint8ArrayToBase58 from './utils/uint8ArrayToBase58'
 
 const DEFAULT_OPTIONS = {
   network: 'testnet'
@@ -60,6 +64,13 @@ export default class DashPlatformSDK {
 
     this.node = {
       status: status.bind(this)
+    }
+
+    this.utils = {
+      hexToUint8Array,
+      base58ToUint8Array,
+      uint8ArrayToBase58,
+      convertToHomographSafeChars
     }
   }
 }
