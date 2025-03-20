@@ -9,10 +9,12 @@ It uses an alternative WASM bindings layer to a Dash Platform Protocol, and othe
 
 SDK uses a pre-defined set of seed nodes (public RPC) at the start, and then tries to switch to the latest list of nodes fetched from the Dash network through https://rpc.digitalcash.dev if possible
 
-#### This is development version, breaking changes may be each release
+### This is development version, breaking changes may be each release
 
 Currently, only minimal features are included, such as document querying and creation of the documents, and all necessary related functions to do that
 There is no input validation and error handling implemented yet relying on a happy path, this is going to be fixed in next versions
+
+**This package is not yet production and mainnet ready, and I would only recommend to use it in the testnet environment**
 
 This library is isomorphic and works in both Node.js and Web browsers without polyfilling
 
