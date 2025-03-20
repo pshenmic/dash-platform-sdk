@@ -1,6 +1,6 @@
 {
   "name": "dash-platform-sdk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist/main.js",
   "devDependencies": {
     "@babel/core": "^7.26.10",
