@@ -21,7 +21,8 @@ import convertToHomographSafeChars from './utils/convertToHomographSafeChars'
 import uint8ArrayToBase58 from './utils/uint8ArrayToBase58'
 
 const DEFAULT_OPTIONS = {
-  network: 'testnet'
+  network: 'testnet',
+  dapiUrl: undefined,
 }
 
 export default class DashPlatformSDK {
@@ -31,7 +32,7 @@ export default class DashPlatformSDK {
 
     this.network = options.network
 
-    this.grpcPool = new GRPCConnectionPool(this.network)
+    this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
 
     this.wasm = wasm
 
