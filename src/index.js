@@ -15,13 +15,16 @@ import fromDocument from './stateTransitions/fromDocument'
 import broadcastStateTransition from './stateTransitions/broadcast'
 import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
 import { base64 } from "rfc4648";
-import hexToUint8Array from './utils/hexToUint8Array'
+import hexToBytes from './utils/hexToBytes'
 import base58ToUint8Array from './utils/base58ToUint8Array'
 import convertToHomographSafeChars from './utils/convertToHomographSafeChars'
 import uint8ArrayToBase58 from './utils/uint8ArrayToBase58'
+import getBalance from './identities/getBalance'
+import bytesToHex from './utils/bytesToHex'
 
 const DEFAULT_OPTIONS = {
-  network: 'testnet'
+  network: 'testnet',
+  dapiUrl: undefined,
 }
 
 export default class DashPlatformSDK {
@@ -31,7 +34,7 @@ export default class DashPlatformSDK {
 
     this.network = options.network
 
-    this.grpcPool = new GRPCConnectionPool(this.network)
+    this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
 
     this.wasm = wasm
 
@@ -55,6 +58,7 @@ export default class DashPlatformSDK {
     }
 
     this.identities = {
+      getBalance: getBalance.bind(this),
       getByIdentifier: getIdentityByIdentifier.bind(this),
       getByPublicKeyHash: getByPublicKeyHash.bind(this),
       getIdentityContractNonce: getIdentityContractNonce.bind(this),
@@ -67,7 +71,8 @@ export default class DashPlatformSDK {
     }
 
     this.utils = {
-      hexToUint8Array,
+      hexToBytes,
+      bytesToHex,
       base58ToUint8Array,
       uint8ArrayToBase58,
       convertToHomographSafeChars

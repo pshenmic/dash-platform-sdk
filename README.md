@@ -1,4 +1,4 @@
-# dash-platform-sdk v1.0.4
+# dash-platform-sdk v1.0.5
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pshenmic/dash-platform-sdk/blob/master/LICENSE) ![npm version](https://img.shields.io/npm/v/react.svg?style=flat) ![a](https://github.com/pshenmic/platform-explorer/actions/workflows/build.yml/badge.svg)
 
 
@@ -182,7 +182,7 @@ await sdk.stateTransitions.broadcastStateTransition(stateTransition)
 Waits for an execution of a state transition in the network
 
 ```javascript
-const stateTransitionHash = hexToUint8Array('4B47EEA3E7621BCEDDD7531A153E01262391A8ECB3C3F93628E5DC3B791EBDFA')
+const stateTransitionHash = hexToBytes('4B47EEA3E7621BCEDDD7531A153E01262391A8ECB3C3F93628E5DC3B791EBDFA')
 await sdk.stateTransitions.broadcastStateTransition(stateTransitionHash)
 ```
 

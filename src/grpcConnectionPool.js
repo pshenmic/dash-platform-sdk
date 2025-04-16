@@ -23,24 +23,29 @@ const seedNodes = {
 export default class GRPCConnectionPool {
   channels
 
-  constructor (network) {
-    this.channels = seedNodes[network].map(dapiUrl => createChannel(dapiUrl))
+  constructor (network, dapiUrl) {
+    if (dapiUrl) {
+      this.channels = [createChannel(dapiUrl)]
+    } else {
+      this.channels = seedNodes[network].map(dapiUrl => createChannel(dapiUrl))
 
-    getEvonodeList(network)
-      .then((evonodeList) => {
-        const evonodeListDapiURLs = Object
-          .entries(evonodeList)
-          .map(([, info]) => info)
-          .filter(info => info.status === 'ENABLED')
-          .map(info => {
-            const [host] = info.address.split(':')
+      getEvonodeList(network)
+        .then((evonodeList) => {
+          const evonodeListDapiURLs = Object
+            .entries(evonodeList)
+            .map(([, info]) => info)
+            .filter(info => info.status === 'ENABLED')
+            .map(info => {
+              const [host] = info.address.split(':')
 
-            return `https://${host}:${info.platformHTTPPort}`
-          })
+              return `https://${host}:${info.platformHTTPPort}`
+            })
 
-        this.channels = evonodeListDapiURLs.map(dapiUrl => createChannel(dapiUrl))
-      })
-      .catch(console.error)
+          this.channels = evonodeListDapiURLs.map(dapiUrl => createChannel(dapiUrl))
+        })
+        .catch(console.error)
+    }
+
   }
 
   getClient () {
