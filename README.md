@@ -182,7 +182,7 @@ await sdk.stateTransitions.broadcastStateTransition(stateTransition)
 Waits for an execution of a state transition in the network
 
 ```javascript
-const stateTransitionHash = hexToUint8Array('4B47EEA3E7621BCEDDD7531A153E01262391A8ECB3C3F93628E5DC3B791EBDFA')
+const stateTransitionHash = hexToBytes('4B47EEA3E7621BCEDDD7531A153E01262391A8ECB3C3F93628E5DC3B791EBDFA')
 await sdk.stateTransitions.broadcastStateTransition(stateTransitionHash)
 ```
 
