@@ -3020,6 +3020,11 @@ grpc-tools@^1.13.0:
   dependencies:
     "@mapbox/node-pre-gyp" "^1.0.5"
 
+grpc-web@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/grpc-web/-/grpc-web-1.5.0.tgz#154e4007ab59a94bf7726b87ef6c5bd8815ecf6e"
+  integrity sha512-y1tS3BBIoiVSzKTDF3Hm7E8hV2n7YY7pO0Uo7depfWJqKzWE+SKr0jvHNIJsJJYILQlpYShpi/DRJJMbosgDMQ==
+
 grpc_tools_node_protoc_ts@^5.3.3:
   version "5.3.3"
   resolved "https://registry.yarnpkg.com/grpc_tools_node_protoc_ts/-/grpc_tools_node_protoc_ts-5.3.3.tgz#9a6c1c2f41563a1ab259c0177496d7dfed30dbfe"
@@ -4457,10 +4462,10 @@ prop-types@^15.8.1:
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
-pshenmic-dpp@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.0.3.tgz#9bb79086473fa74428f6e5e10585976e1604ae00"
-  integrity sha512-fagah4EhH3Q5j/Epy3xCWj/uzpUiK2cBdg8Zeh+d2srg0BmTgREB6Gr0Twfj44FtOYV+HEe3SjhhxKV5WS1Big==
+pshenmic-dpp@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.0.5.tgz#e2441237b557c0634296d37f9e3d7bf302af3282"
+  integrity sha512-qT6NNSD3nhA21loLTi79/Uamt2i+BxkaG+7cIyhSpvSBIgQhv3IREiplmDUHJM+Id7bHt5zYjC349mjEPzJVYQ==
 
 punycode@^2.1.0:
   version "2.3.1"

@@ -139,4 +139,12 @@ describe('DashPlatformSDK', () => {
 
     expect(identityPublicKeys.every(identityPublicKey => identityPublicKey instanceof IdentityPublicKeyWASM)).toBeTruthy()
   })
+
+  test('should be able to get balance', async () => {
+    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+
+    const balance = await sdk.identities.getBalance(identifier)
+
+    expect(balance).toEqual(expect.any(BigInt))
+  })
 })

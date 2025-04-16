@@ -1,5 +1,5 @@
-export default async function fromDocument (document, batchType, identityContractNonce, params = {}) {
-  const documentsBatch = this.wasm.DocumentBatchWASM.new(batchType, document, identityContractNonce)
+export default async function fromDocument (document, batchType, identityContractNonce) {
+  const documentsBatch = new this.wasm.DocumentBatchWASM(batchType, document, identityContractNonce)
 
   return documentsBatch.toStateTransition()
 }

@@ -1,4 +1,4 @@
-export default async function createDocument (dataContract, documentType, data, identityContractNonce, identity, identityPublicKey, privateKey) {
+export default async function createDocument (dataContract, documentType, data, identityContractNonce, identity) {
   return new this.wasm.DocumentWASM(
     data,
     documentType,
