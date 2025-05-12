@@ -6,8 +6,7 @@ import parseIdentifier from '../utils/parseIdentifier'
 const IDENTITY_CONTRACT_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 
 export default async function getIdentityContractNonce (identity, dataContract) {
-  // eslint-disable-next-line new-cap
-  const getIdentityContractNonceRequest = new GetIdentityContractNonceRequest.fromPartial({
+  const getIdentityContractNonceRequest = GetIdentityContractNonceRequest.fromPartial({
     v0: {
       identityId: parseIdentifier(identity),
       contractId: parseIdentifier(dataContract)

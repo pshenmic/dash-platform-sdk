@@ -3,8 +3,7 @@ import parseIdentifier from '../utils/parseIdentifier'
 import { IdentityWASM } from 'pshenmic-dpp'
 
 export default async function getByIdentifier (identifier) {
-  // eslint-disable-next-line new-cap
-  const getIdentityRequest = new GetIdentityRequest.fromPartial({
+  const getIdentityRequest = GetIdentityRequest.fromPartial({
     v0: {
       id: parseIdentifier(identifier)
     }

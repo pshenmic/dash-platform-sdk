@@ -6,8 +6,7 @@ import parseIdentifier from '../utils/parseIdentifier'
 const IDENTITY_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 
 export default async function getIdentityNonce (identifier) {
-  // eslint-disable-next-line new-cap
-  const getIdentityNonceRequest = new GetIdentityNonceRequest.fromPartial({
+  const getIdentityNonceRequest = GetIdentityNonceRequest.fromPartial({
     v0: {
       identityId: parseIdentifier(identifier)
     }

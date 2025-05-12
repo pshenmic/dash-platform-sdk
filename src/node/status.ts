@@ -1,8 +1,7 @@
 import { GetStatusRequest } from '../../proto/generated/platform.js'
 
 export default async function status () {
-  // eslint-disable-next-line new-cap
-  const getStatusRequest = new GetStatusRequest.fromPartial({ v0: {} })
+  const getStatusRequest = GetStatusRequest.fromPartial({ v0: {} })
 
   const response = await this.grpcPool.getClient().getStatus(getStatusRequest)
 

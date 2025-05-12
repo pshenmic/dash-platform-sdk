@@ -14,7 +14,7 @@ import GRPCConnectionPool from './grpcConnectionPool'
 import fromDocument from './stateTransitions/fromDocument'
 import broadcastStateTransition from './stateTransitions/broadcast'
 import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
-import { base64 } from "rfc4648";
+import { base64 } from 'rfc4648'
 import hexToBytes from './utils/hexToBytes'
 import base58ToUint8Array from './utils/base58ToUint8Array'
 import convertToHomographSafeChars from './utils/convertToHomographSafeChars'
@@ -24,12 +24,12 @@ import bytesToHex from './utils/bytesToHex'
 
 const DEFAULT_OPTIONS = {
   network: 'testnet',
-  dapiUrl: undefined,
+  dapiUrl: undefined
 }
 
 export default class DashPlatformSDK {
   constructor (options = DEFAULT_OPTIONS) {
-    const uint8array = base64.parse(wasmBytes.replaceAll(' ', ''));
+    const uint8array = base64.parse(wasmBytes.replaceAll(' ', ''))
     wasm.initSync({ module: uint8array })
 
     this.network = options.network
@@ -37,45 +37,50 @@ export default class DashPlatformSDK {
     this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
 
     this.wasm = wasm
+  }
 
-    this.dataContracts = {
-      getByIdentifier: getDataContractByIdentifier.bind(this)
-    }
+  network: string
+  grpcPool: GRPCConnectionPool
+  // todo typings from pshenmic-dpp
+  wasm: any
 
-    this.documents = {
-      query: getDocuments.bind(this),
-      create: createDocument.bind(this)
-    }
+  dataContracts = {
+    getByIdentifier: getDataContractByIdentifier.bind(this)
+  }
 
-    this.names = {
-      search: search.bind(this)
-    }
+  documents = {
+    query: getDocuments.bind(this),
+    create: createDocument.bind(this)
+  }
 
-    this.stateTransitions = {
-      fromDocument: fromDocument.bind(this),
-      broadcast: broadcastStateTransition.bind(this),
-      waitForStateTransitionResult: waitForStateTransitionResult.bind(this),
-    }
+  names = {
+    search: search.bind(this)
+  }
 
-    this.identities = {
-      getBalance: getBalance.bind(this),
-      getByIdentifier: getIdentityByIdentifier.bind(this),
-      getByPublicKeyHash: getByPublicKeyHash.bind(this),
-      getIdentityContractNonce: getIdentityContractNonce.bind(this),
-      getIdentityNonce: getIdentityNonce.bind(this),
-      getIdentityPublicKeys: getIdentityPublicKeys.bind(this)
-    }
+  stateTransitions = {
+    fromDocument: fromDocument.bind(this),
+    broadcast: broadcastStateTransition.bind(this),
+    waitForStateTransitionResult: waitForStateTransitionResult.bind(this)
+  }
 
-    this.node = {
-      status: status.bind(this)
-    }
+  identities = {
+    getBalance: getBalance.bind(this),
+    getByIdentifier: getIdentityByIdentifier.bind(this),
+    getByPublicKeyHash: getByPublicKeyHash.bind(this),
+    getIdentityContractNonce: getIdentityContractNonce.bind(this),
+    getIdentityNonce: getIdentityNonce.bind(this),
+    getIdentityPublicKeys: getIdentityPublicKeys.bind(this)
+  }
 
-    this.utils = {
-      hexToBytes,
-      bytesToHex,
-      base58ToUint8Array,
-      uint8ArrayToBase58,
-      convertToHomographSafeChars
-    }
+  node = {
+    status: status.bind(this)
+  }
+
+  utils = {
+    hexToBytes,
+    bytesToHex,
+    base58ToUint8Array,
+    uint8ArrayToBase58,
+    convertToHomographSafeChars
   }
 }

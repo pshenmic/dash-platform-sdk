@@ -1,17 +1,16 @@
 import { GetDocumentsRequest } from '../../proto/generated/platform.js'
 import { base58 } from '@scure/base'
-import cbor from 'cbor'
+import { encode } from 'cbor'
 import { DocumentWASM, PlatformVersionWASM } from 'pshenmic-dpp'
 import getByIdentifier from '../dataContracts/getByIdentifier'
 
 export default async function get (dataContractId, documentType, where, orderBy, limit = 100, startAt, startAfter) {
-  // eslint-disable-next-line new-cap
-  const getDocumentsRequest = new GetDocumentsRequest.fromPartial({
+  const getDocumentsRequest = GetDocumentsRequest.fromPartial({
     v0: {
       dataContractId: base58.decode(dataContractId),
       documentType,
-      where: where ? cbor.encode(where) : undefined,
-      orderBy: orderBy ? cbor.encode(orderBy) : undefined,
+      where: where ? encode(where) : undefined,
+      orderBy: orderBy ? encode(orderBy) : undefined,
       limit,
       startAt: startAt || undefined,
       startAfter: startAfter || undefined

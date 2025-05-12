@@ -34,8 +34,8 @@ export default class GRPCConnectionPool {
           const evonodeListDapiURLs = Object
             .entries(evonodeList)
             .map(([, info]) => info)
-            .filter(info => info.status === 'ENABLED')
-            .map(info => {
+            .filter((info: any) => info.status === 'ENABLED')
+            .map((info: any) => {
               const [host] = info.address.split(':')
 
               return `https://${host}:${info.platformHTTPPort}`
@@ -45,7 +45,6 @@ export default class GRPCConnectionPool {
         })
         .catch(console.error)
     }
-
   }
 
   getClient () {

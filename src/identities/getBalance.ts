@@ -2,8 +2,7 @@ import { GetIdentityBalanceRequest } from '../../proto/generated/platform'
 import parseIdentifier from '../utils/parseIdentifier'
 
 export default async function getBalance (identifier) {
-  // eslint-disable-next-line new-cap
-  const getIdentityBalanceRequest = new GetIdentityBalanceRequest.fromPartial({
+  const getIdentityBalanceRequest = GetIdentityBalanceRequest.fromPartial({
     v0: {
       id: parseIdentifier(identifier)
     }

@@ -2,9 +2,8 @@ import { PlatformVersionWASM } from 'pshenmic-dpp'
 import { GetDataContractRequest } from '../../proto/generated/platform'
 import parseIdentifier from '../utils/parseIdentifier'
 
-export default async function GetByIdentifier (identifier) {
-  // eslint-disable-next-line new-cap
-  const getDataContractRequest = new GetDataContractRequest.fromPartial({
+export default async function GetByIdentifier (identifier: string) {
+  const getDataContractRequest = GetDataContractRequest.fromPartial({
     v0: {
       id: parseIdentifier(identifier)
     }

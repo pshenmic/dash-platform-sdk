@@ -2,8 +2,7 @@ import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/pl
 import parseIdentifier from '../utils/parseIdentifier'
 
 export default async function getIdentityPublicKeys (identifier) {
-  // eslint-disable-next-line new-cap
-  const getIdentityKeysRequest = new GetIdentityKeysRequest.fromPartial({
+  const getIdentityKeysRequest = GetIdentityKeysRequest.fromPartial({
     v0: {
       identityId: parseIdentifier(identifier),
       requestType: KeyRequestType.fromPartial({ allKeys: {} })
