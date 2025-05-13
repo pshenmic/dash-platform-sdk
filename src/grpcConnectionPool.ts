@@ -23,11 +23,11 @@ const seedNodes = {
 export default class GRPCConnectionPool {
   channels: Channel[]
 
-  constructor (network: string, dapiUrl: string) {
-    if (dapiUrl !== null) {
+  constructor (network: string, dapiUrl?: string) {
+    if (typeof dapiUrl == 'string') {
       this.channels = [createChannel(dapiUrl)]
     } else {
-      this.channels = seedNodes[network].map(dapiUrl => createChannel(dapiUrl))
+      this.channels = seedNodes[network].map((dapiUrl: string) => createChannel(dapiUrl))
 
       getEvonodeList(network)
         .then((evonodeList) => {
