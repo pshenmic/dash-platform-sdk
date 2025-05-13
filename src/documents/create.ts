@@ -1,4 +1,5 @@
-import { DataContractWASM, DocumentWASM, IdentifierWASM } from 'pshenmic-dpp'
+import { DataContractWASM, DocumentWASM } from 'pshenmic-dpp'
+import {IdentifierLike} from "../index";
 
 /**
  * Creates a document
@@ -6,14 +7,14 @@ import { DataContractWASM, DocumentWASM, IdentifierWASM } from 'pshenmic-dpp'
  * @param documentType {string}
  * @param data {object}
  * @param identityContractNonce {bigint}
- * @param owner {IdentifierWASM}
+ * @param owner {IdentifierLike}
  */
 export default async function createDocument (
   dataContract: DataContractWASM,
   documentType: string,
   data: object,
   identityContractNonce: bigint,
-  owner: IdentifierWASM): Promise<DocumentWASM> {
+  owner: IdentifierLike): Promise<DocumentWASM> {
   return new this.wasm.DocumentWASM(
     data,
     documentType,

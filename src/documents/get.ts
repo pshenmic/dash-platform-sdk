@@ -3,11 +3,12 @@ import { encode } from 'cbor'
 import { DocumentWASM, IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
 import getByIdentifier from '../dataContracts/getByIdentifier'
 import { DAPI_DEFAULT_LIMIT } from '../constants'
+import {IdentifierLike} from "../index";
 
-export default async function get (dataContractId: IdentifierWASM, documentType: string, where?: object, orderBy?: object, limit?: number, startAt?: IdentifierWASM, startAfter?: IdentifierWASM): Promise< DocumentWASM[]> {
+export default async function get (dataContractId: IdentifierLike, documentType: string, where?: object, orderBy?: object, limit?: number, startAt?: IdentifierWASM, startAfter?: IdentifierWASM): Promise< DocumentWASM[]> {
   const getDocumentsRequest = GetDocumentsRequest.fromPartial({
     v0: {
-      dataContractId: dataContractId.bytes(),
+      dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
       documentType,
       where: (where != null) ? encode(where) : undefined,
       orderBy: (orderBy != null) ? encode(orderBy) : undefined,

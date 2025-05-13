@@ -1,11 +1,12 @@
-import { DataContractWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import {DataContractWASM, IdentifierWASM, PlatformVersionWASM} from 'pshenmic-dpp'
 import { GetDataContractRequest } from '../../proto/generated/platform'
 import parseIdentifier from '../utils/parseIdentifier'
+import {IdentifierLike} from "../index";
 
-export default async function GetByIdentifier (identifier: string): Promise<DataContractWASM> {
+export default async function GetByIdentifier (identifier: IdentifierLike): Promise<DataContractWASM> {
   const getDataContractRequest = GetDataContractRequest.fromPartial({
     v0: {
-      id: parseIdentifier(identifier)
+      id: new IdentifierWASM(identifier).bytes()
     }
   })
 

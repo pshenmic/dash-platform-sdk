@@ -2,15 +2,19 @@ import {
   GetIdentityContractNonceRequest
 } from '../../proto/generated/platform'
 import parseIdentifier from '../utils/parseIdentifier'
-import { DataContractWASM, IdentityWASM } from 'pshenmic-dpp'
+import {DataContractWASM, IdentifierWASM, IdentityWASM} from 'pshenmic-dpp'
+import {IdentifierLike} from "../index";
 
 const IDENTITY_CONTRACT_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 
-export default async function getIdentityContractNonce (identity: IdentityWASM, dataContract: DataContractWASM): Promise<bigint> {
+export default async function getIdentityContractNonce (identity: IdentifierLike, dataContract: IdentifierLike): Promise<bigint> {
+  const identityIdentifier = new IdentifierWASM(identity)
+  const dataContractIdentifier = new IdentifierWASM(dataContract)
+
   const getIdentityContractNonceRequest = GetIdentityContractNonceRequest.fromPartial({
     v0: {
-      identityId: parseIdentifier(identity),
-      contractId: parseIdentifier(dataContract)
+      identityId: identityIdentifier.bytes(),
+      contractId: dataContractIdentifier.bytes()
     }
   })
 
@@ -19,7 +23,7 @@ export default async function getIdentityContractNonce (identity: IdentityWASM, 
   const { identityContractNonce } = v0
 
   if (identityContractNonce == null) {
-    throw new Error(`Could not get identityContractNonce for Identity with identifier ${identity.getId().base58()}`)
+    throw new Error(`Could not get identityContractNonce for Identity with identifier ${identityIdentifier.base58()}`)
   }
 
   return BigInt(identityContractNonce) & IDENTITY_CONTRACT_NONCE_VALUE_FILTER
