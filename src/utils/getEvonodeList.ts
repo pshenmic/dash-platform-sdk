@@ -1,4 +1,5 @@
-export default async function getEvonodeList (network) {
+// todo fix any
+export default async function getEvonodeList (network): Promise<any> {
   const baseUrl = {
     testnet: 'https://trpc.digitalcash.dev',
     mainnet: 'https://rpc.digitalcash.dev'
@@ -23,7 +24,7 @@ export default async function getEvonodeList (network) {
 
   const data = await resp.json()
 
-  if (data.error) {
+  if (data.error != null) {
     const err = new Error(data.error.message)
     Object.assign(err, data.error)
     throw err

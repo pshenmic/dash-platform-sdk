@@ -1,6 +1,6 @@
 import { WaitForStateTransitionResultRequest } from '../../proto/generated/platform'
 
-export default async function waitForStateTransitionResult (stateTransitionHash) {
+export default async function waitForStateTransitionResult (stateTransitionHash: Uint8Array): Promise<void> {
   const waitForStateTransitionResultRequest = WaitForStateTransitionResultRequest.fromPartial({
     v0: {
       stateTransitionHash
@@ -11,7 +11,7 @@ export default async function waitForStateTransitionResult (stateTransitionHash)
 
   const { error } = v0
 
-  if (error) {
+  if (error != null) {
     throw new Error(error)
   }
 }
