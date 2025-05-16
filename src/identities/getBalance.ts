@@ -1,7 +1,7 @@
 import { GetIdentityBalanceRequest } from '../../proto/generated/platform'
 import parseIdentifier from '../utils/parseIdentifier'
 
-export default async function getBalance (identifier) {
+export default async function getBalance (identifier: string): Promise<BigInt> {
   const getIdentityBalanceRequest = GetIdentityBalanceRequest.fromPartial({
     v0: {
       id: parseIdentifier(identifier)
@@ -12,7 +12,7 @@ export default async function getBalance (identifier) {
 
   const { balance } = v0
 
-  if (!balance) {
+  if (balance === undefined) {
     throw new Error(`Could not find balance for identity ${identifier}`)
   }
 

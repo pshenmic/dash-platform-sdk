@@ -21,14 +21,24 @@ import convertToHomographSafeChars from './utils/convertToHomographSafeChars'
 import uint8ArrayToBase58 from './utils/uint8ArrayToBase58'
 import getBalance from './identities/getBalance'
 import bytesToHex from './utils/bytesToHex'
+import {
+  DataContractsController,
+  DocumentsController,
+  IdentitiesController,
+  NamesController,
+  NodeController,
+  StateTransitionsController,
+  Utils
+} from './types'
+import { WASM } from 'pshenmic-dpp'
 
-const DEFAULT_OPTIONS = {
+const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
   dapiUrl: undefined
 }
 
 export default class DashPlatformSDK {
-  constructor (options = DEFAULT_OPTIONS) {
+  constructor (options: { network: 'testnet' | 'mainnet', dapiUrl?: string } = DEFAULT_OPTIONS) {
     const uint8array = base64.parse(wasmBytes.replaceAll(' ', ''))
     wasm.initSync({ module: uint8array })
 
@@ -39,31 +49,30 @@ export default class DashPlatformSDK {
     this.wasm = wasm
   }
 
-  network: string
+  network: 'testnet' | 'mainnet'
   grpcPool: GRPCConnectionPool
-  // todo typings from pshenmic-dpp
-  wasm: any
+  wasm: WASM
 
-  dataContracts = {
+  dataContracts: DataContractsController = {
     getByIdentifier: getDataContractByIdentifier.bind(this)
   }
 
-  documents = {
+  documents: DocumentsController = {
     query: getDocuments.bind(this),
     create: createDocument.bind(this)
   }
 
-  names = {
+  names: NamesController = {
     search: search.bind(this)
   }
 
-  stateTransitions = {
+  stateTransitions: StateTransitionsController = {
     fromDocument: fromDocument.bind(this),
     broadcast: broadcastStateTransition.bind(this),
     waitForStateTransitionResult: waitForStateTransitionResult.bind(this)
   }
 
-  identities = {
+  identities: IdentitiesController = {
     getBalance: getBalance.bind(this),
     getByIdentifier: getIdentityByIdentifier.bind(this),
     getByPublicKeyHash: getByPublicKeyHash.bind(this),
@@ -72,11 +81,11 @@ export default class DashPlatformSDK {
     getIdentityPublicKeys: getIdentityPublicKeys.bind(this)
   }
 
-  node = {
+  node: NodeController = {
     status: status.bind(this)
   }
 
-  utils = {
+  utils: Utils = {
     hexToBytes,
     bytesToHex,
     base58ToUint8Array,

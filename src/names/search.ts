@@ -1,9 +1,10 @@
 import convertToHomographSafeChars from '../utils/convertToHomographSafeChars'
 import query from '../documents/get'
+import { DocumentWASM } from 'pshenmic-dpp'
 
 const DPNS_DATA_CONTRACT_ID = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
-export default async function search (name) {
+export default async function search (name: string): Promise<[DocumentWASM]> {
   const [label, parentDomainName] = name.split('.')
 
   const normalizedParentDomainName = convertToHomographSafeChars(parentDomainName)

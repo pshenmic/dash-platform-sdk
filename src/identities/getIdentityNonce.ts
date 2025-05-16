@@ -5,7 +5,7 @@ import parseIdentifier from '../utils/parseIdentifier'
 
 const IDENTITY_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 
-export default async function getIdentityNonce (identifier) {
+export default async function getIdentityNonce (identifier: string): Promise<BigInt> {
   const getIdentityNonceRequest = GetIdentityNonceRequest.fromPartial({
     v0: {
       identityId: parseIdentifier(identifier)
@@ -16,7 +16,7 @@ export default async function getIdentityNonce (identifier) {
 
   const { identityNonce } = v0
 
-  if (!identityNonce) {
+  if (identityNonce === undefined) {
     throw new Error(`Could not get identityNonce for Identity with identifier ${identifier}`)
   }
 

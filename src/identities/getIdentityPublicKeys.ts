@@ -1,7 +1,8 @@
 import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/platform'
 import parseIdentifier from '../utils/parseIdentifier'
+import { IdentityPublicKeyWASM } from 'pshenmic-dpp'
 
-export default async function getIdentityPublicKeys (identifier) {
+export default async function getIdentityPublicKeys (identifier: string): Promise<[IdentityPublicKeyWASM]> {
   const getIdentityKeysRequest = GetIdentityKeysRequest.fromPartial({
     v0: {
       identityId: parseIdentifier(identifier),

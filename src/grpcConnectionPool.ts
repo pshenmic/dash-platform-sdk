@@ -23,8 +23,8 @@ const seedNodes = {
 export default class GRPCConnectionPool {
   channels
 
-  constructor (network, dapiUrl) {
-    if (dapiUrl) {
+  constructor (network: 'testnet' | 'mainnet', dapiUrl?: string) {
+    if (dapiUrl !== undefined) {
       this.channels = [createChannel(dapiUrl)]
     } else {
       this.channels = seedNodes[network].map(dapiUrl => createChannel(dapiUrl))
@@ -38,7 +38,7 @@ export default class GRPCConnectionPool {
             .map((info: any) => {
               const [host] = info.address.split(':')
 
-              return `https://${host}:${info.platformHTTPPort}`
+              return `https://${host as string}:${info.platformHTTPPort as number}`
             })
 
           this.channels = evonodeListDapiURLs.map(dapiUrl => createChannel(dapiUrl))
@@ -47,7 +47,7 @@ export default class GRPCConnectionPool {
     }
   }
 
-  getClient () {
+  getClient (): any {
     const channel = getRandomArrayItem(this.channels)
     return createClient(PlatformDefinition, channel)
   }

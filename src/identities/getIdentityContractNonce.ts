@@ -5,7 +5,7 @@ import parseIdentifier from '../utils/parseIdentifier'
 
 const IDENTITY_CONTRACT_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 
-export default async function getIdentityContractNonce (identity, dataContract) {
+export default async function getIdentityContractNonce (identity: string, dataContract: string): Promise<BigInt> {
   const getIdentityContractNonceRequest = GetIdentityContractNonceRequest.fromPartial({
     v0: {
       identityId: parseIdentifier(identity),
@@ -17,7 +17,7 @@ export default async function getIdentityContractNonce (identity, dataContract) 
 
   const { identityContractNonce } = v0
 
-  if (!identityContractNonce) {
+  if (identityContractNonce === undefined) {
     throw new Error(`Could not get identityContractNonce for Identity with identifier ${identity}`)
   }
 

@@ -4,16 +4,24 @@ import { encode } from 'cbor'
 import { DocumentWASM, PlatformVersionWASM } from 'pshenmic-dpp'
 import getByIdentifier from '../dataContracts/getByIdentifier'
 
-export default async function get (dataContractId, documentType, where, orderBy, limit = 100, startAt, startAfter) {
+export default async function get (
+  dataContractId: string,
+  documentType: string,
+  where?: ArrayLike<any>,
+  orderBy?: ArrayLike<any>,
+  limit: number | undefined = 100,
+  startAt?: Uint8Array<ArrayBufferLike> | undefined,
+  startAfter?: Uint8Array<ArrayBufferLike> | undefined
+): Promise<[DocumentWASM]> {
   const getDocumentsRequest = GetDocumentsRequest.fromPartial({
     v0: {
       dataContractId: base58.decode(dataContractId),
       documentType,
-      where: where ? encode(where) : undefined,
-      orderBy: orderBy ? encode(orderBy) : undefined,
+      where: (where != null) ? encode(where) : undefined,
+      orderBy: (orderBy != null) ? encode(orderBy) : undefined,
       limit,
-      startAt: startAt || undefined,
-      startAfter: startAfter || undefined
+      startAt: startAt != null ? startAt : undefined,
+      startAfter: startAfter != null ? startAfter : undefined
     }
   })
 
