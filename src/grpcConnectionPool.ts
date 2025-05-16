@@ -24,7 +24,7 @@ export default class GRPCConnectionPool {
   channels: Channel[]
 
   constructor (network: 'testnet' | 'mainnet', dapiUrl?: string) {
-    if (typeof dapiUrl == 'string') {
+    if (typeof dapiUrl === 'string') {
       this.channels = [createChannel(dapiUrl)]
     } else {
       this.channels = seedNodes[network].map((dapiUrl: string) => createChannel(dapiUrl))

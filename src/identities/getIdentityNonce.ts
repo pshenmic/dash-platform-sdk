@@ -1,9 +1,8 @@
 import {
   GetIdentityNonceRequest
 } from '../../proto/generated/platform'
-import parseIdentifier from '../utils/parseIdentifier'
 import { IdentifierWASM } from 'pshenmic-dpp'
-import {IdentifierLike} from "../index";
+import { IdentifierLike } from '../types'
 
 const IDENTITY_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 

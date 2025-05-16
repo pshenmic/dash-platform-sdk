@@ -1,7 +1,6 @@
 import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/platform'
-import parseIdentifier from '../utils/parseIdentifier'
 import { IdentifierWASM, IdentityPublicKeyWASM } from 'pshenmic-dpp'
-import {IdentifierLike} from "../index";
+import { IdentifierLike } from '../types'
 
 export default async function getIdentityPublicKeys (identifier: IdentifierLike): Promise<IdentityPublicKeyWASM[]> {
   const getIdentityKeysRequest = GetIdentityKeysRequest.fromPartial({

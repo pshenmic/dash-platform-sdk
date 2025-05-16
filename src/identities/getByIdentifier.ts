@@ -1,10 +1,12 @@
 import { GetIdentityRequest } from '../../proto/generated/platform'
 import { IdentifierWASM, IdentityWASM } from 'pshenmic-dpp'
+import { IdentifierLike } from '../types'
 
-export default async function getByIdentifier (identifier: string): Promise<IdentityWASM> {
+export default async function getByIdentifier (identifier: IdentifierLike): Promise<IdentityWASM> {
+  const id = new IdentifierWASM(identifier)
   const getIdentityRequest = GetIdentityRequest.fromPartial({
     v0: {
-      id: (new IdentifierWASM(identifier)).bytes()
+      id: id.bytes()
     }
   })
 
@@ -13,7 +15,7 @@ export default async function getByIdentifier (identifier: string): Promise<Iden
   const { identity } = v0
 
   if (identity == null) {
-    throw new Error(`Identity with identifier ${new IdentifierWASM(identifier).base58()} not found`)
+    throw new Error(`Identity with identifier ${id.base58()} not found`)
   }
 
   return IdentityWASM.fromBytes(identity)

@@ -3,9 +3,10 @@ import { encode } from 'cbor'
 import { DocumentWASM, IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
 import getByIdentifier from '../dataContracts/getByIdentifier'
 import { DAPI_DEFAULT_LIMIT } from '../constants'
+import { IdentifierLike } from '../types'
 
 export default async function get (
-  dataContractId: string,
+  dataContractId: IdentifierLike,
   documentType: string,
   where?: ArrayLike<any>,
   orderBy?: ArrayLike<any>,

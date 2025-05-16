@@ -7,6 +7,8 @@ import {
   IdentityWASM, IdentityPublicKeyWASM
 } from 'pshenmic-dpp'
 
+export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
+
 export type MasternodeList = Record<string, MasternodeInfo>
 
 export interface MasternodeInfo {
@@ -36,22 +38,22 @@ export interface NodeStatus {
       | string
       | undefined
       tenderdash?: string | undefined
-    }
+    } | undefined
     protocol: {
       tenderdash: {
         p2p: number
         block: number
-      }
+      } | undefined
       drive: {
         latest: number
         current: number
-      }
-    }
-  }
+      } | undefined
+    } | undefined
+  } | undefined
   node: {
     id: string
     proTxHash?: string | undefined
-  }
+  } | undefined
   chain: {
     catchingUp: boolean
     latestBlockHash: string
@@ -62,12 +64,12 @@ export interface NodeStatus {
     earliestBlockHeight: string
     maxPeerBlockHeight: string
     coreChainLockedHeight?: number | undefined
-  }
+  } | undefined
   network: {
     chainId: string
     peersCount: number
     listening: boolean
-  }
+  } | undefined
   stateSync: {
     totalSyncedTime: string
     remainingTime: string
@@ -77,7 +79,7 @@ export interface NodeStatus {
     snapshotChunksCount: string
     backfilledBlocks: string
     backfillBlocksTotal: string
-  }
+  } | undefined
   time: {
     local: string
     block?:
@@ -87,16 +89,16 @@ export interface NodeStatus {
     | string
     | undefined
     epoch?: number | undefined
-  }
+  } | undefined
 }
 
 export interface DataContractsController {
-  getByIdentifier: (identifier: string) => Promise<DataContractWASM>
+  getByIdentifier: (identifier: IdentifierLike) => Promise<DataContractWASM>
 }
 
 export interface DocumentsController {
-  query: (dataContractId: string, documentType: string, where?: ArrayLike<any>, orderBy?: ArrayLike<any>, limit?: number, startAt?: Uint8Array<ArrayBufferLike> | undefined, startAfter?: Uint8Array<ArrayBufferLike> | undefined) => Promise<[DocumentWASM]>
-  create: (dataContract: IdentifierWASM | string | ArrayLike<number>, documentType: string, data: Object, identityContractNonce: BigInt, identity: IdentifierWASM | string | ArrayLike<number>) => Promise<DocumentWASM>
+  query: (dataContractId: IdentifierLike, documentType: string, where?: ArrayLike<any>, orderBy?: ArrayLike<any>, limit?: number, startAt?: IdentifierWASM, startAfter?: IdentifierWASM) => Promise<[DocumentWASM]>
+  create: (dataContract: IdentifierLike, documentType: string, data: Object, identityContractNonce: BigInt, identity: IdentifierLike) => Promise<DocumentWASM>
 }
 
 export interface NamesController {
@@ -110,12 +112,12 @@ export interface StateTransitionsController {
 }
 
 export interface IdentitiesController {
-  getBalance: (identifier: string) => Promise<BigInt>
-  getByIdentifier: (identifier: string) => Promise<IdentityWASM>
+  getBalance: (identifier: IdentifierLike) => Promise<BigInt>
+  getByIdentifier: (identifier: IdentifierLike) => Promise<IdentityWASM>
   getByPublicKeyHash: (hex: string) => Promise<IdentityWASM>
-  getIdentityContractNonce: (identity: string, dataContract: string) => Promise<BigInt>
-  getIdentityNonce: (identifier: string) => Promise<BigInt>
-  getIdentityPublicKeys: (identifier: string) => Promise<[IdentityPublicKeyWASM]>
+  getIdentityContractNonce: (identity: IdentifierLike, dataContract: IdentifierLike) => Promise<BigInt>
+  getIdentityNonce: (identifier: IdentifierLike) => Promise<BigInt>
+  getIdentityPublicKeys: (identifier: IdentifierLike) => Promise<[IdentityPublicKeyWASM]>
 }
 
 export interface NodeController {

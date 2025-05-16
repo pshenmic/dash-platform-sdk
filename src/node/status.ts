@@ -8,14 +8,33 @@ export default async function status (): Promise<NodeStatus> {
 
   const { v0 } = response
 
-  // map buffers to hex string
-  // todo catch nullable and define own interface
-  v0.node.id = v0.node.id.reduce((code: number, acc: string) => acc + code.toString(16), '')
-  v0.node.proTxHash = v0.node.proTxHash.reduce((code: number, acc: string) => acc + code.toString(16), '')
-  v0.chain.latestBlockHash = v0.chain.latestBlockHash.reduce((code: number, acc: string) => acc + code.toString(16), '')
-  v0.chain.latestAppHash = v0.chain.latestAppHash.reduce((code: number, acc: string) => acc + code.toString(16), '')
-  v0.chain.earliestAppHash = v0.chain.earliestAppHash.reduce((code: number, acc: string) => acc + code.toString(16), '')
-  v0.chain.earliestBlockHash = v0.chain.earliestBlockHash.reduce((code: number, acc: string) => acc + code.toString(16), '')
+  if (v0 == null) {
+    throw new Error('Unable to get node status')
+  }
 
-  return v0
+  return {
+    node: (v0.node != null)
+      ? {
+          id: v0.node.id.reduce((acc: string, code: number) => acc + code.toString(16), ''),
+          proTxHash: v0.node.proTxHash?.reduce((acc: string, code: number) => acc + code.toString(16), '')
+        }
+      : undefined,
+    chain: (v0.chain != null)
+      ? {
+          catchingUp: v0.chain.catchingUp,
+          latestBlockHeight: v0.chain.latestBlockHeight,
+          earliestBlockHeight: v0.chain.earliestBlockHeight,
+          maxPeerBlockHeight: v0.chain.maxPeerBlockHeight,
+          coreChainLockedHeight: v0.chain.coreChainLockedHeight,
+          latestBlockHash: v0.chain?.latestBlockHash.reduce((acc: string, code: number) => acc + code.toString(16), ''),
+          latestAppHash: v0.chain?.latestAppHash.reduce((acc: string, code: number) => acc + code.toString(16), ''),
+          earliestBlockHash: v0.chain?.earliestBlockHash.reduce((acc: string, code: number) => acc + code.toString(16), ''),
+          earliestAppHash: v0.chain?.earliestAppHash.reduce((acc: string, code: number) => acc + code.toString(16), '')
+        }
+      : undefined,
+    version: v0.version,
+    network: v0.network,
+    stateSync: v0.stateSync,
+    time: v0.time
+  }
 }

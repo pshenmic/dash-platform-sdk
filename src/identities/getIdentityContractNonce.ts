@@ -1,8 +1,8 @@
 import {
   GetIdentityContractNonceRequest
 } from '../../proto/generated/platform'
-import parseIdentifier from '../utils/parseIdentifier'
-import {DataContractWASM, IdentifierWASM, IdentityWASM} from 'pshenmic-dpp'
+import { IdentifierLike } from '../types'
+import { IdentifierWASM } from 'pshenmic-dpp'
 
 const IDENTITY_CONTRACT_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 
