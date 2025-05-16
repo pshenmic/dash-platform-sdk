@@ -15,7 +15,7 @@ export default async function getByPublicKeyHash (hex: string): Promise<Identity
 
   const { identity } = v0
 
-  if (identity === undefined) {
+  if (identity == null) {
     throw new Error(`Identity with public key hash ${hex} not found`)
   }
 

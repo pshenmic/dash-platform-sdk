@@ -1,6 +1,6 @@
 /* global describe, test, beforeAll, expect */
 
-import DashPlatformSDK from '../../src/index'
+import { DashPlatformSDK } from '../../src/index'
 import { DataContractWASM, DocumentWASM, IdentityPublicKeyWASM, IdentityWASM } from 'pshenmic-dpp'
 
 let sdk

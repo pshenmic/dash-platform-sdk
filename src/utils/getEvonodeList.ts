@@ -25,7 +25,7 @@ export default async function getEvonodeList (network: 'testnet' | 'mainnet'): P
 
   const data = await resp.json()
 
-  if (data.error !== undefined) {
+  if (data.error != null) {
     const err = new Error(data.error.message)
     Object.assign(err, data.error)
     throw err

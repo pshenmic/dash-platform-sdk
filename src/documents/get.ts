@@ -1,8 +1,8 @@
 import { GetDocumentsRequest } from '../../proto/generated/platform.js'
-import { base58 } from '@scure/base'
 import { encode } from 'cbor'
-import { DocumentWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import { DocumentWASM, IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
 import getByIdentifier from '../dataContracts/getByIdentifier'
+import { DAPI_DEFAULT_LIMIT } from '../constants'
 
 export default async function get (
   dataContractId: string,
@@ -10,18 +10,18 @@ export default async function get (
   where?: ArrayLike<any>,
   orderBy?: ArrayLike<any>,
   limit: number | undefined = 100,
-  startAt?: Uint8Array<ArrayBufferLike> | undefined,
-  startAfter?: Uint8Array<ArrayBufferLike> | undefined
+  startAt?: IdentifierWASM,
+  startAfter?: IdentifierWASM
 ): Promise<[DocumentWASM]> {
   const getDocumentsRequest = GetDocumentsRequest.fromPartial({
     v0: {
-      dataContractId: base58.decode(dataContractId),
+      dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
       documentType,
       where: (where != null) ? encode(where) : undefined,
       orderBy: (orderBy != null) ? encode(orderBy) : undefined,
-      limit,
-      startAt: startAt != null ? startAt : undefined,
-      startAfter: startAfter != null ? startAfter : undefined
+      limit: limit ?? DAPI_DEFAULT_LIMIT,
+      startAt: (startAt != null) ? startAt.bytes() : undefined,
+      startAfter: (startAfter != null) ? startAfter.bytes() : undefined
     }
   })
 

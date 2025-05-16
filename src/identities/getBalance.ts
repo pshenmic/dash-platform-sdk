@@ -1,10 +1,10 @@
 import { GetIdentityBalanceRequest } from '../../proto/generated/platform'
-import parseIdentifier from '../utils/parseIdentifier'
+import { IdentifierWASM } from 'pshenmic-dpp'
 
-export default async function getBalance (identifier: string): Promise<BigInt> {
+export default async function getBalance (identifier: string): Promise<bigint> {
   const getIdentityBalanceRequest = GetIdentityBalanceRequest.fromPartial({
     v0: {
-      id: parseIdentifier(identifier)
+      id: (new IdentifierWASM(identifier)).bytes()
     }
   })
 
@@ -12,8 +12,8 @@ export default async function getBalance (identifier: string): Promise<BigInt> {
 
   const { balance } = v0
 
-  if (balance === undefined) {
-    throw new Error(`Could not find balance for identity ${identifier}`)
+  if (balance == null) {
+    throw new Error(`Could not find balance for identity ${(new IdentifierWASM(identifier)).bytes()}`)
   }
 
   return BigInt(balance)

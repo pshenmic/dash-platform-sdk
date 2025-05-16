@@ -2,24 +2,24 @@ import { IdentifierWASM, DocumentWASM } from 'pshenmic-dpp'
 
 /**
  * Creates a document
- * @param dataContract
- * @param documentType
- * @param data
- * @param identityContractNonce
- * @param identity
+ * @param dataContractId {DataContractWASM}
+ * @param documentType {string}
+ * @param data {object}
+ * @param identityContractNonce {bigint}
+ * @param owner {IdentifierLike}
  */
 export default async function createDocument (
-  dataContract: IdentifierWASM | string | ArrayLike<number>,
+  dataContractId: IdentifierWASM | string | ArrayLike<number>,
   documentType: string,
-  data: Object,
-  identityContractNonce: BigInt,
-  identity: IdentifierWASM | string | ArrayLike<number>
+  data: object,
+  identityContractNonce: bigint,
+  owner: IdentifierWASM | string | ArrayLike<number>
 ): Promise<DocumentWASM> {
   return new this.wasm.DocumentWASM(
     data,
     documentType,
     identityContractNonce,
-    dataContract,
-    identity
+    dataContractId,
+    owner
   )
 }
