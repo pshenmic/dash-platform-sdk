@@ -30,7 +30,7 @@ import {
   StateTransitionsController,
   Utils
 } from './types'
-import { WASM } from 'pshenmic-dpp'
+import { DashPlatformProtocolWASM } from 'pshenmic-dpp'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -51,7 +51,7 @@ export default class DashPlatformSDK {
 
   network: 'testnet' | 'mainnet'
   grpcPool: GRPCConnectionPool
-  wasm: WASM
+  wasm: DashPlatformProtocolWASM
 
   dataContracts: DataContractsController = {
     getByIdentifier: getDataContractByIdentifier.bind(this)
