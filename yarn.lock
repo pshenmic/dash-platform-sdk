@@ -4686,7 +4686,7 @@ prop-types@^15.8.1:
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
-pshenmic-dpp@^1.0.5:
+pshenmic-dpp@1.0.6:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.0.6.tgz#15d65798302b07a374240f03d8f7d9ca8d1537e6"
   integrity sha512-qw7GXBAa433HYhnRADFNyNqLTCwITIpAO9zpJ4aMkdo+YWZ3sF++BcFP8vE9a+JPkPWCTkDneopyzI8wZ8rcTQ==

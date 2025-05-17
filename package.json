@@ -3,7 +3,7 @@
   "version": "1.0.5",
   "main": "dist/main.js",
   "description": "Lightweight SDK for accessing Dash Platform blockchain",
-  "ts-standard" : {
+  "ts-standard": {
     "ignore": [
       "proto"
     ]
@@ -44,7 +44,7 @@
     "@scure/base": "^1.2.4",
     "cbor": "^10.0.3",
     "grpc-web": "^1.5.0",
-    "pshenmic-dpp": "^1.0.5",
+    "pshenmic-dpp": "1.0.6",
     "rfc4648": "^1.5.4"
   }
 }
