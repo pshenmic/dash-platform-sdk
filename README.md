@@ -204,7 +204,7 @@ console.log(status.time.epoch)
 ```
 
 ### Key Pairs
-#### Returns key of identity for mnemonic
+#### Returns key of identity for mnemonic by identity index and key index
 ```javascript
 const key = await sdk.keyPairs.mnemonicToIdentityKey('*mnemonic*', 0, 0)
 
