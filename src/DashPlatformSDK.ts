@@ -14,82 +14,121 @@ import GRPCConnectionPool from './grpcConnectionPool'
 import fromDocument from './stateTransitions/fromDocument'
 import broadcastStateTransition from './stateTransitions/broadcast'
 import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
-import { base64 } from 'rfc4648'
+import {base64} from 'rfc4648'
 import hexToBytes from './utils/hexToBytes'
 import base58ToUint8Array from './utils/base58ToUint8Array'
 import convertToHomographSafeChars from './utils/convertToHomographSafeChars'
 import uint8ArrayToBase58 from './utils/uint8ArrayToBase58'
 import getBalance from './identities/getBalance'
 import bytesToHex from './utils/bytesToHex'
+import mnemonicToSeed from './keyPair/mnemonicToSeed'
+import seedToWalletKey from "./keyPair/seedToWalletKey";
 import {
-  DataContractsController,
-  DocumentsController,
-  IdentitiesController,
-  NamesController,
-  NodeController,
-  StateTransitionsController,
-  Utils
+    DataContractsController,
+    DocumentsController,
+    IdentitiesController, KeyPairs,
+    NamesController,
+    NodeController,
+    StateTransitionsController,
+    Utils
 } from './types'
-import { DashPlatformProtocolWASM } from 'pshenmic-dpp'
+import {DashPlatformProtocolWASM} from 'pshenmic-dpp'
+import keyToWalletId from "./keyPair/keyToWalletId";
+import * as DashHD from "dashhd";
+import derivePath from "./keyPair/derivePath";
+import deriveChild from "./keyPair/deriveChild";
+import keyToPublicKey from "./keyPair/keyToPublicKey";
+import xkeyToHDXKey from "./keyPair/xkeyToHDXKey";
+import publicKeyToAddress from "./keyPair/publicKeyToAddress";
+import privateKeyToWif from "./keyPair/privateKeyToWif";
+import keyToXPrivateKey from "./keyPair/keyToXPrivateKey";
+import keyToXPrivateKeyBytes from "./keyPair/keyToXPrivateKeyBytes";
+import keyToXPublicKey from "./keyPair/keyToXPublicKey";
+import keyToXPublicKeyBytes from "./keyPair/keyToXPublicKeyBytes";
+import mnemonicToWalletKey from "./keyPair/mnemonicToWalletKey";
+import walletToIdentityKey from "./keyPair/walletToIdentityKey";
+import mnemonicToIdentityKey from "./keyPair/mnemonicToIdentityKey";
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
-  network: 'testnet',
-  dapiUrl: undefined
+    network: 'testnet',
+    dapiUrl: undefined
 }
 
 export default class DashPlatformSDK {
-  constructor (options: { network: 'testnet' | 'mainnet', dapiUrl?: string } = DEFAULT_OPTIONS) {
-    const uint8array = base64.parse(wasmBytes.replaceAll(' ', ''))
-    wasm.initSync({ module: uint8array })
+    constructor(options: { network: 'testnet' | 'mainnet', dapiUrl?: string } = DEFAULT_OPTIONS) {
+        const uint8array = base64.parse(wasmBytes.replaceAll(' ', ''))
+        wasm.initSync({module: uint8array})
 
-    this.network = options.network
+        this.network = options.network
 
-    this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
+        this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
 
-    this.wasm = wasm
-  }
+        this.wasm = wasm
+    }
 
-  network: 'testnet' | 'mainnet'
-  grpcPool: GRPCConnectionPool
-  wasm: DashPlatformProtocolWASM
+    network: 'testnet' | 'mainnet'
+    grpcPool: GRPCConnectionPool
+    wasm: DashPlatformProtocolWASM
 
-  dataContracts: DataContractsController = {
-    getByIdentifier: getDataContractByIdentifier.bind(this)
-  }
+    dataContracts: DataContractsController = {
+        getByIdentifier: getDataContractByIdentifier.bind(this)
+    }
 
-  documents: DocumentsController = {
-    query: getDocuments.bind(this),
-    create: createDocument.bind(this)
-  }
+    documents: DocumentsController = {
+        query: getDocuments.bind(this),
+        create: createDocument.bind(this)
+    }
 
-  names: NamesController = {
-    search: search.bind(this)
-  }
+    names: NamesController = {
+        search: search.bind(this)
+    }
 
-  stateTransitions: StateTransitionsController = {
-    fromDocument: fromDocument.bind(this),
-    broadcast: broadcastStateTransition.bind(this),
-    waitForStateTransitionResult: waitForStateTransitionResult.bind(this)
-  }
+    stateTransitions: StateTransitionsController = {
+        fromDocument: fromDocument.bind(this),
+        broadcast: broadcastStateTransition.bind(this),
+        waitForStateTransitionResult: waitForStateTransitionResult.bind(this)
+    }
 
-  identities: IdentitiesController = {
-    getBalance: getBalance.bind(this),
-    getByIdentifier: getIdentityByIdentifier.bind(this),
-    getByPublicKeyHash: getByPublicKeyHash.bind(this),
-    getIdentityContractNonce: getIdentityContractNonce.bind(this),
-    getIdentityNonce: getIdentityNonce.bind(this),
-    getIdentityPublicKeys: getIdentityPublicKeys.bind(this)
-  }
+    identities: IdentitiesController = {
+        getBalance: getBalance.bind(this),
+        getByIdentifier: getIdentityByIdentifier.bind(this),
+        getByPublicKeyHash: getByPublicKeyHash.bind(this),
+        getIdentityContractNonce: getIdentityContractNonce.bind(this),
+        getIdentityNonce: getIdentityNonce.bind(this),
+        getIdentityPublicKeys: getIdentityPublicKeys.bind(this)
+    }
 
-  node: NodeController = {
-    status: status.bind(this)
-  }
+    node: NodeController = {
+        status: status.bind(this)
+    }
 
-  utils: Utils = {
-    hexToBytes,
-    bytesToHex,
-    base58ToUint8Array,
-    uint8ArrayToBase58,
-    convertToHomographSafeChars
-  }
+    utils: Utils = {
+        hexToBytes,
+        bytesToHex,
+        base58ToUint8Array,
+        uint8ArrayToBase58,
+        convertToHomographSafeChars,
+    }
+
+    keyPairs: KeyPairs = {
+        mnemonicToIdentityKey,
+        utils: {
+            ...DashHD._utils,
+            mnemonicToSeed,
+            seedToWalletKey,
+            keyToWalletId,
+            derivePath,
+            deriveChild,
+            keyToPublicKey,
+            publicKeyToAddress,
+            privateKeyToWif,
+            keyToXPrivateKey,
+            keyToXPrivateKeyBytes,
+            keyToXPublicKey,
+            keyToXPublicKeyBytes,
+            xkeyToHDXKey,
+            mnemonicToWalletKey,
+            walletToIdentityKey
+        }
+    };
 }
