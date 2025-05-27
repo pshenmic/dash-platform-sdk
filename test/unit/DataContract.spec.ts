@@ -1,5 +1,10 @@
 import { DashPlatformSDK } from '../../src/index'
-import { DataContractWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import {
+  DataContractCreateTransitionWASM,
+  DataContractUpdateTransitionWASM,
+  DataContractWASM,
+  PlatformVersionWASM
+} from 'pshenmic-dpp'
 
 let sdk: DashPlatformSDK
 
@@ -60,5 +65,21 @@ describe('DataContract', () => {
       PlatformVersionWASM.PLATFORM_V2)
 
     expect(dataContract).toEqual(expect.any(DataContractWASM))
+  })
+
+  test('should be able to create data contract create transition', async () => {
+    const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema)
+
+    const transition = await sdk.dataContracts.transitions.createTransition(dataContract, identityNonce)
+
+    expect(transition).toEqual(expect.any(DataContractCreateTransitionWASM))
+  })
+
+  test('should be able to create data contract update transition', async () => {
+    const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema)
+
+    const transition = await sdk.dataContracts.transitions.updateTransition(dataContract, identityNonce)
+
+    expect(transition).toEqual(expect.any(DataContractUpdateTransitionWASM))
   })
 })
