@@ -3,7 +3,8 @@ import {
   DocumentWASM,
   IdentifierWASM,
   BatchType,
-  StateTransitionWASM, PlatformVersionWASM, DataContractCreateTransitionWASM
+  StateTransitionWASM,
+  PlatformVersionWASM
 } from 'pshenmic-dpp'
 import { Utils as DashHdUtils } from 'dashhd'
 import mnemonicToWalletKey from './keyPairs/mnemonicToWalletKey'
@@ -34,6 +35,8 @@ import getIdentityPublicKeys from './identities/getIdentityPublicKeys'
 import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
 import walletToIdentityKey from './keyPairs/walletToIdentityKey'
 import mnemonicToIdentityKey from './keyPairs/mnemonicToIdentityKey'
+import createDataContractTransition from './dataContracts/transitions/createDataContractTransition'
+import updateDataContractTransition from './dataContracts/transitions/updateDataContractTransition'
 
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
 
@@ -124,14 +127,26 @@ export interface NodeStatus {
   } | undefined
 }
 
+export interface DataContractConfig {
+  $format_version: string
+  canBeDeleted: boolean
+  readonly: boolean
+  keepsHistory: boolean
+  documentsKeepHistoryContractDefault: boolean
+  documentsMutableContractDefault: boolean
+  documentsCanBeDeletedContractDefault: boolean
+  requiresIdentityEncryptionBoundedKey?: number | null
+  requiresIdentityDecryptionBoundedKey?: number | null
+}
+
 export interface DataContractTransitions {
-  createTransition: (dataContract: DataContractWASM, identityNonce: bigint, platformVersion?: PlatformVersionWASM) => Promise<DataContractCreateTransitionWASM>
-  updateTransition: (dataContract: DataContractWASM, identityNonce: bigint, platformVersion?: PlatformVersionWASM) => Promise<DataContractCreateTransitionWASM>
+  createTransition: typeof createDataContractTransition
+  updateTransition: typeof updateDataContractTransition
 }
 
 export interface DataContractsController {
   transitions: DataContractTransitions
-  create: (ownerId: IdentifierLike, identityNonce: bigint, schema: object, definitions?: object, fullValidation?: boolean, platformVersion?: PlatformVersionWASM) => Promise<DataContractWASM>
+  create: (ownerId: IdentifierLike, identityNonce: bigint, schema: object, definitions?: object, fullValidation?: boolean, config?: DataContractConfig, platformVersion?: PlatformVersionWASM) => Promise<DataContractWASM>
   getByIdentifier: (identifier: IdentifierLike) => Promise<DataContractWASM>
 }
 

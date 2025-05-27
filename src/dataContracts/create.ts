@@ -1,5 +1,5 @@
 import { DataContractWASM, PlatformVersionWASM } from 'pshenmic-dpp'
-import { IdentifierLike } from '../types'
+import { DataContractConfig, IdentifierLike } from '../types'
 
 export default async function createDataContract (
   ownerId: IdentifierLike,
@@ -7,9 +7,10 @@ export default async function createDataContract (
   schema: object,
   definitions?: object,
   fullValidation: boolean | undefined = true,
+  config?: DataContractConfig,
   platformVersion: PlatformVersionWASM | undefined = PlatformVersionWASM.PLATFORM_V1
 ): Promise<DataContractWASM> {
-  return new this.wasm.DataContractWASM(
+  const dataContract = new this.wasm.DataContractWASM(
     ownerId,
     identityNonce,
     schema,
@@ -17,4 +18,10 @@ export default async function createDataContract (
     fullValidation,
     platformVersion
   )
+
+  if (config != null) {
+    dataContract.setConfig(config)
+  }
+
+  return dataContract
 }

@@ -5,14 +5,16 @@ import {
   DataContractWASM,
   PlatformVersionWASM
 } from 'pshenmic-dpp'
+import { DataContractConfig } from '../../src/types'
 
 let sdk: DashPlatformSDK
 
 let dataContractIdentifier: string
 let ownerIdentifier: string
 let identityNonce: bigint
-let schema: object
 let definitions: object
+let config: DataContractConfig
+let schema: object
 
 describe('DataContract', () => {
   beforeAll(() => {
@@ -25,6 +27,19 @@ describe('DataContract', () => {
     definitions = {
       def1: true
     }
+
+    config = {
+      $format_version: '0',
+      canBeDeleted: true,
+      readonly: true,
+      keepsHistory: false,
+      documentsKeepHistoryContractDefault: false,
+      documentsMutableContractDefault: false,
+      documentsCanBeDeletedContractDefault: true,
+      requiresIdentityEncryptionBoundedKey: null,
+      requiresIdentityDecryptionBoundedKey: null
+    }
+
     schema = {
       note: {
         type: 'object',
@@ -62,9 +77,12 @@ describe('DataContract', () => {
       schema,
       definitions,
       true,
-      PlatformVersionWASM.PLATFORM_V2)
+      config,
+      PlatformVersionWASM.PLATFORM_V2
+    )
 
     expect(dataContract).toEqual(expect.any(DataContractWASM))
+    expect(dataContract.getConfig()).toEqual(config)
   })
 
   test('should be able to create data contract create transition', async () => {
