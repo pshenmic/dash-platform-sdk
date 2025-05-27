@@ -3,7 +3,7 @@ import {
   DocumentWASM,
   IdentifierWASM,
   BatchType,
-  StateTransitionWASM
+  StateTransitionWASM, PlatformVersionWASM, DataContractCreateTransitionWASM
 } from 'pshenmic-dpp'
 import { Utils as DashHdUtils } from 'dashhd'
 import mnemonicToWalletKey from './keyPairs/mnemonicToWalletKey'
@@ -124,7 +124,14 @@ export interface NodeStatus {
   } | undefined
 }
 
+export interface DataContractTransitions {
+  createTransition: (dataContract: DataContractWASM, identityNonce: bigint, platformVersion?: PlatformVersionWASM) => Promise<DataContractCreateTransitionWASM>
+  updateTransition: (dataContract: DataContractWASM, identityNonce: bigint, platformVersion?: PlatformVersionWASM) => Promise<DataContractCreateTransitionWASM>
+}
+
 export interface DataContractsController {
+  transitions: DataContractTransitions
+  create: (ownerId: IdentifierLike, identityNonce: bigint, schema: object, definitions?: object, fullValidation?: boolean, platformVersion?: PlatformVersionWASM) => Promise<DataContractWASM>
   getByIdentifier: (identifier: IdentifierLike) => Promise<DataContractWASM>
 }
 
