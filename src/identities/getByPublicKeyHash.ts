@@ -4,9 +4,8 @@ import {
 import { IdentityWASM } from 'pshenmic-dpp'
 import hexToBytes from '../utils/hexToBytes'
 
-export default async function getByPublicKeyHash (hex) {
-  // eslint-disable-next-line new-cap
-  const getIdentityByPublicKeyHashRequest = new GetIdentityByPublicKeyHashRequest.fromPartial({
+export default async function getByPublicKeyHash (hex: string): Promise<IdentityWASM> {
+  const getIdentityByPublicKeyHashRequest = GetIdentityByPublicKeyHashRequest.fromPartial({
     v0: {
       publicKeyHash: hexToBytes(hex)
     }
@@ -16,7 +15,7 @@ export default async function getByPublicKeyHash (hex) {
 
   const { identity } = v0
 
-  if (!identity) {
+  if (identity == null) {
     throw new Error(`Identity with public key hash ${hex} not found`)
   }
 
