@@ -65,6 +65,88 @@ const dataContractIdentifier = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 const dataContract = await sdk.dataContracts.getByIdentifier(dataContractIdentifier)
 ```
 
+#### Create Data Contract
+
+Create data contract from schema
+
+```javascript
+const dataContractIdentifier = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const ownerIdentifier = 'GARSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const identityNonce = BigInt(11)
+
+const definitions = {
+  def1: true
+}
+const schema = {
+  note: {
+    type: 'object',
+    properties: {
+      author: { type: 'string', position: 1 },
+      message: { type: 'string', position: 0 }
+    },
+    additionalProperties: false
+  }
+}
+
+const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, PlatformVersionWASM.PLATFORM_V1)
+```
+
+#### Data Contract Create Transition
+
+Create Data Contract Create Transition
+
+```javascript
+const dataContractIdentifier = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const ownerIdentifier = 'GARSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const identityNonce = BigInt(11)
+
+const definitions = {
+  def1: true
+}
+const schema = {
+  note: {
+    type: 'object',
+    properties: {
+      author: { type: 'string', position: 1 },
+      message: { type: 'string', position: 0 }
+    },
+    additionalProperties: false
+  }
+}
+
+const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, PlatformVersionWASM.PLATFORM_V1)
+
+const transition = await sdk.dataContracts.transitions.createTransition(dataContract, identityNonce)
+```
+
+#### Data Contract Update Transition
+
+Create Data Contract Update Transition
+
+```javascript
+const dataContractIdentifier = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const ownerIdentifier = 'GARSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const identityNonce = BigInt(11)
+
+const definitions = {
+  def1: true
+}
+const schema = {
+  note: {
+    type: 'object',
+    properties: {
+      author: { type: 'string', position: 1 },
+      message: { type: 'string', position: 0 }
+    },
+    additionalProperties: false
+  }
+}
+
+const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, PlatformVersionWASM.PLATFORM_V1)
+
+const transition = await sdk.dataContracts.transitions.updateTransition(dataContract, identityNonce)
+```
+
 ###  Documents
 
 #### Create Document
