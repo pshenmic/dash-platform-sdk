@@ -21,31 +21,31 @@ import convertToHomographSafeChars from './utils/convertToHomographSafeChars'
 import uint8ArrayToBase58 from './utils/uint8ArrayToBase58'
 import getBalance from './identities/getBalance'
 import bytesToHex from './utils/bytesToHex'
-import mnemonicToSeed from './keyPairs/mnemonicToSeed'
-import seedToWallet from './keyPairs/seedToWallet'
+import mnemonicToSeed from './keyPair/mnemonicToSeed'
+import seedToWallet from './keyPair/seedToWallet'
 import {
   DataContractsController,
   DocumentsController,
-  IdentitiesController, KeyPairs,
+  IdentitiesController, KeyPair,
   NamesController,
   NodeController,
   StateTransitionsController,
   Utils
 } from './types'
 import { DashPlatformProtocolWASM } from 'pshenmic-dpp'
-import keyToWalletId from './keyPairs/keyToWalletId'
+import keyToWalletId from './keyPair/keyToWalletId'
 import * as DashHD from 'dashhd'
-import derivePath from './keyPairs/derivePath'
-import deriveChild from './keyPairs/deriveChild'
-import keyToPublicKey from './keyPairs/keyToPublicKey'
-import xkeyToHDXKey from './keyPairs/xkeyToHDXKey'
-import publicKeyToAddress from './keyPairs/publicKeyToAddress'
-import privateKeyToWif from './keyPairs/privateKeyToWif'
-import keyToXPrivateKey from './keyPairs/keyToXPrivateKey'
-import keyToXPublicKey from './keyPairs/keyToXPublicKey'
-import mnemonicToWallet from './keyPairs/mnemonicToWallet'
-import walletToIdentityKey from './keyPairs/walletToIdentityKey'
-import mnemonicToIdentityKey from './keyPairs/mnemonicToIdentityKey'
+import derivePath from './keyPair/derivePath'
+import deriveChild from './keyPair/deriveChild'
+import keyToPublicKey from './keyPair/keyToPublicKey'
+import xkeyToHDXKey from './keyPair/xkeyToHDXKey'
+import publicKeyToAddress from './keyPair/publicKeyToAddress'
+import privateKeyToWif from './keyPair/privateKeyToWif'
+import keyToXPrivateKey from './keyPair/keyToXPrivateKey'
+import keyToXPublicKey from './keyPair/keyToXPublicKey'
+import mnemonicToWallet from './keyPair/mnemonicToWallet'
+import walletToIdentityKey from './keyPair/walletToIdentityKey'
+import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -108,7 +108,7 @@ export default class DashPlatformSDK {
     convertToHomographSafeChars
   }
 
-  keyPairs: KeyPairs = {
+  keyPair: KeyPair = {
     mnemonicToIdentityKey,
     utils: {
       ...DashHD._utils,
