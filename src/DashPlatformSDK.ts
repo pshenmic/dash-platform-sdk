@@ -24,7 +24,7 @@ import bytesToHex from './utils/bytesToHex'
 import mnemonicToSeed from './keyPairs/mnemonicToSeed'
 import seedToWalletKey from './keyPairs/seedToWalletKey'
 import {
-  DataContractsController,
+  DataContractsController, DocumentsBatchController,
   DocumentsController,
   IdentitiesController, KeyPairs,
   NamesController,
@@ -51,6 +51,13 @@ import mnemonicToIdentityKey from './keyPairs/mnemonicToIdentityKey'
 import createDataContract from './dataContracts/create'
 import createDataContractTransition from './dataContracts/transitions/createDataContractTransition'
 import updateDataContractTransition from './dataContracts/transitions/updateDataContractTransition'
+import { createBatch } from './documents/documentsBatch/createBatch'
+import createDocumentCreateTransition from './documents/transitions/createDocumentCreateTransition'
+import createDocumentDeleteTransition from './documents/transitions/createDocumentDeleteTransition'
+import createDocumentPurchaseTransition from './documents/transitions/createDocumentPurchaseTransition'
+import createDocumentReplaceTransition from './documents/transitions/createDocumentReplaceTransition'
+import createDocumentUpdatePriceTransition from './documents/transitions/createDocumentUpdatePriceTransition'
+import createDocumentTransferTransition from './documents/transitions/createDocumentTransferTransition'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -85,6 +92,30 @@ export default class DashPlatformSDK {
   documents: DocumentsController = {
     query: getDocuments.bind(this),
     create: createDocument.bind(this)
+  }
+
+  documentsBatchController: DocumentsBatchController = {
+    create: createBatch.bind(this),
+    transitions: {
+      documentCreateTransition: {
+        create: createDocumentCreateTransition.bind(this)
+      },
+      documentDeleteTransition: {
+        create: createDocumentDeleteTransition.bind(this)
+      },
+      documentPurchaseTransition: {
+        create: createDocumentPurchaseTransition.bind(this)
+      },
+      documentReplaceTransition: {
+        create: createDocumentReplaceTransition.bind(this)
+      },
+      documentUpdatePriceTransition: {
+        create: createDocumentUpdatePriceTransition.bind(this)
+      },
+      documentTransferTransition: {
+        create: createDocumentTransferTransition.bind(this)
+      }
+    }
   }
 
   names: NamesController = {

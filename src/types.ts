@@ -41,6 +41,15 @@ import getIdentityPublicKeys from './identities/getIdentityPublicKeys'
 import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
 import walletToIdentityKey from './keyPairs/walletToIdentityKey'
 import mnemonicToIdentityKey from './keyPairs/mnemonicToIdentityKey'
+import { createBatch } from './documents/documentsBatch/createBatch'
+import getDocument from './documents/get'
+import createDocument from './documents/create'
+import createDocumentCreateTransition from './documents/transitions/createDocumentCreateTransition'
+import createDocumentDeleteTransition from './documents/transitions/createDocumentDeleteTransition'
+import createDocumentUpdatePriceTransition from './documents/transitions/createDocumentUpdatePriceTransition'
+import createDocumentTransferTransition from './documents/transitions/createDocumentTransferTransition'
+import createDocumentReplaceTransition from './documents/transitions/createDocumentReplaceTransition'
+import createDocumentPurchaseTransition from './documents/transitions/createDocumentPurchaseTransition'
 
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
 
@@ -144,9 +153,33 @@ export interface DataContractsController {
   getByIdentifier: (identifier: IdentifierLike) => Promise<DataContractWASM>
 }
 
+export interface DocumentsBatchController {
+  create: typeof createBatch
+  transitions: {
+    documentCreateTransition: {
+      create: typeof createDocumentCreateTransition
+    }
+    documentDeleteTransition: {
+      create: typeof createDocumentDeleteTransition
+    }
+    documentPurchaseTransition: {
+      create: typeof createDocumentPurchaseTransition
+    }
+    documentReplaceTransition: {
+      create: typeof createDocumentReplaceTransition
+    }
+    documentTransferTransition: {
+      create: typeof createDocumentTransferTransition
+    }
+    documentUpdatePriceTransition: {
+      create: typeof createDocumentUpdatePriceTransition
+    }
+  }
+}
+
 export interface DocumentsController {
-  query: (dataContractId: IdentifierLike, documentType: string, where?: ArrayLike<any>, orderBy?: ArrayLike<any>, limit?: number, startAt?: IdentifierWASM, startAfter?: IdentifierWASM) => Promise<[DocumentWASM]>
-  create: (dataContract: IdentifierLike, documentType: string, data: Object, identityContractNonce: BigInt, identity: IdentifierLike) => Promise<DocumentWASM>
+  query: typeof getDocument
+  create: typeof createDocument
 }
 
 export interface NamesController {
