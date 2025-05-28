@@ -113,7 +113,7 @@ export default class DashPlatformSDK {
     utils: {
       ...DashHD._utils,
       mnemonicToSeed,
-      seedToWallet: seedToWallet,
+      seedToWallet,
       keyToWalletId,
       derivePath,
       deriveChild,
@@ -123,7 +123,7 @@ export default class DashPlatformSDK {
       keyToXPrivateKey,
       keyToXPublicKey,
       xkeyToHDXKey,
-      mnemonicToWallet: mnemonicToWallet,
+      mnemonicToWallet,
       walletToIdentityKey
     }
   }
