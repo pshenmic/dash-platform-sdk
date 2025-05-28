@@ -46,6 +46,9 @@ import keyToXPublicKey from './keyPair/keyToXPublicKey'
 import mnemonicToWallet from './keyPair/mnemonicToWallet'
 import walletToIdentityKey from './keyPair/walletToIdentityKey'
 import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
+import createDataContractTransition from './dataContracts/transitions/createDataContractTransition'
+import updateDataContractTransition from './dataContracts/transitions/updateDataContractTransition'
+import createDataContract from './dataContracts/create'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
