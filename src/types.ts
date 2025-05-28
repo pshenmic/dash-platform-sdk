@@ -3,7 +3,14 @@ import {
   DocumentWASM,
   IdentifierWASM,
   BatchType,
-  StateTransitionWASM, PlatformVersionWASM, DataContractCreateTransitionWASM
+  StateTransitionWASM,
+  PlatformVersionWASM,
+  DataContractCreateTransitionWASM,
+  DocumentCreateTransitionWASM,
+  DocumentDeleteTransitionWASM,
+  DocumentPurchaseTransitionWASM,
+  DocumentReplaceTransitionWASM,
+  DocumentTransferTransitionWASM, DocumentUpdatePriceTransitionWASM
 } from 'pshenmic-dpp'
 import { Utils as DashHdUtils } from 'dashhd'
 import mnemonicToWalletKey from './keyPairs/mnemonicToWalletKey'
@@ -36,6 +43,8 @@ import walletToIdentityKey from './keyPairs/walletToIdentityKey'
 import mnemonicToIdentityKey from './keyPairs/mnemonicToIdentityKey'
 
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
+
+export type DocumentTransitionLike = DocumentCreateTransitionWASM | DocumentDeleteTransitionWASM | DocumentPurchaseTransitionWASM | DocumentReplaceTransitionWASM | DocumentTransferTransitionWASM | DocumentUpdatePriceTransitionWASM
 
 export type MasternodeList = Record<string, MasternodeInfo>
 

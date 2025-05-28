@@ -1,36 +1,52 @@
 import {
-  DocumentCreateTransitionWASM,
-  DocumentDeleteTransitionWASM, DocumentPurchaseTransitionWASM, DocumentReplaceTransitionWASM,
-  DocumentsBatchWASM, DocumentTransferTransitionWASM,
-  DocumentTransitionWASM, DocumentUpdatePriceTransitionWASM,
+  DocumentsBatchWASM,
+  DocumentTransitionWASM,
   DocumentWASM
 } from "pshenmic-dpp";
-import createTransition from "../transitions/createTransition";
+import {DocumentTransitionLike, IdentifierLike} from "../../types";
+import ArrayLike = jasmine.ArrayLike;
 
-export default async function create(input: DocumentWASM | DocumentTransitionWASM | DocumentCreateTransitionWASM | DocumentDeleteTransitionWASM | DocumentPurchaseTransitionWASM | DocumentReplaceTransitionWASM | DocumentTransferTransitionWASM | DocumentUpdatePriceTransitionWASM, opts?: {identityContractNonce: bigint, documentTypeName: string}): Promise<DocumentsBatchWASM> {
-  let transition = input instanceof DocumentTransitionWASM ? input : undefined
-
-  if (
-    input instanceof DocumentCreateTransitionWASM ||
-    input instanceof DocumentDeleteTransitionWASM ||
-    input instanceof DocumentPurchaseTransitionWASM ||
-    input instanceof DocumentReplaceTransitionWASM ||
-    input instanceof DocumentTransferTransitionWASM ||
-    input instanceof DocumentUpdatePriceTransitionWASM
-  ) {
-    transition = input.toDocumentTransition()
+function convertToTransition(
+  input: DocumentWASM | DocumentTransitionWASM | DocumentTransitionLike,
+  identityContractNonce?: bigint | null): DocumentTransitionWASM {
+  if (input instanceof DocumentTransitionWASM) {
+    return input
   } else if (input instanceof DocumentWASM) {
-
-    if(opts?.identityContractNonce == null && opts?.documentTypeName == null) {
-      throw new Error('You must specify a documentTypeName and identityContractNonce in opts if use DocumentWASM as input');
+    if (identityContractNonce == null) {
+      throw new Error('You must specify a documentTypeName and identityContractNonce in opts if use DocumentWASM as inputs');
     }
 
-    const createTx = await createTransition(input, opts?.identityContractNonce, opts?.documentTypeName)
+    const normalTransition = new this.wasm.DocumentCreateTransitionWASM(input, identityContractNonce, input.getDocumentTypeName())
 
-    transition = createTx.toDocumentTransition()
+    return normalTransition.toDocumentTransition()
   } else {
-    throw new Error("Invalid input type")
+    return input.toDocumentTransition()
+  }
+}
+
+export async function create(
+  inputs: DocumentWASM | DocumentTransitionWASM | DocumentTransitionLike | DocumentWASM[] | DocumentTransitionWASM[] | DocumentTransitionLike[],
+  ownerId: IdentifierLike,
+  opts?: {
+    identityContractNonce?: bigint | null,
+    userFeeIncrease?: number | null,
+    signaturePublicKeyId?: number | null,
+    signature?: ArrayLike<number> | null
+  }
+): Promise<DocumentsBatchWASM> {
+  let transitions: DocumentTransitionWASM[] = []
+
+  if (inputs instanceof Array) {
+
+    transitions = inputs.map(
+      (input: DocumentWASM | DocumentTransitionWASM | DocumentTransitionLike): DocumentTransitionWASM =>
+        convertToTransition(input, opts?.identityContractNonce)
+    )
+  } else {
+    transitions = [convertToTransition(inputs, opts?.identityContractNonce)]
   }
 
-  return new this.wasm.DocumentsBatchWASM()
+  let signature: Uint8Array | undefined = opts?.signature != null ? Uint8Array.from(opts?.signature) : undefined
+
+  return new this.wasm.DocumentsBatchWASM(transitions, ownerId, opts?.userFeeIncrease, opts?.signaturePublicKeyId, signature)
 }
