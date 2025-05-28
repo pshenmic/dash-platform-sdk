@@ -88,7 +88,19 @@ const schema = {
   }
 }
 
-const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, PlatformVersionWASM.PLATFORM_V1)
+const config = {
+  $format_version: '0',
+  canBeDeleted: true,
+  readonly: false,
+  keepsHistory: false,
+  documentsKeepHistoryContractDefault: false,
+  documentsMutableContractDefault: true,
+  documentsCanBeDeletedContractDefault: true,
+  requiresIdentityEncryptionBoundedKey: null,
+  requiresIdentityDecryptionBoundedKey: null
+}
+
+const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, config, PlatformVersionWASM.PLATFORM_V1)
 ```
 
 #### Data Contract Create Transition
@@ -114,7 +126,19 @@ const schema = {
   }
 }
 
-const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, PlatformVersionWASM.PLATFORM_V1)
+const config = {
+  $format_version: '0',
+  canBeDeleted: true,
+  readonly: false,
+  keepsHistory: false,
+  documentsKeepHistoryContractDefault: false,
+  documentsMutableContractDefault: true,
+  documentsCanBeDeletedContractDefault: true,
+  requiresIdentityEncryptionBoundedKey: null,
+  requiresIdentityDecryptionBoundedKey: null
+}
+
+const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, config, PlatformVersionWASM.PLATFORM_V1)
 
 const transition = await sdk.dataContracts.transitions.createTransition(dataContract, identityNonce)
 ```
@@ -142,7 +166,19 @@ const schema = {
   }
 }
 
-const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, PlatformVersionWASM.PLATFORM_V1)
+const config = {
+  $format_version: '0',
+  canBeDeleted: true,
+  readonly: false,
+  keepsHistory: false,
+  documentsKeepHistoryContractDefault: false,
+  documentsMutableContractDefault: true,
+  documentsCanBeDeletedContractDefault: true,
+  requiresIdentityEncryptionBoundedKey: null,
+  requiresIdentityDecryptionBoundedKey: null
+}
+
+const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, config, PlatformVersionWASM.PLATFORM_V1)
 
 const transition = await sdk.dataContracts.transitions.updateTransition(dataContract, identityNonce)
 ```

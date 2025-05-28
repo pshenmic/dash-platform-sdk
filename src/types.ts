@@ -13,10 +13,8 @@ import {
   DocumentTransferTransitionWASM, DocumentUpdatePriceTransitionWASM
 } from 'pshenmic-dpp'
 import { Utils as DashHdUtils } from 'dashhd'
-import mnemonicToWalletKey from './keyPairs/mnemonicToWalletKey'
-import keyToXPublicKeyBytes from './keyPairs/keyToXPublicKeyBytes'
+import mnemonicToWallet from './keyPairs/mnemonicToWallet'
 import keyToXPublicKey from './keyPairs/keyToXPublicKey'
-import keyToXPrivateKeyBytes from './keyPairs/keyToXPrivateKeyBytes'
 import keyToXPrivateKey from './keyPairs/keyToXPrivateKey'
 import privateKeyToWif from './keyPairs/privateKeyToWif'
 import publicKeyToAddress from './keyPairs/publicKeyToAddress'
@@ -25,7 +23,7 @@ import deriveChild from './keyPairs/deriveChild'
 import xkeyToHDXKey from './keyPairs/xkeyToHDXKey'
 import keyToPublicKey from './keyPairs/keyToPublicKey'
 import keyToWalletId from './keyPairs/keyToWalletId'
-import seedToWalletKey from './keyPairs/seedToWalletKey'
+import seedToWallet from './keyPairs/seedToWallet'
 import mnemonicToSeed from './keyPairs/mnemonicToSeed'
 import hexToBytes from './utils/hexToBytes'
 import bytesToHex from './utils/bytesToHex'
@@ -41,6 +39,8 @@ import getIdentityPublicKeys from './identities/getIdentityPublicKeys'
 import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
 import walletToIdentityKey from './keyPairs/walletToIdentityKey'
 import mnemonicToIdentityKey from './keyPairs/mnemonicToIdentityKey'
+import createDataContractTransition from './dataContracts/transitions/createDataContractTransition'
+import updateDataContractTransition from './dataContracts/transitions/updateDataContractTransition'
 import { createBatch } from './documents/documentsBatch/createBatch'
 import getDocument from './documents/get'
 import createDocument from './documents/create'
@@ -142,14 +142,26 @@ export interface NodeStatus {
   } | undefined
 }
 
+export interface DataContractConfig {
+  $format_version: string
+  canBeDeleted: boolean
+  readonly: boolean
+  keepsHistory: boolean
+  documentsKeepHistoryContractDefault: boolean
+  documentsMutableContractDefault: boolean
+  documentsCanBeDeletedContractDefault: boolean
+  requiresIdentityEncryptionBoundedKey?: number | null
+  requiresIdentityDecryptionBoundedKey?: number | null
+}
+
 export interface DataContractTransitions {
-  createTransition: (dataContract: DataContractWASM, identityNonce: bigint, platformVersion?: PlatformVersionWASM) => Promise<DataContractCreateTransitionWASM>
-  updateTransition: (dataContract: DataContractWASM, identityNonce: bigint, platformVersion?: PlatformVersionWASM) => Promise<DataContractCreateTransitionWASM>
+  createTransition: typeof createDataContractTransition
+  updateTransition: typeof updateDataContractTransition
 }
 
 export interface DataContractsController {
   transitions: DataContractTransitions
-  create: (ownerId: IdentifierLike, identityNonce: bigint, schema: object, definitions?: object, fullValidation?: boolean, platformVersion?: PlatformVersionWASM) => Promise<DataContractWASM>
+  create: (ownerId: IdentifierLike, identityNonce: bigint, schema: object, definitions?: object, fullValidation?: boolean, config?: DataContractConfig, platformVersion?: PlatformVersionWASM) => Promise<DataContractWASM>
   getByIdentifier: (identifier: IdentifierLike) => Promise<DataContractWASM>
 }
 
@@ -215,7 +227,7 @@ export interface Utils {
 
 export interface KeyPairsUtils {
   mnemonicToSeed: typeof mnemonicToSeed
-  seedToWalletKey: typeof seedToWalletKey
+  seedToWallet: typeof seedToWallet
   deriveChild: typeof deriveChild
   derivePath: typeof derivePath
   keyToWalletId: typeof keyToWalletId
@@ -223,11 +235,9 @@ export interface KeyPairsUtils {
   publicKeyToAddress: typeof publicKeyToAddress
   privateKeyToWif: typeof privateKeyToWif
   keyToXPrivateKey: typeof keyToXPrivateKey
-  keyToXPrivateKeyBytes: typeof keyToXPrivateKeyBytes
   keyToXPublicKey: typeof keyToXPublicKey
-  keyToXPublicKeyBytes: typeof keyToXPublicKeyBytes
   xkeyToHDXKey: typeof xkeyToHDXKey
-  mnemonicToWalletKey: typeof mnemonicToWalletKey
+  mnemonicToWallet: typeof mnemonicToWallet
   walletToIdentityKey: typeof walletToIdentityKey
 }
 
