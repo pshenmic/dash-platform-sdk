@@ -6,10 +6,8 @@ import {
   StateTransitionWASM
 } from 'pshenmic-dpp'
 import { Utils as DashHdUtils } from 'dashhd'
-import mnemonicToWalletKey from './keyPairs/mnemonicToWalletKey'
-import keyToXPublicKeyBytes from './keyPairs/keyToXPublicKeyBytes'
+import mnemonicToWallet from './keyPairs/mnemonicToWallet'
 import keyToXPublicKey from './keyPairs/keyToXPublicKey'
-import keyToXPrivateKeyBytes from './keyPairs/keyToXPrivateKeyBytes'
 import keyToXPrivateKey from './keyPairs/keyToXPrivateKey'
 import privateKeyToWif from './keyPairs/privateKeyToWif'
 import publicKeyToAddress from './keyPairs/publicKeyToAddress'
@@ -18,7 +16,7 @@ import deriveChild from './keyPairs/deriveChild'
 import xkeyToHDXKey from './keyPairs/xkeyToHDXKey'
 import keyToPublicKey from './keyPairs/keyToPublicKey'
 import keyToWalletId from './keyPairs/keyToWalletId'
-import seedToWalletKey from './keyPairs/seedToWalletKey'
+import seedToWallet from './keyPairs/seedToWallet'
 import mnemonicToSeed from './keyPairs/mnemonicToSeed'
 import hexToBytes from './utils/hexToBytes'
 import bytesToHex from './utils/bytesToHex'
@@ -166,7 +164,7 @@ export interface Utils {
 
 export interface KeyPairsUtils {
   mnemonicToSeed: typeof mnemonicToSeed
-  seedToWalletKey: typeof seedToWalletKey
+  seedToWallet: typeof seedToWallet
   deriveChild: typeof deriveChild
   derivePath: typeof derivePath
   keyToWalletId: typeof keyToWalletId
@@ -174,11 +172,9 @@ export interface KeyPairsUtils {
   publicKeyToAddress: typeof publicKeyToAddress
   privateKeyToWif: typeof privateKeyToWif
   keyToXPrivateKey: typeof keyToXPrivateKey
-  keyToXPrivateKeyBytes: typeof keyToXPrivateKeyBytes
   keyToXPublicKey: typeof keyToXPublicKey
-  keyToXPublicKeyBytes: typeof keyToXPublicKeyBytes
   xkeyToHDXKey: typeof xkeyToHDXKey
-  mnemonicToWalletKey: typeof mnemonicToWalletKey
+  mnemonicToWallet: typeof mnemonicToWallet
   walletToIdentityKey: typeof walletToIdentityKey
 }
 

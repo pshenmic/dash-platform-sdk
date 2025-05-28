@@ -22,7 +22,7 @@ import uint8ArrayToBase58 from './utils/uint8ArrayToBase58'
 import getBalance from './identities/getBalance'
 import bytesToHex from './utils/bytesToHex'
 import mnemonicToSeed from './keyPairs/mnemonicToSeed'
-import seedToWalletKey from './keyPairs/seedToWalletKey'
+import seedToWallet from './keyPairs/seedToWallet'
 import {
   DataContractsController,
   DocumentsController,
@@ -42,10 +42,8 @@ import xkeyToHDXKey from './keyPairs/xkeyToHDXKey'
 import publicKeyToAddress from './keyPairs/publicKeyToAddress'
 import privateKeyToWif from './keyPairs/privateKeyToWif'
 import keyToXPrivateKey from './keyPairs/keyToXPrivateKey'
-import keyToXPrivateKeyBytes from './keyPairs/keyToXPrivateKeyBytes'
 import keyToXPublicKey from './keyPairs/keyToXPublicKey'
-import keyToXPublicKeyBytes from './keyPairs/keyToXPublicKeyBytes'
-import mnemonicToWalletKey from './keyPairs/mnemonicToWalletKey'
+import mnemonicToWallet from './keyPairs/mnemonicToWallet'
 import walletToIdentityKey from './keyPairs/walletToIdentityKey'
 import mnemonicToIdentityKey from './keyPairs/mnemonicToIdentityKey'
 
@@ -115,7 +113,7 @@ export default class DashPlatformSDK {
     utils: {
       ...DashHD._utils,
       mnemonicToSeed,
-      seedToWalletKey,
+      seedToWallet: seedToWallet,
       keyToWalletId,
       derivePath,
       deriveChild,
@@ -123,11 +121,9 @@ export default class DashPlatformSDK {
       publicKeyToAddress,
       privateKeyToWif,
       keyToXPrivateKey,
-      keyToXPrivateKeyBytes,
       keyToXPublicKey,
-      keyToXPublicKeyBytes,
       xkeyToHDXKey,
-      mnemonicToWalletKey,
+      mnemonicToWallet: mnemonicToWallet,
       walletToIdentityKey
     }
   }
