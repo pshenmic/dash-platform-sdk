@@ -35,12 +35,12 @@
     "ws": "^8.18.1"
   },
   "scripts": {
-    "build": "webpack",
-    "build:grpc": "yarn proto:generate && yarn proto:transpile",
+    "build": "webpack && yarn build:types",
+    "build:grpc": "yarn proto:generate",
+    "build:types": "tsc --emitDeclarationOnly --outFile dist/index.d.ts",
     "lint": "ts-standard --fix",
     "test": "jest",
-    "proto:generate": "grpc_tools_node_protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./proto/generated --ts_proto_opt=useAsyncIterable=false --ts_proto_opt=forceLong=string,env=browser,outputServices=grpc-web,outputServices=generic-definitions,outputJsonMethods=false,useExactTypes=false --proto_path=./proto ./proto/platform.proto",
-    "proto:transpile": "tsc ./proto/generated/platform.ts"
+    "proto:generate": "grpc_tools_node_protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./proto/generated --ts_proto_opt=useAsyncIterable=false --ts_proto_opt=forceLong=string,env=browser,outputServices=grpc-web,outputServices=generic-definitions,outputJsonMethods=false,useExactTypes=false --proto_path=./proto ./proto/platform.proto"
   },
   "dependencies": {
     "@dashincubator/secp256k1": "^1.7.1-5",
