@@ -3,13 +3,43 @@ import {
   DocumentWASM,
   IdentifierWASM,
   BatchType,
-  StateTransitionWASM,
-  IdentityWASM, IdentityPublicKeyWASM
+  StateTransitionWASM
 } from 'pshenmic-dpp'
+import { Utils as DashHdUtils } from 'dashhd'
+import mnemonicToWallet from './keyPair/mnemonicToWallet'
+import keyToXPublicKey from './keyPair/keyToXPublicKey'
+import keyToXPrivateKey from './keyPair/keyToXPrivateKey'
+import privateKeyToWif from './keyPair/privateKeyToWif'
+import publicKeyToAddress from './keyPair/publicKeyToAddress'
+import derivePath from './keyPair/derivePath'
+import deriveChild from './keyPair/deriveChild'
+import xkeyToHDXKey from './keyPair/xkeyToHDXKey'
+import keyToPublicKey from './keyPair/keyToPublicKey'
+import keyToWalletId from './keyPair/keyToWalletId'
+import seedToWallet from './keyPair/seedToWallet'
+import mnemonicToSeed from './keyPair/mnemonicToSeed'
+import hexToBytes from './utils/hexToBytes'
+import bytesToHex from './utils/bytesToHex'
+import base58ToUint8Array from './utils/base58ToUint8Array'
+import uint8ArrayToBase58 from './utils/uint8ArrayToBase58'
+import convertToHomographSafeChars from './utils/convertToHomographSafeChars'
+import getBalance from './identities/getBalance'
+import getByIdentifier from './identities/getByIdentifier'
+import getByPublicKeyHash from './identities/getByPublicKeyHash'
+import getIdentityContractNonce from './identities/getIdentityContractNonce'
+import getIdentityNonce from './identities/getIdentityNonce'
+import getIdentityPublicKeys from './identities/getIdentityPublicKeys'
+import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
+import walletToIdentityKey from './keyPair/walletToIdentityKey'
+import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
 
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
 
 export type MasternodeList = Record<string, MasternodeInfo>
+
+export interface walletToIdentityKeyOpts {
+  network?: 'mainnet' | 'testnet'
+}
 
 export interface MasternodeInfo {
   proTxHash: string
@@ -108,16 +138,16 @@ export interface NamesController {
 export interface StateTransitionsController {
   fromDocument: (document: DocumentWASM, batchType: BatchType, identityContractNonce: BigInt) => Promise<StateTransitionWASM>
   broadcast: (stateTransition: StateTransitionWASM) => Promise<void>
-  waitForStateTransitionResult: (stateTransitionHash: Uint8Array<ArrayBufferLike>) => Promise<void>
+  waitForStateTransitionResult: typeof waitForStateTransitionResult
 }
 
 export interface IdentitiesController {
-  getBalance: (identifier: IdentifierLike) => Promise<BigInt>
-  getByIdentifier: (identifier: IdentifierLike) => Promise<IdentityWASM>
-  getByPublicKeyHash: (hex: string) => Promise<IdentityWASM>
-  getIdentityContractNonce: (identity: IdentifierLike, dataContract: IdentifierLike) => Promise<BigInt>
-  getIdentityNonce: (identifier: IdentifierLike) => Promise<BigInt>
-  getIdentityPublicKeys: (identifier: IdentifierLike) => Promise<[IdentityPublicKeyWASM]>
+  getBalance: typeof getBalance
+  getByIdentifier: typeof getByIdentifier
+  getByPublicKeyHash: typeof getByPublicKeyHash
+  getIdentityContractNonce: typeof getIdentityContractNonce
+  getIdentityNonce: typeof getIdentityNonce
+  getIdentityPublicKeys: typeof getIdentityPublicKeys
 }
 
 export interface NodeController {
@@ -125,9 +155,30 @@ export interface NodeController {
 }
 
 export interface Utils {
-  hexToBytes: (hex: string) => Uint8Array
-  bytesToHex: (bytes: ArrayLike<number>) => string
-  base58ToUint8Array: (string: string) => Uint8Array
-  uint8ArrayToBase58: (uint8Array: Uint8Array) => string
-  convertToHomographSafeChars: (input: string) => string
+  hexToBytes: typeof hexToBytes
+  bytesToHex: typeof bytesToHex
+  base58ToUint8Array: typeof base58ToUint8Array
+  uint8ArrayToBase58: typeof uint8ArrayToBase58
+  convertToHomographSafeChars: typeof convertToHomographSafeChars
+}
+
+export interface KeyPairUtils {
+  mnemonicToSeed: typeof mnemonicToSeed
+  seedToWallet: typeof seedToWallet
+  deriveChild: typeof deriveChild
+  derivePath: typeof derivePath
+  keyToWalletId: typeof keyToWalletId
+  keyToPublicKey: typeof keyToPublicKey
+  publicKeyToAddress: typeof publicKeyToAddress
+  privateKeyToWif: typeof privateKeyToWif
+  keyToXPrivateKey: typeof keyToXPrivateKey
+  keyToXPublicKey: typeof keyToXPublicKey
+  xkeyToHDXKey: typeof xkeyToHDXKey
+  mnemonicToWallet: typeof mnemonicToWallet
+  walletToIdentityKey: typeof walletToIdentityKey
+}
+
+export interface KeyPair {
+  mnemonicToIdentityKey: typeof mnemonicToIdentityKey
+  utils: DashHdUtils & KeyPairUtils
 }

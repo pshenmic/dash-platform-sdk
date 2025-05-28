@@ -1,4 +1,4 @@
-import { GetDocumentsRequest } from '../../proto/generated/platform.js'
+import { GetDocumentsRequest } from '../../proto/generated/platform'
 import { encode } from 'cbor'
 import { DocumentWASM, IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
 import getByIdentifier from '../dataContracts/getByIdentifier'

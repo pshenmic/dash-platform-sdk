@@ -21,16 +21,31 @@ import convertToHomographSafeChars from './utils/convertToHomographSafeChars'
 import uint8ArrayToBase58 from './utils/uint8ArrayToBase58'
 import getBalance from './identities/getBalance'
 import bytesToHex from './utils/bytesToHex'
+import mnemonicToSeed from './keyPair/mnemonicToSeed'
+import seedToWallet from './keyPair/seedToWallet'
 import {
   DataContractsController,
   DocumentsController,
-  IdentitiesController,
+  IdentitiesController, KeyPair,
   NamesController,
   NodeController,
   StateTransitionsController,
   Utils
 } from './types'
 import { DashPlatformProtocolWASM } from 'pshenmic-dpp'
+import keyToWalletId from './keyPair/keyToWalletId'
+import * as DashHD from 'dashhd'
+import derivePath from './keyPair/derivePath'
+import deriveChild from './keyPair/deriveChild'
+import keyToPublicKey from './keyPair/keyToPublicKey'
+import xkeyToHDXKey from './keyPair/xkeyToHDXKey'
+import publicKeyToAddress from './keyPair/publicKeyToAddress'
+import privateKeyToWif from './keyPair/privateKeyToWif'
+import keyToXPrivateKey from './keyPair/keyToXPrivateKey'
+import keyToXPublicKey from './keyPair/keyToXPublicKey'
+import mnemonicToWallet from './keyPair/mnemonicToWallet'
+import walletToIdentityKey from './keyPair/walletToIdentityKey'
+import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -91,5 +106,25 @@ export default class DashPlatformSDK {
     base58ToUint8Array,
     uint8ArrayToBase58,
     convertToHomographSafeChars
+  }
+
+  keyPair: KeyPair = {
+    mnemonicToIdentityKey,
+    utils: {
+      ...DashHD._utils,
+      mnemonicToSeed,
+      seedToWallet,
+      keyToWalletId,
+      derivePath,
+      deriveChild,
+      keyToPublicKey,
+      publicKeyToAddress,
+      privateKeyToWif,
+      keyToXPrivateKey,
+      keyToXPublicKey,
+      xkeyToHDXKey,
+      mnemonicToWallet,
+      walletToIdentityKey
+    }
   }
 }

@@ -203,4 +203,11 @@ console.log(status.chain.latestBlockHash)
 console.log(status.time.epoch)
 ```
 
+### Key Pairs
+#### Returns key of identity for mnemonic by identity index and key index
+```javascript
+const key = await sdk.keyPair.mnemonicToIdentityKey('*mnemonic*', 0, 0)
 
+console.log(key.privateKey)
+console.log(key.publicKey)
+```
