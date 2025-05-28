@@ -5,7 +5,6 @@ import {
   BatchType,
   StateTransitionWASM,
   PlatformVersionWASM,
-  DataContractCreateTransitionWASM,
   DocumentCreateTransitionWASM,
   DocumentDeleteTransitionWASM,
   DocumentPurchaseTransitionWASM,

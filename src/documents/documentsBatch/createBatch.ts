@@ -3,10 +3,10 @@ import {
   DocumentTransitionWASM,
   DocumentWASM
 } from 'pshenmic-dpp'
-import {DocumentTransitionLike, IdentifierLike} from '../../types'
+import { DocumentTransitionLike, IdentifierLike } from '../../types'
 import ArrayLike = jasmine.ArrayLike
 
-function convertToTransition(
+function convertToTransition (
   input: DocumentWASM | DocumentTransitionWASM | DocumentTransitionLike,
   identityContractNonce?: bigint | null): DocumentTransitionWASM {
   if (input instanceof DocumentTransitionWASM) {
@@ -24,8 +24,8 @@ function convertToTransition(
   }
 }
 
-export async function createBatch(
-  inputs: DocumentWASM | DocumentTransitionWASM | DocumentTransitionLike | (DocumentWASM | DocumentTransitionWASM | DocumentTransitionLike)[],
+export async function createBatch (
+  inputs: DocumentWASM | DocumentTransitionWASM | DocumentTransitionLike | Array<DocumentWASM | DocumentTransitionWASM | DocumentTransitionLike>,
   ownerId: IdentifierLike,
   opts?: {
     identityContractNonce?: bigint | null
