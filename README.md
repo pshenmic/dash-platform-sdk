@@ -187,6 +187,164 @@ const [document] = await sdk.documents.query(dataContract, documentType, where, 
 console.log(document)
 ```
 
+
+###  Documents Transitions
+
+#### Document Create Transition
+Creates a DocumentCreateTransitionWASM instance that can be used for a state transition creation
+
+
+```javascript
+const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const identity = '9VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
+const identityContractNonce = BigInt(1)
+const documentType = 'domain'
+const data = {
+  "key": "value"
+}
+
+const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+
+const transition = await sdk.documentsBatch.transitions.documentCreateTransition.create(document, identityContractNonce)
+
+console.log(transition)
+```
+
+#### Document Delete Transition
+Creates a DocumentDeleteTransitionWASM instance that can be used for a state transition creation
+
+
+```javascript
+const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const identity = '9VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
+const identityContractNonce = BigInt(1)
+const documentType = 'domain'
+const data = {
+  "key": "value"
+}
+
+const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+
+const transition = await sdk.documentsBatch.transitions.documentDeleteTransition.create(document, identityContractNonce)
+
+console.log(transition)
+```
+
+#### Document Purchase Transition
+Creates a DocumentPurchaseTransitionWASM instance that can be used for a state transition creation
+
+
+```javascript
+const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const identity = '9VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
+const identityContractNonce = BigInt(1)
+const documentType = 'domain'
+const data = {
+  "key": "value"
+}
+const price = BigInt(100)
+
+const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+
+const transition = await sdk.documentsBatch.transitions.documentPurchaseTransition.create(document, identityContractNonce, price)
+
+console.log(transition)
+```
+
+#### Document Replace Transition
+Creates a DocumentReplaceTransitionWASM instance that can be used for a state transition creation
+
+
+```javascript
+const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const identity = '9VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
+const identityContractNonce = BigInt(1)
+const documentType = 'domain'
+const data = {
+  "key": "value"
+}
+
+const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+
+const transition = await sdk.documentsBatch.transitions.documentReplaceTransition.create(document, identityContractNonce)
+
+console.log(transition)
+```
+
+#### Document Transfer Transition
+Creates a DocumentTransferTransitionWASM instance that can be used for a state transition creation
+
+
+```javascript
+const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const identity = '9VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
+const identityContractNonce = BigInt(1)
+const documentType = 'domain'
+const data = {
+  "key": "value"
+}
+const recipient = '7VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
+
+const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+
+const transition = await sdk.documentsBatch.transitions.documentTransferTransition.create(document, identityContractNonce, recipient)
+
+console.log(transition)
+```
+
+#### Document Update Price Transition
+Creates a DocumentUpdatePriceTransitionWASM instance that can be used for a state transition creation
+
+
+```javascript
+const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const identity = '9VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
+const identityContractNonce = BigInt(1)
+const documentType = 'domain'
+const data = {
+  "key": "value"
+}
+const price = BigInt(100)
+
+const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+
+const transition = await sdk.documentsBatch.transitions.documentUpdatePriceTransition.create(document, identityContractNonce, price)
+
+console.log(transition)
+```
+
+### Documents Batch
+#### Create Documents Batch
+This method allows to create DocumentsBatchWASM from: 
+DocumentWASM, DocumentTransitionWASM, DocumentCreateTransitionWASM, 
+DocumentDeleteTransitionWASM, DocumentPurchaseTransitionWASM,
+DocumentReplaceTransitionWASM, DocumentTransferTransitionWASM,
+DocumentUpdatePriceTransitionWASM and array with any of this types
+
+
+```javascript
+const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const identity = '9VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
+const identityContractNonce = BigInt(1)
+const documentType = 'domain'
+const data = {
+  "key": "value"
+}
+const price = BigInt(100)
+const recipient = '8VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
+
+const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+
+const transitionCreate = await sdk.documentsBatch.transitions.documentCreateTransition.create(document, identityContractNonce)
+const transitionDelete = await sdk.documentsBatch.transitions.documentDeleteTransition.create(document, identityContractNonce)
+const transitionPurchase = await sdk.documentsBatch.transitions.documentPurchaseTransition.create(document, identityContractNonce, price)
+const transitionReplace = await sdk.documentsBatch.transitions.documentReplaceTransition.create(document, identityContractNonce)
+const transitionTransfer = await sdk.documentsBatch.transitions.documentTransferTransition.create(document, identityContractNonce, recipient)
+const transitionUpdatePrice = await sdk.documentsBatch.transitions.documentUpdatePriceTransition.create(document, identityContractNonce, price)
+
+const batch = await sdk.documentsBatch.create([document, transitionCreate, transitionDelete, transitionPurchase, transitionReplace, transitionTransfer, transitionUpdatePrice], identity, {identityContractNonce: BigInt(1)})
+```
+
 ### Identities
 #### Get identity by identifier
 Searches an identity by identifier (base58) and returns an IdentityWASM instance
