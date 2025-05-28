@@ -94,7 +94,7 @@ export default class DashPlatformSDK {
     create: createDocument.bind(this)
   }
 
-  documentsBatchController: DocumentsBatchController = {
+  documentsBatch: DocumentsBatchController = {
     create: createBatch.bind(this),
     transitions: {
       documentCreateTransition: {
