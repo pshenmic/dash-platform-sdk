@@ -34,11 +34,10 @@
   },
   "scripts": {
     "build": "webpack",
-    "build:grpc": "yarn proto:generate && yarn proto:transpile",
+    "build:grpc": "yarn proto:generate",
     "lint": "ts-standard --fix",
     "test": "jest",
-    "proto:generate": "grpc_tools_node_protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./proto/generated --ts_proto_opt=useAsyncIterable=false --ts_proto_opt=forceLong=string,env=browser,outputServices=grpc-web,outputServices=generic-definitions,outputJsonMethods=false,useExactTypes=false --proto_path=./proto ./proto/platform.proto",
-    "proto:transpile": "tsc ./proto/generated/platform.ts"
+    "proto:generate": "grpc_tools_node_protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./proto/generated --ts_proto_opt=useAsyncIterable=false --ts_proto_opt=forceLong=string,env=browser,outputServices=grpc-web,outputServices=generic-definitions,outputJsonMethods=false,useExactTypes=false --proto_path=./proto ./proto/platform.proto"
   },
   "dependencies": {
     "@scure/base": "^1.2.4",
