@@ -7,18 +7,18 @@ import {
   PlatformVersionWASM
 } from 'pshenmic-dpp'
 import { Utils as DashHdUtils } from 'dashhd'
-import mnemonicToWallet from './keyPairs/mnemonicToWallet'
-import keyToXPublicKey from './keyPairs/keyToXPublicKey'
-import keyToXPrivateKey from './keyPairs/keyToXPrivateKey'
-import privateKeyToWif from './keyPairs/privateKeyToWif'
-import publicKeyToAddress from './keyPairs/publicKeyToAddress'
-import derivePath from './keyPairs/derivePath'
-import deriveChild from './keyPairs/deriveChild'
-import xkeyToHDXKey from './keyPairs/xkeyToHDXKey'
-import keyToPublicKey from './keyPairs/keyToPublicKey'
-import keyToWalletId from './keyPairs/keyToWalletId'
-import seedToWallet from './keyPairs/seedToWallet'
-import mnemonicToSeed from './keyPairs/mnemonicToSeed'
+import mnemonicToWallet from './keyPair/mnemonicToWallet'
+import keyToXPublicKey from './keyPair/keyToXPublicKey'
+import keyToXPrivateKey from './keyPair/keyToXPrivateKey'
+import privateKeyToWif from './keyPair/privateKeyToWif'
+import publicKeyToAddress from './keyPair/publicKeyToAddress'
+import derivePath from './keyPair/derivePath'
+import deriveChild from './keyPair/deriveChild'
+import xkeyToHDXKey from './keyPair/xkeyToHDXKey'
+import keyToPublicKey from './keyPair/keyToPublicKey'
+import keyToWalletId from './keyPair/keyToWalletId'
+import seedToWallet from './keyPair/seedToWallet'
+import mnemonicToSeed from './keyPair/mnemonicToSeed'
 import hexToBytes from './utils/hexToBytes'
 import bytesToHex from './utils/bytesToHex'
 import base58ToUint8Array from './utils/base58ToUint8Array'
@@ -31,8 +31,8 @@ import getIdentityContractNonce from './identities/getIdentityContractNonce'
 import getIdentityNonce from './identities/getIdentityNonce'
 import getIdentityPublicKeys from './identities/getIdentityPublicKeys'
 import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
-import walletToIdentityKey from './keyPairs/walletToIdentityKey'
-import mnemonicToIdentityKey from './keyPairs/mnemonicToIdentityKey'
+import walletToIdentityKey from './keyPair/walletToIdentityKey'
+import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
 import createDataContractTransition from './dataContracts/transitions/createDataContractTransition'
 import updateDataContractTransition from './dataContracts/transitions/updateDataContractTransition'
 
@@ -184,7 +184,7 @@ export interface Utils {
   convertToHomographSafeChars: typeof convertToHomographSafeChars
 }
 
-export interface KeyPairsUtils {
+export interface KeyPairUtils {
   mnemonicToSeed: typeof mnemonicToSeed
   seedToWallet: typeof seedToWallet
   deriveChild: typeof deriveChild
@@ -200,7 +200,7 @@ export interface KeyPairsUtils {
   walletToIdentityKey: typeof walletToIdentityKey
 }
 
-export interface KeyPairs {
+export interface KeyPair {
   mnemonicToIdentityKey: typeof mnemonicToIdentityKey
-  utils: DashHdUtils & KeyPairsUtils
+  utils: DashHdUtils & KeyPairUtils
 }
