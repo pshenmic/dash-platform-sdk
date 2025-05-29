@@ -140,7 +140,7 @@ const config = {
 
 const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, config, PlatformVersionWASM.PLATFORM_V1)
 
-const transition = await sdk.stateTransitions.dataContract.createTransition(dataContract, identityNonce)
+const transition = await sdk.stateTransitions.dataContract.create(dataContract, identityNonce)
 ```
 
 #### Data Contract Update Transition
@@ -180,7 +180,7 @@ const config = {
 
 const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, config, PlatformVersionWASM.PLATFORM_V1)
 
-const transition = await sdk.stateTransitions.dataContract.updateTransition(dataContract, identityNonce)
+const transition = await sdk.stateTransitions.dataContract.update(dataContract, identityNonce)
 ```
 
 ###  Documents
