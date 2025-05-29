@@ -46,6 +46,9 @@ import keyToXPublicKey from './keyPair/keyToXPublicKey'
 import mnemonicToWallet from './keyPair/mnemonicToWallet'
 import walletToIdentityKey from './keyPair/walletToIdentityKey'
 import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
+import createDataContractTransition from './stateTransitions/dataContract/createDataContractTransition'
+import updateDataContractTransition from './stateTransitions/dataContract/updateDataContractTransition'
+import createDataContract from './dataContracts/create'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -69,6 +72,7 @@ export default class DashPlatformSDK {
   wasm: DashPlatformProtocolWASM
 
   dataContracts: DataContractsController = {
+    create: createDataContract.bind(this),
     getByIdentifier: getDataContractByIdentifier.bind(this)
   }
 
@@ -84,7 +88,11 @@ export default class DashPlatformSDK {
   stateTransitions: StateTransitionsController = {
     fromDocument: fromDocument.bind(this),
     broadcast: broadcastStateTransition.bind(this),
-    waitForStateTransitionResult: waitForStateTransitionResult.bind(this)
+    waitForStateTransitionResult: waitForStateTransitionResult.bind(this),
+    dataContract: {
+      create: createDataContractTransition.bind(this),
+      update: updateDataContractTransition.bind(this)
+    }
   }
 
   identities: IdentitiesController = {

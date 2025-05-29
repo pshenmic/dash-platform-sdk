@@ -1,0 +1,65 @@
+import { DocumentWASM, IdentityPublicKeyWASM, IdentityWASM } from 'pshenmic-dpp'
+import { DashPlatformSDK } from '../../src'
+
+let sdk: DashPlatformSDK
+
+describe('Identity', () => {
+  beforeAll(() => {
+    sdk = new DashPlatformSDK()
+  })
+
+  test('should be able to search names by DPNS name', async () => {
+    const [document] = await sdk.names.search('xyz.dash')
+
+    expect(document).toEqual(expect.any(DocumentWASM))
+  })
+
+  test('should be able to get identity by identifier', async () => {
+    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+
+    const identity = await sdk.identities.getByIdentifier(identifier)
+
+    expect(identity).toEqual(expect.any(IdentityWASM))
+  })
+
+  test('should be able to get identity by public key hash', async () => {
+    const publicKeyHash = 'c5b7fdfa5731e1b31b1b42c13959756e8db22b3b'
+
+    const identity = await sdk.identities.getByPublicKeyHash(publicKeyHash)
+
+    expect(identity).toEqual(expect.any(IdentityWASM))
+  })
+
+  test('should be able to get identity contract nonce', async () => {
+    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+    const dataContract = '6QMfQTdKpC3Y9uWBcTwXeY3KdzRLDqASUsDnQ4MEc9XC'
+
+    const identityContractNonce = await sdk.identities.getIdentityContractNonce(identifier, dataContract)
+
+    expect(identityContractNonce).toEqual(expect.any(BigInt))
+  })
+
+  test('should be able to get identity nonce', async () => {
+    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+
+    const identityNonce = await sdk.identities.getIdentityNonce(identifier)
+
+    expect(identityNonce).toEqual(expect.any(BigInt))
+  })
+
+  test('should be able to get identity public keys', async () => {
+    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+
+    const identityPublicKeys = await sdk.identities.getIdentityPublicKeys(identifier)
+
+    expect(identityPublicKeys.every(identityPublicKey => identityPublicKey instanceof IdentityPublicKeyWASM)).toBeTruthy()
+  })
+
+  test('should be able to get balance', async () => {
+    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+
+    const balance = await sdk.identities.getBalance(identifier)
+
+    expect(balance).toEqual(expect.any(BigInt))
+  })
+})

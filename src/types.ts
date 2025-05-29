@@ -3,7 +3,8 @@ import {
   DocumentWASM,
   IdentifierWASM,
   BatchType,
-  StateTransitionWASM
+  StateTransitionWASM,
+  PlatformVersionWASM
 } from 'pshenmic-dpp'
 import { Utils as DashHdUtils } from 'dashhd'
 import mnemonicToWallet from './keyPair/mnemonicToWallet'
@@ -32,6 +33,8 @@ import getIdentityPublicKeys from './identities/getIdentityPublicKeys'
 import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
 import walletToIdentityKey from './keyPair/walletToIdentityKey'
 import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
+import createDataContractTransition from './stateTransitions/dataContract/createDataContractTransition'
+import updateDataContractTransition from './stateTransitions/dataContract/updateDataContractTransition'
 
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
 
@@ -122,7 +125,25 @@ export interface NodeStatus {
   } | undefined
 }
 
+export interface DataContractConfig {
+  $format_version: string
+  canBeDeleted: boolean
+  readonly: boolean
+  keepsHistory: boolean
+  documentsKeepHistoryContractDefault: boolean
+  documentsMutableContractDefault: boolean
+  documentsCanBeDeletedContractDefault: boolean
+  requiresIdentityEncryptionBoundedKey?: number | null
+  requiresIdentityDecryptionBoundedKey?: number | null
+}
+
+export interface DataContractTransitions {
+  create: typeof createDataContractTransition
+  update: typeof updateDataContractTransition
+}
+
 export interface DataContractsController {
+  create: (ownerId: IdentifierLike, identityNonce: bigint, schema: object, definitions?: object, fullValidation?: boolean, config?: DataContractConfig, platformVersion?: PlatformVersionWASM) => Promise<DataContractWASM>
   getByIdentifier: (identifier: IdentifierLike) => Promise<DataContractWASM>
 }
 
@@ -136,6 +157,7 @@ export interface NamesController {
 }
 
 export interface StateTransitionsController {
+  dataContract: DataContractTransitions
   fromDocument: (document: DocumentWASM, batchType: BatchType, identityContractNonce: BigInt) => Promise<StateTransitionWASM>
   broadcast: (stateTransition: StateTransitionWASM) => Promise<void>
   waitForStateTransitionResult: typeof waitForStateTransitionResult
