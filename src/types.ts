@@ -148,8 +148,8 @@ export interface DataContractConfig {
 }
 
 export interface DataContractTransitions {
-  createTransition: typeof createDataContractTransition
-  updateTransition: typeof updateDataContractTransition
+  create: typeof createDataContractTransition
+  update: typeof updateDataContractTransition
 }
 
 export interface DataContractsController {

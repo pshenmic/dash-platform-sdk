@@ -91,8 +91,8 @@ export default class DashPlatformSDK {
     broadcast: broadcastStateTransition.bind(this),
     waitForStateTransitionResult: waitForStateTransitionResult.bind(this),
     dataContract: {
-      createTransition: createDataContractTransition.bind(this),
-      updateTransition: updateDataContractTransition.bind(this)
+      create: createDataContractTransition.bind(this),
+      update: updateDataContractTransition.bind(this)
     },
     documentsBatch: {
       create: createBatch.bind(this)
