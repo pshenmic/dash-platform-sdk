@@ -88,7 +88,7 @@ describe('DataContract', () => {
   test('should be able to create data contract create transition', async () => {
     const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema)
 
-    const transition = await sdk.dataContracts.transitions.createTransition(dataContract, identityNonce)
+    const transition = await sdk.stateTransitions.dataContract.createTransition(dataContract, identityNonce)
 
     expect(transition).toEqual(expect.any(DataContractCreateTransitionWASM))
   })
@@ -96,7 +96,7 @@ describe('DataContract', () => {
   test('should be able to create data contract update transition', async () => {
     const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema)
 
-    const transition = await sdk.dataContracts.transitions.updateTransition(dataContract, identityNonce)
+    const transition = await sdk.stateTransitions.dataContract.updateTransition(dataContract, identityNonce)
 
     expect(transition).toEqual(expect.any(DataContractUpdateTransitionWASM))
   })
