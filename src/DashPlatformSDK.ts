@@ -24,7 +24,7 @@ import bytesToHex from './utils/bytesToHex'
 import mnemonicToSeed from './keyPair/mnemonicToSeed'
 import seedToWallet from './keyPair/seedToWallet'
 import {
-  DataContractsController, DocumentsBatchController,
+  DataContractsController,
   DocumentsController,
   IdentitiesController, KeyPair,
   NamesController,
@@ -82,10 +82,6 @@ export default class DashPlatformSDK {
     create: createDocument.bind(this)
   }
 
-  documentsBatch: DocumentsBatchController = {
-    create: createBatch.bind(this)
-  }
-
   names: NamesController = {
     search: search.bind(this)
   }
@@ -97,6 +93,9 @@ export default class DashPlatformSDK {
     dataContract: {
       createTransition: createDataContractTransition.bind(this),
       updateTransition: updateDataContractTransition.bind(this)
+    },
+    documentsBatch: {
+      create: createBatch.bind(this)
     }
   }
 

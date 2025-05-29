@@ -172,6 +172,7 @@ export interface NamesController {
 
 export interface StateTransitionsController {
   dataContract: DataContractTransitions
+  documentsBatch: DocumentsBatchController
   fromDocument: (document: DocumentWASM, batchType: BatchType, identityContractNonce: BigInt) => Promise<StateTransitionWASM>
   broadcast: (stateTransition: StateTransitionWASM) => Promise<void>
   waitForStateTransitionResult: typeof waitForStateTransitionResult

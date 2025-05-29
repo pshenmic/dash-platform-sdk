@@ -39,9 +39,9 @@ describe('DocumentsBatch', () => {
 
     const transition = new sdk.wasm.DocumentCreateTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
 
-    const batch = await sdk.documentsBatch.create(transition, identity)
+    const batch = await sdk.stateTransitions.documentsBatch.create(transition, identity)
 
-    const batchFromArray = await sdk.documentsBatch.create([transition, transition], identity)
+    const batchFromArray = await sdk.stateTransitions.documentsBatch.create([transition, transition], identity)
 
     expect(transition).toEqual(expect.any(DocumentCreateTransitionWASM))
     expect(batch).toEqual(expect.any(DocumentsBatchWASM))
@@ -54,9 +54,9 @@ describe('DocumentsBatch', () => {
 
     const transition = new sdk.wasm.DocumentDeleteTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
 
-    const batch = await sdk.documentsBatch.create(transition, identity)
+    const batch = await sdk.stateTransitions.documentsBatch.create(transition, identity)
 
-    const batchFromArray = await sdk.documentsBatch.create([transition, transition], identity)
+    const batchFromArray = await sdk.stateTransitions.documentsBatch.create([transition, transition], identity)
 
     expect(transition).toEqual(expect.any(DocumentDeleteTransitionWASM))
     expect(batch).toEqual(expect.any(DocumentsBatchWASM))
@@ -69,9 +69,9 @@ describe('DocumentsBatch', () => {
 
     const transition = new sdk.wasm.DocumentPurchaseTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
 
-    const batch = await sdk.documentsBatch.create(transition, identity)
+    const batch = await sdk.stateTransitions.documentsBatch.create(transition, identity)
 
-    const batchFromArray = await sdk.documentsBatch.create([transition, transition], identity)
+    const batchFromArray = await sdk.stateTransitions.documentsBatch.create([transition, transition], identity)
 
     expect(transition).toEqual(expect.any(DocumentPurchaseTransitionWASM))
     expect(batch).toEqual(expect.any(DocumentsBatchWASM))
@@ -84,9 +84,9 @@ describe('DocumentsBatch', () => {
 
     const transition = new sdk.wasm.DocumentReplaceTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
 
-    const batch = await sdk.documentsBatch.create(transition, identity)
+    const batch = await sdk.stateTransitions.documentsBatch.create(transition, identity)
 
-    const batchFromArray = await sdk.documentsBatch.create([transition, transition], identity)
+    const batchFromArray = await sdk.stateTransitions.documentsBatch.create([transition, transition], identity)
 
     expect(transition).toEqual(expect.any(DocumentReplaceTransitionWASM))
     expect(batch).toEqual(expect.any(DocumentsBatchWASM))
@@ -99,9 +99,9 @@ describe('DocumentsBatch', () => {
 
     const transition = new sdk.wasm.DocumentTransferTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), recipient)
 
-    const batch = await sdk.documentsBatch.create(transition, identity)
+    const batch = await sdk.stateTransitions.documentsBatch.create(transition, identity)
 
-    const batchFromArray = await sdk.documentsBatch.create([transition, transition], identity)
+    const batchFromArray = await sdk.stateTransitions.documentsBatch.create([transition, transition], identity)
 
     expect(transition).toEqual(expect.any(DocumentTransferTransitionWASM))
     expect(batch).toEqual(expect.any(DocumentsBatchWASM))
@@ -114,9 +114,9 @@ describe('DocumentsBatch', () => {
 
     const transition = new sdk.wasm.DocumentUpdatePriceTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
 
-    const batch = await sdk.documentsBatch.create(transition, identity)
+    const batch = await sdk.stateTransitions.documentsBatch.create(transition, identity)
 
-    const batchFromArray = await sdk.documentsBatch.create([transition, transition], identity)
+    const batchFromArray = await sdk.stateTransitions.documentsBatch.create([transition, transition], identity)
 
     expect(transition).toEqual(expect.any(DocumentUpdatePriceTransitionWASM))
     expect(batch).toEqual(expect.any(DocumentsBatchWASM))
@@ -127,9 +127,9 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
 
-    const batch = await sdk.documentsBatch.create(document, identity, { identityContractNonce: BigInt(1) })
+    const batch = await sdk.stateTransitions.documentsBatch.create(document, identity, { identityContractNonce: BigInt(1) })
 
-    const batchFromArray = await sdk.documentsBatch.create([document, document], identity, { identityContractNonce: BigInt(1) })
+    const batchFromArray = await sdk.stateTransitions.documentsBatch.create([document, document], identity, { identityContractNonce: BigInt(1) })
 
     expect(batch).toEqual(expect.any(DocumentsBatchWASM))
     expect(batchFromArray).toEqual(expect.any(DocumentsBatchWASM))
@@ -146,7 +146,7 @@ describe('DocumentsBatch', () => {
     const transitionTransfer = new sdk.wasm.DocumentTransferTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), recipient)
     const transitionUpdatePrice = new sdk.wasm.DocumentUpdatePriceTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
 
-    const batch = await sdk.documentsBatch.create([document, transitionCreate, transitionDelete, transitionPurchase, transitionReplace, transitionTransfer, transitionUpdatePrice], identity, { identityContractNonce: BigInt(1) })
+    const batch = await sdk.stateTransitions.documentsBatch.create([document, transitionCreate, transitionDelete, transitionPurchase, transitionReplace, transitionTransfer, transitionUpdatePrice], identity, { identityContractNonce: BigInt(1) })
 
     expect(batch).toEqual(expect.any(DocumentsBatchWASM))
     expect(batch.transitions.length).toEqual(7)
