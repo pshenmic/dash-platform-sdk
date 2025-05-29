@@ -1,9 +1,0 @@
-import { DataContractCreateTransitionWASM, DataContractWASM, PlatformVersionWASM } from 'pshenmic-dpp'
-
-export default async function updateDataContractTransition (
-  dataContract: DataContractWASM,
-  identityNonce: bigint,
-  platformVersion: PlatformVersionWASM | undefined = PlatformVersionWASM.PLATFORM_V1
-): Promise<DataContractCreateTransitionWASM> {
-  return new this.wasm.DataContractUpdateTransitionWASM(dataContract, identityNonce, platformVersion)
-}

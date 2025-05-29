@@ -3,7 +3,7 @@ import {
   DataContractUpdateTransitionWASM,
   DataContractCreateTransitionWASM,
   DataContractWASM,
-  PlatformVersionWASM
+  PlatformVersionWASM, StateTransitionWASM
 } from 'pshenmic-dpp'
 import { DataContractConfig } from '../../src/types'
 
@@ -90,7 +90,7 @@ describe('DataContract', () => {
 
     const transition = await sdk.stateTransitions.dataContract.create(dataContract, identityNonce)
 
-    expect(transition).toEqual(expect.any(DataContractCreateTransitionWASM))
+    expect(transition).toEqual(expect.any(StateTransitionWASM))
   })
 
   test('should be able to create data contract update transition', async () => {
@@ -98,6 +98,6 @@ describe('DataContract', () => {
 
     const transition = await sdk.stateTransitions.dataContract.update(dataContract, identityNonce)
 
-    expect(transition).toEqual(expect.any(DataContractUpdateTransitionWASM))
+    expect(transition).toEqual(expect.any(StateTransitionWASM))
   })
 })
