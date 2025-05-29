@@ -143,7 +143,6 @@ export interface DataContractTransitions {
 }
 
 export interface DataContractsController {
-  transitions: DataContractTransitions
   create: (ownerId: IdentifierLike, identityNonce: bigint, schema: object, definitions?: object, fullValidation?: boolean, config?: DataContractConfig, platformVersion?: PlatformVersionWASM) => Promise<DataContractWASM>
   getByIdentifier: (identifier: IdentifierLike) => Promise<DataContractWASM>
 }
@@ -158,6 +157,7 @@ export interface NamesController {
 }
 
 export interface StateTransitionsController {
+  dataContract: DataContractTransitions
   fromDocument: (document: DocumentWASM, batchType: BatchType, identityContractNonce: BigInt) => Promise<StateTransitionWASM>
   broadcast: (stateTransition: StateTransitionWASM) => Promise<void>
   waitForStateTransitionResult: typeof waitForStateTransitionResult

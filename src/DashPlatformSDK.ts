@@ -72,10 +72,6 @@ export default class DashPlatformSDK {
   wasm: DashPlatformProtocolWASM
 
   dataContracts: DataContractsController = {
-    transitions: {
-      createTransition: createDataContractTransition.bind(this),
-      updateTransition: updateDataContractTransition.bind(this)
-    },
     create: createDataContract.bind(this),
     getByIdentifier: getDataContractByIdentifier.bind(this)
   }
@@ -92,7 +88,11 @@ export default class DashPlatformSDK {
   stateTransitions: StateTransitionsController = {
     fromDocument: fromDocument.bind(this),
     broadcast: broadcastStateTransition.bind(this),
-    waitForStateTransitionResult: waitForStateTransitionResult.bind(this)
+    waitForStateTransitionResult: waitForStateTransitionResult.bind(this),
+    dataContract: {
+      createTransition: createDataContractTransition.bind(this),
+      updateTransition: updateDataContractTransition.bind(this)
+    }
   }
 
   identities: IdentitiesController = {
