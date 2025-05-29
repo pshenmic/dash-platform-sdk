@@ -4,7 +4,12 @@ import {
   IdentifierWASM,
   BatchType,
   StateTransitionWASM,
-  PlatformVersionWASM
+  PlatformVersionWASM,
+  DocumentCreateTransitionWASM,
+  DocumentDeleteTransitionWASM,
+  DocumentPurchaseTransitionWASM,
+  DocumentReplaceTransitionWASM,
+  DocumentTransferTransitionWASM, DocumentUpdatePriceTransitionWASM
 } from 'pshenmic-dpp'
 import { Utils as DashHdUtils } from 'dashhd'
 import mnemonicToWallet from './keyPair/mnemonicToWallet'
@@ -35,8 +40,18 @@ import walletToIdentityKey from './keyPair/walletToIdentityKey'
 import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
 import createDataContractTransition from './stateTransitions/dataContract/createDataContractTransition'
 import updateDataContractTransition from './stateTransitions/dataContract/updateDataContractTransition'
+import documentCreateTransition from './stateTransitions/documentsBatch/create'
+import documentReplaceTransition from './stateTransitions/documentsBatch/replace'
+import documentDeleteTransition from './stateTransitions/documentsBatch/delete'
+import documentPurchaseTransition from './stateTransitions/documentsBatch/purchase'
+import documentUpdatePriceTransition from './stateTransitions/documentsBatch/updatePrice'
+import documentTransferTransition from './stateTransitions/documentsBatch/transfer'
+import getDocument from './documents/get'
+import createDocument from './documents/create'
 
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
+
+export type DocumentTransitionLike = DocumentCreateTransitionWASM | DocumentDeleteTransitionWASM | DocumentPurchaseTransitionWASM | DocumentReplaceTransitionWASM | DocumentTransferTransitionWASM | DocumentUpdatePriceTransitionWASM
 
 export type MasternodeList = Record<string, MasternodeInfo>
 
@@ -147,9 +162,18 @@ export interface DataContractsController {
   getByIdentifier: (identifier: IdentifierLike) => Promise<DataContractWASM>
 }
 
+export interface DocumentsBatchController {
+  create: typeof documentCreateTransition
+  delete: typeof documentDeleteTransition
+  purchase: typeof documentPurchaseTransition
+  replace: typeof documentReplaceTransition
+  transfer: typeof documentTransferTransition
+  updatePrice: typeof documentUpdatePriceTransition
+}
+
 export interface DocumentsController {
-  query: (dataContractId: IdentifierLike, documentType: string, where?: ArrayLike<any>, orderBy?: ArrayLike<any>, limit?: number, startAt?: IdentifierWASM, startAfter?: IdentifierWASM) => Promise<[DocumentWASM]>
-  create: (dataContract: IdentifierLike, documentType: string, data: Object, identityContractNonce: BigInt, identity: IdentifierLike) => Promise<DocumentWASM>
+  query: typeof getDocument
+  create: typeof createDocument
 }
 
 export interface NamesController {
@@ -158,6 +182,7 @@ export interface NamesController {
 
 export interface StateTransitionsController {
   dataContract: DataContractTransitions
+  documentsBatch: DocumentsBatchController
   fromDocument: (document: DocumentWASM, batchType: BatchType, identityContractNonce: BigInt) => Promise<StateTransitionWASM>
   broadcast: (stateTransition: StateTransitionWASM) => Promise<void>
   waitForStateTransitionResult: typeof waitForStateTransitionResult

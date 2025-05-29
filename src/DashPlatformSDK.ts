@@ -49,6 +49,12 @@ import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
 import createDataContractTransition from './stateTransitions/dataContract/createDataContractTransition'
 import updateDataContractTransition from './stateTransitions/dataContract/updateDataContractTransition'
 import createDataContract from './dataContracts/create'
+import documentCreateTransition from './stateTransitions/documentsBatch/create'
+import documentReplaceTransition from './stateTransitions/documentsBatch/replace'
+import documentDeleteTransition from './stateTransitions/documentsBatch/delete'
+import documentPurchaseTransition from './stateTransitions/documentsBatch/purchase'
+import documentUpdatePriceTransition from './stateTransitions/documentsBatch/updatePrice'
+import documentTransferTransition from './stateTransitions/documentsBatch/transfer'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -92,6 +98,14 @@ export default class DashPlatformSDK {
     dataContract: {
       create: createDataContractTransition.bind(this),
       update: updateDataContractTransition.bind(this)
+    },
+    documentsBatch: {
+      create: documentCreateTransition.bind(this),
+      delete: documentDeleteTransition.bind(this),
+      purchase: documentPurchaseTransition.bind(this),
+      replace: documentReplaceTransition.bind(this),
+      transfer: documentTransferTransition.bind(this),
+      updatePrice: documentUpdatePriceTransition.bind(this)
     }
   }
 

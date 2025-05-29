@@ -1,7 +1,5 @@
 import { DashPlatformSDK } from '../../src/index'
 import {
-  DataContractUpdateTransitionWASM,
-  DataContractCreateTransitionWASM,
   DataContractWASM,
   PlatformVersionWASM, StateTransitionWASM
 } from 'pshenmic-dpp'

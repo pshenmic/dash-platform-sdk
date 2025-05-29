@@ -223,6 +223,31 @@ const [document] = await sdk.documents.query(dataContract, documentType, where, 
 console.log(document)
 ```
 
+### Documents Batch
+#### Create Documents Batch
+This method allows to create DocumentsBatchWASM
+
+```javascript
+const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const identity = '9VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
+const identityContractNonce = BigInt(1)
+const documentType = 'domain'
+const data = {
+  "key": "value"
+}
+const price = BigInt(100)
+const recipient = '8VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
+
+const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+
+const transitionCreate = await sdk.stateTransitions.documentsBatch.create(document, identityContractNonce)
+const transitionDelete = await sdk.stateTransitions.documentsBatch.delete(document, identityContractNonce)
+const transitionPurchase = await sdk.stateTransitions.documentsBatch.purchase(document, recipient, identityContractNonce, price)
+const transitionReplace = await sdk.stateTransitions.documentsBatch.replace(document, identityContractNonce)
+const transitionTransfer = await sdk.stateTransitions.documentsBatch.transfer(document, identityContractNonce, recipient)
+const transitionUpdatePrice = await sdk.stateTransitions.documentsBatch.updatePrice(document, identityContractNonce, price)
+```
+
 ### Identities
 #### Get identity by identifier
 Searches an identity by identifier (base58) and returns an IdentityWASM instance
