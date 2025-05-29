@@ -43,12 +43,6 @@ import updateDataContractTransition from './dataContracts/transitions/updateData
 import { createBatch } from './documents/documentsBatch/createBatch'
 import getDocument from './documents/get'
 import createDocument from './documents/create'
-import createDocumentCreateTransition from './documents/transitions/createDocumentCreateTransition'
-import createDocumentDeleteTransition from './documents/transitions/createDocumentDeleteTransition'
-import createDocumentUpdatePriceTransition from './documents/transitions/createDocumentUpdatePriceTransition'
-import createDocumentTransferTransition from './documents/transitions/createDocumentTransferTransition'
-import createDocumentReplaceTransition from './documents/transitions/createDocumentReplaceTransition'
-import createDocumentPurchaseTransition from './documents/transitions/createDocumentPurchaseTransition'
 
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
 
@@ -166,26 +160,6 @@ export interface DataContractsController {
 
 export interface DocumentsBatchController {
   create: typeof createBatch
-  transitions: {
-    documentCreateTransition: {
-      create: typeof createDocumentCreateTransition
-    }
-    documentDeleteTransition: {
-      create: typeof createDocumentDeleteTransition
-    }
-    documentPurchaseTransition: {
-      create: typeof createDocumentPurchaseTransition
-    }
-    documentReplaceTransition: {
-      create: typeof createDocumentReplaceTransition
-    }
-    documentTransferTransition: {
-      create: typeof createDocumentTransferTransition
-    }
-    documentUpdatePriceTransition: {
-      create: typeof createDocumentUpdatePriceTransition
-    }
-  }
 }
 
 export interface DocumentsController {

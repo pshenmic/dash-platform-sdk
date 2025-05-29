@@ -37,7 +37,7 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document create transition', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
 
-    const transition = await sdk.documentsBatch.transitions.documentCreateTransition.create(document, identityContractNonce)
+    const transition = new sdk.wasm.DocumentCreateTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
 
     const batch = await sdk.documentsBatch.create(transition, identity)
 
@@ -52,7 +52,7 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document delete transition', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
 
-    const transition = await sdk.documentsBatch.transitions.documentDeleteTransition.create(document, identityContractNonce)
+    const transition = new sdk.wasm.DocumentDeleteTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
 
     const batch = await sdk.documentsBatch.create(transition, identity)
 
@@ -67,7 +67,7 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document purchase transition', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
 
-    const transition = await sdk.documentsBatch.transitions.documentPurchaseTransition.create(document, identityContractNonce, price)
+    const transition = new sdk.wasm.DocumentPurchaseTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
 
     const batch = await sdk.documentsBatch.create(transition, identity)
 
@@ -82,7 +82,7 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document replace transition', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
 
-    const transition = await sdk.documentsBatch.transitions.documentReplaceTransition.create(document, identityContractNonce)
+    const transition = new sdk.wasm.DocumentReplaceTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
 
     const batch = await sdk.documentsBatch.create(transition, identity)
 
@@ -97,7 +97,7 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document transfer transition', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
 
-    const transition = await sdk.documentsBatch.transitions.documentTransferTransition.create(document, identityContractNonce, recipient)
+    const transition = new sdk.wasm.DocumentTransferTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), recipient)
 
     const batch = await sdk.documentsBatch.create(transition, identity)
 
@@ -112,7 +112,7 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document update price transition', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
 
-    const transition = await sdk.documentsBatch.transitions.documentUpdatePriceTransition.create(document, identityContractNonce, price)
+    const transition = new sdk.wasm.DocumentUpdatePriceTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
 
     const batch = await sdk.documentsBatch.create(transition, identity)
 
@@ -139,12 +139,12 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from mixed input', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
 
-    const transitionCreate = await sdk.documentsBatch.transitions.documentCreateTransition.create(document, identityContractNonce)
-    const transitionDelete = await sdk.documentsBatch.transitions.documentDeleteTransition.create(document, identityContractNonce)
-    const transitionPurchase = await sdk.documentsBatch.transitions.documentPurchaseTransition.create(document, identityContractNonce, price)
-    const transitionReplace = await sdk.documentsBatch.transitions.documentReplaceTransition.create(document, identityContractNonce)
-    const transitionTransfer = await sdk.documentsBatch.transitions.documentTransferTransition.create(document, identityContractNonce, recipient)
-    const transitionUpdatePrice = await sdk.documentsBatch.transitions.documentUpdatePriceTransition.create(document, identityContractNonce, price)
+    const transitionCreate = new sdk.wasm.DocumentCreateTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
+    const transitionDelete = new sdk.wasm.DocumentDeleteTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
+    const transitionPurchase = new sdk.wasm.DocumentPurchaseTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
+    const transitionReplace = new sdk.wasm.DocumentReplaceTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
+    const transitionTransfer = new sdk.wasm.DocumentTransferTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), recipient)
+    const transitionUpdatePrice = new sdk.wasm.DocumentUpdatePriceTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
 
     const batch = await sdk.documentsBatch.create([document, transitionCreate, transitionDelete, transitionPurchase, transitionReplace, transitionTransfer, transitionUpdatePrice], identity, { identityContractNonce: BigInt(1) })
 

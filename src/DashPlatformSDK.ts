@@ -50,12 +50,6 @@ import createDataContractTransition from './dataContracts/transitions/createData
 import updateDataContractTransition from './dataContracts/transitions/updateDataContractTransition'
 import createDataContract from './dataContracts/create'
 import { createBatch } from './documents/documentsBatch/createBatch'
-import createDocumentCreateTransition from './documents/transitions/createDocumentCreateTransition'
-import createDocumentDeleteTransition from './documents/transitions/createDocumentDeleteTransition'
-import createDocumentPurchaseTransition from './documents/transitions/createDocumentPurchaseTransition'
-import createDocumentReplaceTransition from './documents/transitions/createDocumentReplaceTransition'
-import createDocumentUpdatePriceTransition from './documents/transitions/createDocumentUpdatePriceTransition'
-import createDocumentTransferTransition from './documents/transitions/createDocumentTransferTransition'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -93,27 +87,7 @@ export default class DashPlatformSDK {
   }
 
   documentsBatch: DocumentsBatchController = {
-    create: createBatch.bind(this),
-    transitions: {
-      documentCreateTransition: {
-        create: createDocumentCreateTransition.bind(this)
-      },
-      documentDeleteTransition: {
-        create: createDocumentDeleteTransition.bind(this)
-      },
-      documentPurchaseTransition: {
-        create: createDocumentPurchaseTransition.bind(this)
-      },
-      documentReplaceTransition: {
-        create: createDocumentReplaceTransition.bind(this)
-      },
-      documentUpdatePriceTransition: {
-        create: createDocumentUpdatePriceTransition.bind(this)
-      },
-      documentTransferTransition: {
-        create: createDocumentTransferTransition.bind(this)
-      }
-    }
+    create: createBatch.bind(this)
   }
 
   names: NamesController = {
