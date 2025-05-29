@@ -40,7 +40,12 @@ import walletToIdentityKey from './keyPair/walletToIdentityKey'
 import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
 import createDataContractTransition from './dataContracts/transitions/createDataContractTransition'
 import updateDataContractTransition from './dataContracts/transitions/updateDataContractTransition'
-import { createBatch } from './stateTransitions/documentsBatch/createBatch'
+import documentCreateTransition from './stateTransitions/documentsBatch/create'
+import documentReplaceTransition from './stateTransitions/documentsBatch/replace'
+import documentDeleteTransition from './stateTransitions/documentsBatch/delete'
+import documentPurchaseTransition from './stateTransitions/documentsBatch/purchase'
+import documentUpdatePriceTransition from './stateTransitions/documentsBatch/updatePrice'
+import documentTransferTransition from './stateTransitions/documentsBatch/transfer'
 import getDocument from './documents/get'
 import createDocument from './documents/create'
 
@@ -158,7 +163,12 @@ export interface DataContractsController {
 }
 
 export interface DocumentsBatchController {
-  create: typeof createBatch
+  create: typeof documentCreateTransition
+  delete: typeof documentDeleteTransition
+  purchase: typeof documentPurchaseTransition
+  replace: typeof documentReplaceTransition
+  transfer: typeof documentTransferTransition
+  updatePrice: typeof documentUpdatePriceTransition
 }
 
 export interface DocumentsController {

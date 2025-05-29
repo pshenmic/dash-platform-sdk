@@ -33,9 +33,7 @@ export async function createBatch (
     signature?: Uint8Array | null
   }
 ): Promise<StateTransitionWASM> {
-  let transitions: DocumentTransitionWASM[]
-
-  transitions = [convertToTransition.bind(this)(inputs, opts?.identityContractNonce)]
+  const transitions: DocumentTransitionWASM[] = [convertToTransition.bind(this)(inputs, opts?.identityContractNonce)]
 
   const signature: Uint8Array | undefined = opts?.signature != null ? opts?.signature : undefined
 

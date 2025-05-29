@@ -1,11 +1,7 @@
 import { DashPlatformSDK } from '../../src'
 import {
-  DocumentCreateTransitionWASM,
-  DocumentDeleteTransitionWASM,
-  DocumentPurchaseTransitionWASM, DocumentReplaceTransitionWASM,
-  DocumentsBatchWASM, DocumentTransferTransitionWASM, DocumentUpdatePriceTransitionWASM, StateTransitionWASM
+  StateTransitionWASM
 } from 'pshenmic-dpp'
-import {create} from "dashhd";
 
 let sdk: DashPlatformSDK
 
@@ -36,77 +32,50 @@ describe('DocumentsBatch', () => {
   })
 
   test('should be able to create document batch from document create transition', async () => {
+    const document = await sdk.documents.create(dataContract, documentType, data, BigInt(1), identity)
 
-    const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+    const stateTransitions = await sdk.stateTransitions.documentsBatch.create(document, identityContractNonce)
 
-    const transition = new sdk.wasm.DocumentCreateTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
-
-    const batch = await sdk.stateTransitions.documentsBatch.create(transition, identity)
-
-    expect(transition).toEqual(expect.any(DocumentCreateTransitionWASM))
-    expect(batch).toEqual(expect.any(StateTransitionWASM))
+    expect(stateTransitions).toEqual(expect.any(StateTransitionWASM))
   })
 
   test('should be able to create document batch from document delete transition', async () => {
-    const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+    const document = await sdk.documents.create(dataContract, documentType, data, BigInt(1), identity)
 
-    const transition = new sdk.wasm.DocumentDeleteTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
+    const stateTransitions = await sdk.stateTransitions.documentsBatch.delete(document, identityContractNonce)
 
-    const batch = await sdk.stateTransitions.documentsBatch.create(transition, identity)
-
-    expect(transition).toEqual(expect.any(DocumentDeleteTransitionWASM))
-    expect(batch).toEqual(expect.any(StateTransitionWASM))
+    expect(stateTransitions).toEqual(expect.any(StateTransitionWASM))
   })
 
   test('should be able to create document batch from document purchase transition', async () => {
-    const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+    const document = await sdk.documents.create(dataContract, documentType, data, BigInt(1), identity)
 
-    const transition = new sdk.wasm.DocumentPurchaseTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
+    const stateTransition = await sdk.stateTransitions.documentsBatch.purchase(document, recipient, identityContractNonce, price)
 
-    const batch = await sdk.stateTransitions.documentsBatch.create(document, identity)
-
-    expect(transition).toEqual(expect.any(DocumentPurchaseTransitionWASM))
-    expect(batch).toEqual(expect.any(StateTransitionWASM))
+    expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
   })
 
   test('should be able to create document batch from document replace transition', async () => {
-    const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+    const document = await sdk.documents.create(dataContract, documentType, data, BigInt(1), identity)
 
-    const transition = new sdk.wasm.DocumentReplaceTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
+    const stateTransition = await sdk.stateTransitions.documentsBatch.replace(document, identityContractNonce)
 
-    const batch = await sdk.stateTransitions.documentsBatch.create(transition, identity)
-
-    expect(transition).toEqual(expect.any(DocumentReplaceTransitionWASM))
-    expect(batch).toEqual(expect.any(StateTransitionWASM))
+    expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
   })
 
   test('should be able to create document batch from document transfer transition', async () => {
-    const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+    const document = await sdk.documents.create(dataContract, documentType, data, BigInt(1), identity)
 
-    const transition = new sdk.wasm.DocumentTransferTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), recipient)
+    const stateTransition = await sdk.stateTransitions.documentsBatch.transfer(document, identityContractNonce, recipient)
 
-    const batch = await sdk.stateTransitions.documentsBatch.create(transition, identity)
-
-    expect(transition).toEqual(expect.any(DocumentTransferTransitionWASM))
-    expect(batch).toEqual(expect.any(StateTransitionWASM))
+    expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
   })
 
   test('should be able to create document batch from document update price transition', async () => {
-    const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+    const document = await sdk.documents.create(dataContract, documentType, data, BigInt(1), identity)
 
-    const transition = new sdk.wasm.DocumentUpdatePriceTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
+    const stateTransition = await sdk.stateTransitions.documentsBatch.updatePrice(document, identityContractNonce, price)
 
-    const batch = await sdk.stateTransitions.documentsBatch.create(transition, identity)
-
-    expect(transition).toEqual(expect.any(DocumentUpdatePriceTransitionWASM))
-    expect(batch).toEqual(expect.any(StateTransitionWASM))
-  })
-
-  test('should be able to create document batch from document', async () => {
-    const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
-
-    const batch = await sdk.stateTransitions.documentsBatch.create(document, identity, { identityContractNonce: BigInt(1) })
-
-    expect(batch).toEqual(expect.any(StateTransitionWASM))
+    expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
   })
 })

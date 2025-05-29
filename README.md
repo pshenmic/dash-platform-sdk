@@ -225,12 +225,7 @@ console.log(document)
 
 ### Documents Batch
 #### Create Documents Batch
-This method allows to create DocumentsBatchWASM from: 
-DocumentWASM, DocumentTransitionWASM, DocumentCreateTransitionWASM, 
-DocumentDeleteTransitionWASM, DocumentPurchaseTransitionWASM,
-DocumentReplaceTransitionWASM, DocumentTransferTransitionWASM,
-DocumentUpdatePriceTransitionWASM and array with any of this types
-
+This method allows to create DocumentsBatchWASM
 
 ```javascript
 const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
@@ -245,9 +240,12 @@ const recipient = '8VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
 
 const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
 
-const transitionCreate = new sdk.wasm.DocumentCreateTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
-
-const batch = await sdk.stateTransitions.documentsBatch.create(transitionCreate, identity)
+const transitionCreate = await sdk.stateTransitions.documentsBatch.create(document, identityContractNonce)
+const transitionDelete = await sdk.stateTransitions.documentsBatch.delete(document, identityContractNonce)
+const transitionPurchase = await sdk.stateTransitions.documentsBatch.purchase(document, recipient, identityContractNonce, price)
+const transitionReplace = await sdk.stateTransitions.documentsBatch.replace(document, identityContractNonce)
+const transitionTransfer = await sdk.stateTransitions.documentsBatch.transfer(document, identityContractNonce, recipient)
+const transitionUpdatePrice = await sdk.stateTransitions.documentsBatch.updatePrice(document, identityContractNonce, price)
 ```
 
 ### Identities
