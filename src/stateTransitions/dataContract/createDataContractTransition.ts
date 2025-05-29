@@ -1,9 +1,16 @@
-import { DataContractCreateTransitionWASM, DataContractWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import {
+  DataContractCreateTransitionWASM,
+  DataContractWASM,
+  PlatformVersionWASM,
+  StateTransitionWASM
+} from 'pshenmic-dpp'
 
 export default async function createDataContractTransition (
   dataContract: DataContractWASM,
   identityNonce: bigint,
   platformVersion: PlatformVersionWASM | undefined = PlatformVersionWASM.PLATFORM_V1
-): Promise<DataContractCreateTransitionWASM> {
-  return new this.wasm.DataContractCreateTransitionWASM(dataContract, identityNonce, platformVersion)
+): Promise<StateTransitionWASM> {
+  const dataContractTransition =  new this.wasm.DataContractCreateTransitionWASM(dataContract, identityNonce, platformVersion)
+
+  return dataContractTransition.toStateTransition()
 }
