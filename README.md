@@ -140,7 +140,7 @@ const config = {
 
 const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, config, PlatformVersionWASM.PLATFORM_V1)
 
-const transition = await sdk.dataContracts.transitions.createTransition(dataContract, identityNonce)
+const transition = await sdk.stateTransitions.dataContract.createTransition(dataContract, identityNonce)
 ```
 
 #### Data Contract Update Transition
@@ -180,7 +180,7 @@ const config = {
 
 const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, config, PlatformVersionWASM.PLATFORM_V1)
 
-const transition = await sdk.dataContracts.transitions.updateTransition(dataContract, identityNonce)
+const transition = await sdk.stateTransitions.dataContract.updateTransition(dataContract, identityNonce)
 ```
 
 ###  Documents
@@ -252,7 +252,7 @@ const transitionReplace = new sdk.wasm.DocumentReplaceTransitionWASM(document, i
 const transitionTransfer = new sdk.wasm.DocumentTransferTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), recipient)
 const transitionUpdatePrice = new sdk.wasm.DocumentUpdatePriceTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
 
-const batch = await sdk.documentsBatch.create([document, transitionCreate, transitionDelete, transitionPurchase, transitionReplace, transitionTransfer, transitionUpdatePrice], identity, {identityContractNonce: BigInt(1)})
+const batch = await sdk.stateTransitions.documentsBatch.create([document, transitionCreate, transitionDelete, transitionPurchase, transitionReplace, transitionTransfer, transitionUpdatePrice], identity, {identityContractNonce: BigInt(1)})
 ```
 
 ### Identities
