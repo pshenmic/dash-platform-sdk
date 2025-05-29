@@ -37,9 +37,18 @@ export async function createBatch (
   let transitions: DocumentTransitionWASM[] = []
 
   if (inputs instanceof Array) {
+    let nonce = opts?.identityContractNonce ?? BigInt(0)
+
     transitions = inputs.map(
-      (input: DocumentWASM | DocumentTransitionWASM | DocumentTransitionLike): DocumentTransitionWASM =>
-        convertToTransition.bind(this)(input, opts?.identityContractNonce)
+      (input: DocumentWASM | DocumentTransitionWASM | DocumentTransitionLike): DocumentTransitionWASM => {
+        const transition = convertToTransition.bind(this)(input, opts?.identityContractNonce)
+
+        if(input instanceof DocumentWASM) {
+            nonce = nonce + BigInt(1)
+        }
+
+        return transition
+      }
     )
   } else {
     transitions = [convertToTransition.bind(this)(inputs, opts?.identityContractNonce)]
