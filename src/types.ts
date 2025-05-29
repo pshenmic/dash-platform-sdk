@@ -33,8 +33,8 @@ import getIdentityPublicKeys from './identities/getIdentityPublicKeys'
 import waitForStateTransitionResult from './stateTransitions/waitForStateTransitionResult'
 import walletToIdentityKey from './keyPair/walletToIdentityKey'
 import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
-import createDataContractTransition from './dataContracts/transitions/createDataContractTransition'
-import updateDataContractTransition from './dataContracts/transitions/updateDataContractTransition'
+import createDataContractTransition from './stateTransitions/transitions/createDataContractTransition'
+import updateDataContractTransition from './stateTransitions/transitions/updateDataContractTransition'
 
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
 
