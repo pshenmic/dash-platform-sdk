@@ -40,7 +40,7 @@ import walletToIdentityKey from './keyPair/walletToIdentityKey'
 import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
 import createDataContractTransition from './dataContracts/transitions/createDataContractTransition'
 import updateDataContractTransition from './dataContracts/transitions/updateDataContractTransition'
-import { createBatch } from './documents/documentsBatch/createBatch'
+import { createBatch } from './stateTransitions/documentsBatch/createBatch'
 import getDocument from './documents/get'
 import createDocument from './documents/create'
 

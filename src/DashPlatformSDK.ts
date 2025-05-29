@@ -49,7 +49,7 @@ import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
 import createDataContractTransition from './dataContracts/transitions/createDataContractTransition'
 import updateDataContractTransition from './dataContracts/transitions/updateDataContractTransition'
 import createDataContract from './dataContracts/create'
-import { createBatch } from './documents/documentsBatch/createBatch'
+import { createBatch } from './stateTransitions/documentsBatch/createBatch'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',

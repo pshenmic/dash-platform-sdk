@@ -246,13 +246,8 @@ const recipient = '8VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
 const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
 
 const transitionCreate = new sdk.wasm.DocumentCreateTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
-const transitionDelete = new sdk.wasm.DocumentDeleteTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
-const transitionPurchase = new sdk.wasm.DocumentPurchaseTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
-const transitionReplace = new sdk.wasm.DocumentReplaceTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
-const transitionTransfer = new sdk.wasm.DocumentTransferTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), recipient)
-const transitionUpdatePrice = new sdk.wasm.DocumentUpdatePriceTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
 
-const batch = await sdk.stateTransitions.documentsBatch.create([document, transitionCreate, transitionDelete, transitionPurchase, transitionReplace, transitionTransfer, transitionUpdatePrice], identity, {identityContractNonce: BigInt(1)})
+const batch = await sdk.stateTransitions.documentsBatch.create(transitionCreate, identity)
 ```
 
 ### Identities
