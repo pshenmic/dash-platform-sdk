@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
-    "outFile": "dist/index.d.ts",
+    "outDir": "build",
     "allowJs": false,
     "target": "es5",
     "declaration": true,
     "strictNullChecks": true,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": false
   },
-  "include": ["./src/types.ts"]
+  "include": ["./src/index.ts"]
 }
