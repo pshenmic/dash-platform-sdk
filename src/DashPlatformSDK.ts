@@ -4,8 +4,8 @@ import createDocument from './documents/create'
 import getDataContractByIdentifier from './dataContracts/getByIdentifier'
 import getIdentityByIdentifier from './identities/getByIdentifier'
 import getByPublicKeyHash from './identities/getByPublicKeyHash'
-import * as wasm from 'pshenmic-dpp'
-import wasmBytes from 'pshenmic-dpp/dist/wasm/pshenmic_dpp_bg'
+import * as dpp from 'pshenmic-dpp'
+import dppWasmBytes from 'pshenmic-dpp/dist/wasm/pshenmic_dpp_bg'
 import getIdentityContractNonce from './identities/getIdentityContractNonce'
 import getIdentityNonce from './identities/getIdentityNonce'
 import getIdentityPublicKeys from './identities/getIdentityPublicKeys'
@@ -49,12 +49,12 @@ import mnemonicToIdentityKey from './keyPair/mnemonicToIdentityKey'
 import createDataContractTransition from './stateTransitions/dataContract/createDataContractTransition'
 import updateDataContractTransition from './stateTransitions/dataContract/updateDataContractTransition'
 import createDataContract from './dataContracts/create'
-import documentCreateTransition from './stateTransitions/documentsBatch/create'
-import documentReplaceTransition from './stateTransitions/documentsBatch/replace'
-import documentDeleteTransition from './stateTransitions/documentsBatch/delete'
-import documentPurchaseTransition from './stateTransitions/documentsBatch/purchase'
-import documentUpdatePriceTransition from './stateTransitions/documentsBatch/updatePrice'
-import documentTransferTransition from './stateTransitions/documentsBatch/transfer'
+import documentCreateTransition from './stateTransitions/batch/document/create'
+import documentReplaceTransition from './stateTransitions/batch/document/replace'
+import documentDeleteTransition from './stateTransitions/batch/document/delete'
+import documentPurchaseTransition from './stateTransitions/batch/document/purchase'
+import documentUpdatePriceTransition from './stateTransitions/batch/document/updatePrice'
+import documentTransferTransition from './stateTransitions/batch/document/transfer'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -63,19 +63,19 @@ const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
 
 export default class DashPlatformSDK {
   constructor (options: { network: 'testnet' | 'mainnet', dapiUrl?: string } = DEFAULT_OPTIONS) {
-    const uint8array = base64.parse(wasmBytes.replaceAll(' ', ''))
-    wasm.initSync({ module: uint8array })
+    const uint8array = base64.parse(dppWasmBytes.replaceAll(' ', ''))
+    dpp.initSync({ module: uint8array })
 
     this.network = options.network
 
     this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
 
-    this.wasm = wasm
+    this.dpp = dpp
   }
 
   network: 'testnet' | 'mainnet'
   grpcPool: GRPCConnectionPool
-  wasm: DashPlatformProtocolWASM
+  dpp: DashPlatformProtocolWASM
 
   dataContracts: DataContractsController = {
     create: createDataContract.bind(this),

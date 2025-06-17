@@ -11,7 +11,7 @@ describe('Document', () => {
   test('should be able to create document', async () => {
     const dataContract = '6QMfQTdKpC3Y9uWBcTwXeY3KdzRLDqASUsDnQ4MEc9XC'
     const identity = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
-    const identityContractNonce = BigInt(1)
+    const revision = BigInt(1)
     const documentType = 'pool'
     const data = {
       name: 'MyPool',
@@ -20,7 +20,7 @@ describe('Document', () => {
       description: 'test pool'
     }
 
-    const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
+    const document = await sdk.documents.create(dataContract, documentType, data, identity, revision)
 
     expect(document).toEqual(expect.any(DocumentWASM))
   })

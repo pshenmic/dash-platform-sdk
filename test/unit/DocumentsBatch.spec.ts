@@ -32,7 +32,7 @@ describe('DocumentsBatch', () => {
   })
 
   test('should be able to create document batch from document create transition', async () => {
-    const document = await sdk.documents.create(dataContract, documentType, data, BigInt(1), identity)
+    const document = await sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
 
     const stateTransitions = await sdk.stateTransitions.documentsBatch.create(document, identityContractNonce)
 
@@ -40,7 +40,7 @@ describe('DocumentsBatch', () => {
   })
 
   test('should be able to create document batch from document delete transition', async () => {
-    const document = await sdk.documents.create(dataContract, documentType, data, BigInt(1), identity)
+    const document = await sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
 
     const stateTransitions = await sdk.stateTransitions.documentsBatch.delete(document, identityContractNonce)
 
@@ -48,7 +48,7 @@ describe('DocumentsBatch', () => {
   })
 
   test('should be able to create document batch from document purchase transition', async () => {
-    const document = await sdk.documents.create(dataContract, documentType, data, BigInt(1), identity)
+    const document = await sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
 
     const stateTransition = await sdk.stateTransitions.documentsBatch.purchase(document, recipient, identityContractNonce, price)
 
@@ -56,7 +56,7 @@ describe('DocumentsBatch', () => {
   })
 
   test('should be able to create document batch from document replace transition', async () => {
-    const document = await sdk.documents.create(dataContract, documentType, data, BigInt(1), identity)
+    const document = await sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
 
     const stateTransition = await sdk.stateTransitions.documentsBatch.replace(document, identityContractNonce)
 
@@ -64,7 +64,7 @@ describe('DocumentsBatch', () => {
   })
 
   test('should be able to create document batch from document transfer transition', async () => {
-    const document = await sdk.documents.create(dataContract, documentType, data, BigInt(1), identity)
+    const document = await sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
 
     const stateTransition = await sdk.stateTransitions.documentsBatch.transfer(document, identityContractNonce, recipient)
 
@@ -72,7 +72,7 @@ describe('DocumentsBatch', () => {
   })
 
   test('should be able to create document batch from document update price transition', async () => {
-    const document = await sdk.documents.create(dataContract, documentType, data, BigInt(1), identity)
+    const document = await sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
 
     const stateTransition = await sdk.stateTransitions.documentsBatch.updatePrice(document, identityContractNonce, price)
 

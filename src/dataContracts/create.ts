@@ -10,7 +10,7 @@ export default async function createDataContract (
   config?: DataContractConfig,
   platformVersion: PlatformVersionWASM | undefined = PlatformVersionWASM.PLATFORM_V1
 ): Promise<DataContractWASM> {
-  const dataContract = new this.wasm.DataContractWASM(
+  const dataContract = new this.dpp.DataContractWASM(
     ownerId,
     identityNonce,
     schema,
