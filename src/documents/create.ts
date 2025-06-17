@@ -6,20 +6,19 @@ import { IdentifierLike } from '../types'
  * @param dataContractId {IdentifierLike}
  * @param documentType {string}
  * @param data {object}
- * @param revision {bigint}
  * @param owner {IdentifierLike}
  */
 export default async function createDocument (
   dataContractId: IdentifierLike,
   documentType: string,
   data: object,
-  revision: bigint,
-  owner: IdentifierLike
+  owner: IdentifierLike,
+  revision?: BigInt
 ): Promise<DocumentWASM> {
-  return new this.wasm.DocumentWASM(
+  return new this.dpp.DocumentWASM(
     data,
     documentType,
-    revision,
+    BigInt(1),
     dataContractId,
     owner
   )

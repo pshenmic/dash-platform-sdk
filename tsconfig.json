@@ -5,6 +5,7 @@
     "target": "es5",
     "declaration": true,
     "strictNullChecks": true,
+    "emitDeclarationOnly": false
   },
-  "include": ["./src/**/*", "./test/**/*"]
+  "include": ["./src/index.ts"]
 }

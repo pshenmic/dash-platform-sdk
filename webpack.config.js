@@ -38,7 +38,6 @@ module.exports = {
     globalObject: 'this',
     path: path.resolve(__dirname, 'dist'),
     library: 'DashPlatformSDK',
-    libraryExport: 'default',
     libraryTarget: 'umd'
   }
 }
