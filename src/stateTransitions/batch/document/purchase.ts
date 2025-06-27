@@ -2,6 +2,8 @@ import { DocumentWASM, StateTransitionWASM } from 'pshenmic-dpp'
 import {IdentifierLike} from "../../../types";
 
 export default async function (document: DocumentWASM, ownerId: IdentifierLike, identityContractNonce: bigint, price: bigint): Promise<StateTransitionWASM> {
+  document.setRevision(document.getRevision()! + BigInt(1))
+
   const deleteTransition = new this.dpp.DocumentPurchaseTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
 
   const documentTransition = deleteTransition.toDocumentTransition()
