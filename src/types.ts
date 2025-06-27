@@ -16,7 +16,7 @@ import {
 import { Utils as DashHdUtils } from 'dashhd'
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
 
-export {DashPlatformSDK} from './index'
+export { DashPlatformSDK } from './index'
 export type DocumentTransitionLike = DocumentCreateTransitionWASM | DocumentDeleteTransitionWASM | DocumentPurchaseTransitionWASM | DocumentReplaceTransitionWASM | DocumentTransferTransitionWASM | DocumentUpdatePriceTransitionWASM
 
 export type MasternodeList = Record<string, MasternodeInfo>
@@ -202,7 +202,7 @@ export interface Signer {
 }
 
 export interface AbstractSigner {
-  connect() : void
-  getCurrentIdentity() : IdentityWASM
-  signStateTransition(stateTransition: StateTransitionWASM, identity: IdentityWASM): void
+  connect: () => void
+  getCurrentIdentity: () => IdentityWASM
+  signStateTransition: (stateTransition: StateTransitionWASM, identity: IdentityWASM) => void
 }
