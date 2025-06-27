@@ -4,7 +4,7 @@ export default async function (document: DocumentWASM, identityContractNonce: bi
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.setRevision(document.getRevision()! + BigInt(1))
 
-  const deleteTransition = new this.dpp.DocumentDeleteTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
+  const deleteTransition = new this.dpp.DocumentDeleteTransitionWASM(document, identityContractNonce)
 
   const documentTransition = deleteTransition.toDocumentTransition()
 

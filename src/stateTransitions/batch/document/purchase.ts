@@ -5,7 +5,7 @@ export default async function (document: DocumentWASM, ownerId: IdentifierLike, 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.setRevision(document.getRevision()! + BigInt(1))
 
-  const deleteTransition = new this.dpp.DocumentPurchaseTransitionWASM(document, identityContractNonce, document.getDocumentTypeName(), price)
+  const deleteTransition = new this.dpp.DocumentPurchaseTransitionWASM(document, identityContractNonce, price)
 
   const documentTransition = deleteTransition.toDocumentTransition()
 
