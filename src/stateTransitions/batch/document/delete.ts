@@ -1,6 +1,8 @@
 import { DocumentWASM, StateTransitionWASM } from 'pshenmic-dpp'
 
 export default async function (document: DocumentWASM, identityContractNonce: bigint): Promise<StateTransitionWASM> {
+  document.setRevision(document.getRevision()! + BigInt(1))
+
   const deleteTransition = new this.dpp.DocumentDeleteTransitionWASM(document, identityContractNonce, document.getDocumentTypeName())
 
   const documentTransition = deleteTransition.toDocumentTransition()
