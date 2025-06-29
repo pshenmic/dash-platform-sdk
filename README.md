@@ -62,7 +62,7 @@ Queries a DAPI for data contract and returns a IdentityWASM instance
 ```javascript
 const dataContractIdentifier = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
-const dataContract = await sdk.dataContracts.getByIdentifier(dataContractIdentifier)
+const dataContract = await sdk.dataContracts.getIdentityByIdentifier(dataContractIdentifier)
 ```
 
 #### Create Data Contract
@@ -254,7 +254,7 @@ Searches an identity by identifier (base58) and returns an IdentityWASM instance
 ```javascript
 const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
 
-const identity = await sdk.identities.getByIdentifier(identifier)
+const identity = await sdk.identities.getIdentityByIdentifier(identifier)
 
 console.log(identity)
 ```
@@ -263,7 +263,7 @@ console.log(identity)
 ```javascript
 const publicKeyHash = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
 
-const identity = await sdk.identities.getByPublicKeyHash(publicKeyHash)
+const identity = await sdk.identities.getIdentityByPublicKeyHash(publicKeyHash)
 
 console.log(identity)
 ```

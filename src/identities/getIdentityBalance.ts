@@ -2,7 +2,7 @@ import { GetIdentityBalanceRequest } from '../../proto/generated/platform'
 import { IdentifierWASM } from 'pshenmic-dpp'
 import { IdentifierLike } from '../types'
 
-export default async function getBalance (identifier: IdentifierLike): Promise<bigint> {
+export default async function getIdentityBalance (identifier: IdentifierLike): Promise<bigint> {
   const id = new IdentifierWASM(identifier)
 
   const getIdentityBalanceRequest = GetIdentityBalanceRequest.fromPartial({
