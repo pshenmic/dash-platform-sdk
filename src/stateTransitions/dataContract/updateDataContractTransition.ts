@@ -1,4 +1,5 @@
 import {
+  DataContractUpdateTransitionWASM,
   DataContractWASM,
   PlatformVersionWASM,
   StateTransitionWASM
@@ -9,7 +10,7 @@ export default async function updateDataContractTransition (
   identityNonce: bigint,
   platformVersion: PlatformVersionWASM | undefined = PlatformVersionWASM.PLATFORM_V1
 ): Promise<StateTransitionWASM> {
-  const dataContractTransition = new this.dpp.DataContractUpdateTransitionWASM(dataContract, identityNonce, platformVersion)
+  const dataContractTransition = new DataContractUpdateTransitionWASM(dataContract, identityNonce, platformVersion)
 
   return dataContractTransition.toStateTransition()
 }

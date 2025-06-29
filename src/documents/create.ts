@@ -15,7 +15,7 @@ export default async function createDocument (
   owner: IdentifierLike,
   revision?: BigInt
 ): Promise<DocumentWASM> {
-  return new this.dpp.DocumentWASM(
+  return new DocumentWASM(
     data,
     documentType,
     BigInt(1),

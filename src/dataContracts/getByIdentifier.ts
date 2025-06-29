@@ -18,5 +18,5 @@ export default async function getByIdentifier (identifier: IdentifierLike): Prom
     throw new Error(`Data Contract with identifier ${id.base58()} not found`)
   }
 
-  return this.dpp.DataContractWASM.fromBytes(dataContract, true, PlatformVersionWASM.PLATFORM_V1)
+  return DataContractWASM.fromBytes(dataContract, true, PlatformVersionWASM.PLATFORM_V1)
 }

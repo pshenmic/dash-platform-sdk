@@ -15,5 +15,5 @@ export default async function getIdentityPublicKeys (identifier: IdentifierLike)
   const { keys } = v0
   const { keysBytes } = keys
 
-  return keysBytes.map((bytes) => this.dpp.IdentityPublicKeyWASM.fromBytes(bytes))
+  return keysBytes.map((bytes) => IdentityPublicKeyWASM.fromBytes(bytes))
 }
