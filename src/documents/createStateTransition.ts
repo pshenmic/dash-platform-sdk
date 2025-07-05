@@ -23,7 +23,7 @@ export interface DocumentBatchTransitionUpdatePriceParams {
 
 export type CreateStateTransitionDocumentBatchParams = DocumentBatchTransitionPurchaseParams | DocumentBatchTransitionTransferParams | DocumentBatchTransitionUpdatePriceParams
 
-const batchTypesMap = {
+const documentBatchTypesMap = {
   [BatchType.Create]: DocumentCreateTransitionWASM,
   [BatchType.Replace]: DocumentReplaceTransitionWASM,
   [BatchType.Delete]: DocumentDeleteTransitionWASM,
@@ -33,7 +33,7 @@ const batchTypesMap = {
 }
 
 export default async function createStateTransition (document: DocumentWASM, type: BatchType, identityContractNonce: bigint, params?: CreateStateTransitionDocumentBatchParams | undefined): Promise<StateTransitionWASM> {
-  const TransitionClass = batchTypesMap[type]
+  const TransitionClass = documentBatchTypesMap[type]
 
   if (TransitionClass == null) {
     throw new Error(`Unknown batch type: ${type}`)
