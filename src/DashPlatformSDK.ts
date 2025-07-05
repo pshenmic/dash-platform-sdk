@@ -1,13 +1,13 @@
-import {DashPlatformProtocolWASM} from 'pshenmic-dpp'
+import { DashPlatformProtocolWASM } from 'pshenmic-dpp'
 import GRPCConnectionPool from './grpcConnectionPool'
-import {IdentitiesController} from "./identities";
-import {StateTransitionsController} from "./stateTransitions/StateTransitionsController";
-import {DocumentsController} from "./documents";
-import {UtilsController} from "./utils";
-import {KeyPairController} from "./keyPair";
-import {NodeController} from "./node";
-import {NamesController} from "./names";
-import {DataContractsController} from "./dataContracts";
+import { IdentitiesController } from './identities'
+import { StateTransitionsController } from './stateTransitions'
+import { DocumentsController } from './documents'
+import { UtilsController } from './utils'
+import { KeyPairController } from './keyPair'
+import { NodeController } from './node'
+import { NamesController } from './names'
+import { DataContractsController } from './dataContracts'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -27,19 +27,20 @@ export default class DashPlatformSDK {
   constructor (options: { network: 'testnet' | 'mainnet', dapiUrl?: string } = DEFAULT_OPTIONS) {
     this.network = options.network
 
-    this.identities = new IdentitiesController()
-    this.documents = new DocumentsController()
     this.utils = new UtilsController()
-    this.keyPair = new KeyPairController()
-    this.node = new NodeController()
-    this.dataContracts = new DataContractsController()
-    this.names = new NamesController()
 
-    this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
+    this.grpcPool = new GRPCConnectionPool(this.network, this.utils, options.dapiUrl)
+
+    this.stateTransitions = new StateTransitionsController(this.grpcPool)
+    this.identities = new IdentitiesController(this.grpcPool, this.utils)
+    this.dataContracts = new DataContractsController(this.grpcPool)
+    this.documents = new DocumentsController(this.grpcPool)
+    this.names = new NamesController(this.grpcPool)
+    this.node = new NodeController(this.grpcPool)
+    this.keyPair = new KeyPairController()
   }
 
   network: 'testnet' | 'mainnet'
   grpcPool: GRPCConnectionPool
   dpp: DashPlatformProtocolWASM
-
 }

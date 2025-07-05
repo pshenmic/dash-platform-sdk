@@ -1,8 +1,9 @@
-import { GetIdentityRequest } from '../../proto/generated/platform'
+import { GetIdentityRequest, GetIdentityResponse_GetIdentityResponseV0 } from '../../proto/generated/platform'
 import { IdentifierWASM, IdentityWASM } from 'pshenmic-dpp'
 import { IdentifierLike } from '../types'
+import GRPCConnectionPool from '../grpcConnectionPool'
 
-export default async function getIdentityByIdentifier (identifier: IdentifierLike): Promise<IdentityWASM> {
+export default async function getIdentityByIdentifier (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<IdentityWASM> {
   const id = new IdentifierWASM(identifier)
   const getIdentityRequest = GetIdentityRequest.fromPartial({
     v0: {
@@ -10,9 +11,9 @@ export default async function getIdentityByIdentifier (identifier: IdentifierLik
     }
   })
 
-  const { v0 } = await this.grpcPool.getClient().getIdentity(getIdentityRequest)
+  const { v0 } = await grpcPool.getClient().getIdentity(getIdentityRequest)
 
-  const { identity } = v0
+  const { identity } = v0 as GetIdentityResponse_GetIdentityResponseV0
 
   if (identity == null) {
     throw new Error(`Identity with identifier ${id.base58()} not found`)

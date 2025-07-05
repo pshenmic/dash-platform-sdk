@@ -4719,10 +4719,10 @@ prop-types@^15.8.1:
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
-pshenmic-dpp@1.0.7-rc.4:
-  version "1.0.7-rc.4"
-  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.0.7-rc.4.tgz#8fce045ea1b77137b94011333d94fe930076d3c0"
-  integrity sha512-kjX3t+d7DHE7OKQZcHcWmzaV7VT8rRh+6/NoxLtw3sdMHX5XQ/KWihHBd8qhdClnDxds9vuui76qfXYN/f8zzA==
+pshenmic-dpp@1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.0.8.tgz#880ee08dc2ddbe17eea87aea5d37df277b44d84c"
+  integrity sha512-Dy0ncF+2CpiYGnkReKGR4GL6Dwe/Hhh77wB9vJmO7p+7bodc26jwjsZokhZIU/rYZ7CvCIL7fVUKf0LYExeWbQ==
 
 punycode@^2.1.0:
   version "2.3.1"

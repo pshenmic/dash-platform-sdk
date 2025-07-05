@@ -1,21 +1,26 @@
-import get from "./get";
-import {IdentifierLike} from "../types";
-import createDocument from "./create";
-import {BatchType, DocumentWASM, IdentifierWASM} from "pshenmic-dpp";
-import createStateTransition, {CreateStateTransitionParams} from "./createStateTransition";
+import get from './get'
+import { IdentifierLike } from '../types'
+import createDocument from './create'
+import { BatchType, DocumentWASM, IdentifierWASM, StateTransitionWASM } from 'pshenmic-dpp'
+import createStateTransition, { CreateStateTransitionDocumentBatchParams } from './createStateTransition'
+import GRPCConnectionPool from '../grpcConnectionPool'
 
 export class DocumentsController {
+  grpcPool: GRPCConnectionPool
 
-    create(dataContractId: IdentifierLike, documentType: string, data: object, owner: IdentifierLike, revision?: bigint) {
-        return createDocument(dataContractId, documentType, data, owner, revision);
-    }
+  constructor (grpcPool: GRPCConnectionPool) {
+    this.grpcPool = grpcPool
+  }
 
-    query(dataContractId: IdentifierLike, documentType: string, where?: ArrayLike<any>, orderBy?: ArrayLike<any>, limit: number | undefined = 100, startAt?: IdentifierWASM, startAfter?: IdentifierWASM) {
-        return get(dataContractId, documentType, where, orderBy, limit, startAt, startAfter);
-    }
+  async create (dataContractId: IdentifierLike, documentType: string, data: object, owner: IdentifierLike, revision?: bigint): Promise<DocumentWASM> {
+    return await createDocument(dataContractId, documentType, data, owner, revision)
+  }
 
-    createStateTransition(document: DocumentWASM, batchType: BatchType, identityContractNonce: bigint, params?: CreateStateTransitionParams) {
-        return createStateTransition(document, batchType, identityContractNonce, params)
-    }
+  async query (dataContractId: IdentifierLike, documentType: string, where?: ArrayLike<any>, orderBy?: ArrayLike<any>, limit: number | undefined = 100, startAt?: IdentifierWASM, startAfter?: IdentifierWASM): Promise<DocumentWASM[]> {
+    return await get(this.grpcPool, dataContractId, documentType, where, orderBy, limit, startAt, startAfter)
+  }
 
+  async createStateTransition (document: DocumentWASM, batchType: BatchType, identityContractNonce: bigint, params?: CreateStateTransitionDocumentBatchParams): Promise<StateTransitionWASM> {
+    return await createStateTransition(document, batchType, identityContractNonce, params)
+  }
 }

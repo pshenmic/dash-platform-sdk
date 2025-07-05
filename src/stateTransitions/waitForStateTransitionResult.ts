@@ -1,5 +1,5 @@
 import { WaitForStateTransitionResultRequest } from '../../proto/generated/platform'
-import {StateTransitionWASM} from "pshenmic-dpp";
+import { StateTransitionWASM } from 'pshenmic-dpp'
 
 export default async function waitForStateTransitionResult (stateTransition: StateTransitionWASM): Promise<void> {
   const waitForStateTransitionResultRequest = WaitForStateTransitionResultRequest.fromPartial({

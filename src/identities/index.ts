@@ -1,30 +1,44 @@
-import getIdentityContractNonce from "./getIdentityContractNonce";
-import getIdentityPublicKeys from "./getIdentityPublicKeys";
-import getIdentityNonce from "./getIdentityNonce";
-import getIdentityBalance from "./getIdentityBalance";
-import getIdentityByPublicKeyHash from "./getIdentityByPublicKeyHash";
-import {IdentifierLike} from "../types";
+import getIdentityContractNonce from './getIdentityContractNonce'
+import getIdentityPublicKeys from './getIdentityPublicKeys'
+import getIdentityNonce from './getIdentityNonce'
+import getIdentityBalance from './getIdentityBalance'
+import getIdentityByPublicKeyHash from './getIdentityByPublicKeyHash'
+import { IdentifierLike } from '../types'
+import GRPCConnectionPool from '../grpcConnectionPool'
+import { UtilsController } from '../utils'
+import getIdentityByIdentifier from './getIdentityByIdentifier'
+import { IdentityPublicKeyWASM, IdentityWASM } from 'pshenmic-dpp'
 
 export class IdentitiesController {
+  grpcPool: GRPCConnectionPool
+  utils: UtilsController
 
-    getIdentityBalance(identifier: IdentifierLike) {
-        return getIdentityBalance(identifier)
-    }
+  constructor (grpcPool: GRPCConnectionPool, utils: UtilsController) {
+    this.grpcPool = grpcPool
+    this.utils = utils
+  }
 
-    getIdentityByPublicKeyHash(hex: string) {
-        return getIdentityByPublicKeyHash(hex)
-    }
+  async getIdentityBalance (identifier: IdentifierLike): Promise<bigint> {
+    return await getIdentityBalance(this.grpcPool, identifier)
+  }
 
-    getIdentityNonce(identifier: IdentifierLike) {
-        return getIdentityNonce(identifier)
-    }
+  async getIdentityByPublicKeyHash (hex: string): Promise<IdentityWASM> {
+    return await getIdentityByPublicKeyHash(this.grpcPool, this.utils, hex)
+  }
 
-    getIdentityContractNonce(identifier: IdentifierLike, dataContract: IdentifierLike) {
-        return getIdentityContractNonce(identifier, dataContract)
-    }
+  async getIdentityByIdentifier (identifier: IdentifierLike): Promise<IdentityWASM> {
+    return await getIdentityByIdentifier(this.grpcPool, identifier)
+  }
 
-    getIdentityPublicKeys(identifier: IdentifierLike) {
-        return getIdentityPublicKeys(identifier)
-    }
+  async getIdentityNonce (identifier: IdentifierLike): Promise<bigint> {
+    return await getIdentityNonce(this.grpcPool, identifier)
+  }
 
+  async getIdentityContractNonce (identifier: IdentifierLike, dataContract: IdentifierLike): Promise<bigint> {
+    return await getIdentityContractNonce(this.grpcPool, identifier, dataContract)
+  }
+
+  async getIdentityPublicKeys (identifier: IdentifierLike): Promise<IdentityPublicKeyWASM[]> {
+    return await getIdentityPublicKeys(this.grpcPool, identifier)
+  }
 }

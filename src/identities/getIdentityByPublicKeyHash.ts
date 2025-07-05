@@ -1,19 +1,20 @@
 import {
-  GetIdentityByPublicKeyHashRequest
+  GetIdentityByPublicKeyHashRequest, GetIdentityByPublicKeyHashResponse_GetIdentityByPublicKeyHashResponseV0
 } from '../../proto/generated/platform'
 import { IdentityWASM } from 'pshenmic-dpp'
-import hexToBytes from '../utils/hexToBytes'
+import GRPCConnectionPool from '../grpcConnectionPool'
+import { UtilsController } from '../utils'
 
-export default async function getIdentityByPublicKeyHash (hex: string): Promise<IdentityWASM> {
+export default async function getIdentityByPublicKeyHash (grpcPool: GRPCConnectionPool, utils: UtilsController, hex: string): Promise<IdentityWASM> {
   const getIdentityByPublicKeyHashRequest = GetIdentityByPublicKeyHashRequest.fromPartial({
     v0: {
-      publicKeyHash: hexToBytes(hex)
+      publicKeyHash: utils.hexToBytes(hex)
     }
   })
 
-  const { v0 } = await this.grpcPool.getClient().getIdentityByPublicKeyHash(getIdentityByPublicKeyHashRequest)
+  const { v0 } = await grpcPool.getClient().getIdentityByPublicKeyHash(getIdentityByPublicKeyHashRequest)
 
-  const { identity } = v0
+  const { identity } = v0 as GetIdentityByPublicKeyHashResponse_GetIdentityByPublicKeyHashResponseV0
 
   if (identity == null) {
     throw new Error(`Identity with public key hash ${hex} not found`)

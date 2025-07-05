@@ -7,8 +7,8 @@ export default async function createDataContract (
   schema: object,
   definitions?: object,
   tokenConfiguration?: object,
-  fullValidation: boolean | undefined = true,
   config?: DataContractConfig,
+  fullValidation: boolean | undefined = true,
   platformVersion: PlatformVersionWASM | undefined = PlatformVersionWASM.PLATFORM_V1
 ): Promise<DataContractWASM> {
   const dataContract = new DataContractWASM(

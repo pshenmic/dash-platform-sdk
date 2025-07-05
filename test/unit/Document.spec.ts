@@ -31,7 +31,9 @@ describe('Document', () => {
 
     const [document] = await sdk.documents.query(dataContract, documentType)
 
-    expect(document.getDataContractId().base58()).toEqual(dataContract)
+    expect(document.createdAtBlockHeight).toEqual(undefined)
+
+    expect(document.dataContractId.base58()).toEqual(dataContract)
     expect(document).toEqual(expect.any(DocumentWASM))
   })
 })

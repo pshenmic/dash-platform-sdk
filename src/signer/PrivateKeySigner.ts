@@ -1,13 +1,16 @@
 import { IdentityWASM, NetworkWASM, PrivateKeyWASM, StateTransitionWASM } from 'pshenmic-dpp'
 import { base64 } from '@scure/base'
-import { AbstractSigner, IdentitiesController } from '../types'
+import { AbstractSigner } from '../types'
+import { IdentitiesController } from '../identities'
 
 export class PrivateKeySigner implements AbstractSigner {
   privateKey: PrivateKeyWASM
   identity: IdentityWASM
   identities: IdentitiesController
 
-  constructor (privateKey: string | PrivateKeyWASM, network?: NetworkWASM | string) {
+  constructor (identitiesController: IdentitiesController, privateKey: string | PrivateKeyWASM, network?: NetworkWASM | string) {
+    this.identities = identitiesController
+
     if (typeof privateKey === 'string') {
       let privateKeyWASM
 
@@ -30,10 +33,9 @@ export class PrivateKeySigner implements AbstractSigner {
       } catch (e) {
       }
 
-      if (!privateKeyWASM) {
+      if (privateKeyWASM == null) {
         throw new Error('Could not decode private key')
       }
-      // @ts-expect-error
     } else if (privateKey?.__type === 'PrivateKeyWASM') {
       this.privateKey = privateKey
     } else {
@@ -42,7 +44,7 @@ export class PrivateKeySigner implements AbstractSigner {
   }
 
   async connect (): Promise<void> {
-    this.identity = await this.identities.getByPublicKeyHash(this.privateKey.getPublicKeyHash())
+    this.identity = await this.identities.getIdentityByPublicKeyHash(this.privateKey.getPublicKeyHash())
   }
 
   getCurrentIdentity (): IdentityWASM {
@@ -53,7 +55,7 @@ export class PrivateKeySigner implements AbstractSigner {
     const [identityPublicKey] = this.identity.getPublicKeys()
       .filter(identityPublicKey => identityPublicKey.getPublicKeyHash() === this.privateKey.getPublicKeyHash())
 
-    if (!identityPublicKey) {
+    if (identityPublicKey == null) {
       throw new Error('Could not find an identity public key of identity matching this private key')
     }
 

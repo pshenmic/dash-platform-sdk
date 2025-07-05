@@ -1,18 +1,22 @@
 import {
-    StateTransitionWASM
-} from "pshenmic-dpp";
-import waitForStateTransitionResult from "./waitForStateTransitionResult";
-import broadcast from "./broadcast";
-
+  StateTransitionWASM
+} from 'pshenmic-dpp'
+import waitForStateTransitionResult from './waitForStateTransitionResult'
+import broadcast from './broadcast'
+import GRPCConnectionPool from '../grpcConnectionPool'
 
 export class StateTransitionsController {
-    broadcast(stateTransition: StateTransitionWASM) {
-        return broadcast(stateTransition);
-    }
+  grpcPool: GRPCConnectionPool
 
-    waitForStateTransitionResult(stateTransition: StateTransitionWASM) {
-        return waitForStateTransitionResult(stateTransition)
-    }
+  constructor (grpcPool: GRPCConnectionPool) {
+    this.grpcPool = grpcPool
+  }
 
+  async broadcast (stateTransition: StateTransitionWASM): Promise<void> {
+    return await broadcast(stateTransition)
+  }
 
+  async waitForStateTransitionResult (stateTransition: StateTransitionWASM): Promise<void> {
+    return await waitForStateTransitionResult(stateTransition)
+  }
 }
