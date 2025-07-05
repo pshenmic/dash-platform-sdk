@@ -17,7 +17,7 @@ describe('Identity', () => {
   test('should be able to get identity by identifier', async () => {
     const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
 
-    const identity = await sdk.identities.getByIdentifier(identifier)
+    const identity = await sdk.identities.getIdentityByIdentifier(identifier)
 
     expect(identity).toEqual(expect.any(IdentityWASM))
   })
@@ -25,7 +25,7 @@ describe('Identity', () => {
   test('should be able to get identity by public key hash', async () => {
     const publicKeyHash = 'c5b7fdfa5731e1b31b1b42c13959756e8db22b3b'
 
-    const identity = await sdk.identities.getByPublicKeyHash(publicKeyHash)
+    const identity = await sdk.identities.getIdentityByPublicKeyHash(publicKeyHash)
 
     expect(identity).toEqual(expect.any(IdentityWASM))
   })
@@ -58,7 +58,7 @@ describe('Identity', () => {
   test('should be able to get balance', async () => {
     const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
 
-    const balance = await sdk.identities.getBalance(identifier)
+    const balance = await sdk.identities.getIdentityBalance(identifier)
 
     expect(balance).toEqual(expect.any(BigInt))
   })

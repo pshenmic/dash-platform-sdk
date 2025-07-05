@@ -6,21 +6,23 @@ export default async function createDataContract (
   identityNonce: bigint,
   schema: object,
   definitions?: object,
-  fullValidation: boolean | undefined = true,
+  tokenConfiguration?: object,
   config?: DataContractConfig,
+  fullValidation: boolean | undefined = true,
   platformVersion: PlatformVersionWASM | undefined = PlatformVersionWASM.PLATFORM_V1
 ): Promise<DataContractWASM> {
-  const dataContract = new this.dpp.DataContractWASM(
+  const dataContract = new DataContractWASM(
     ownerId,
     identityNonce,
     schema,
     definitions,
+    tokenConfiguration,
     fullValidation,
     platformVersion
   )
 
   if (config != null) {
-    dataContract.setConfig(config)
+    dataContract.setConfig(config, platformVersion)
   }
 
   return dataContract

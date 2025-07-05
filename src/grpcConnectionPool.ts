@@ -1,4 +1,4 @@
-import getRandomArrayItem from './utils/getRandomArrayItem'
+import { UtilsController } from './utils'
 import { Channel, Client, createChannel, createClient } from 'nice-grpc-web'
 import { PlatformDefinition } from '../proto/generated/platform'
 import getEvonodeList from './utils/getEvonodeList'
@@ -22,8 +22,11 @@ const seedNodes = {
 
 export default class GRPCConnectionPool {
   channels: Channel[]
+  utils: UtilsController
 
-  constructor (network: 'testnet' | 'mainnet', dapiUrl?: string) {
+  constructor (network: 'testnet' | 'mainnet', utils: UtilsController, dapiUrl?: string) {
+    this.utils = utils
+
     if (typeof dapiUrl === 'string') {
       this.channels = [createChannel(dapiUrl)]
     } else {
@@ -48,7 +51,7 @@ export default class GRPCConnectionPool {
   }
 
   getClient (): Client<PlatformDefinition> {
-    const channel = getRandomArrayItem(this.channels)
+    const channel = this.utils.getRandomArrayItem(this.channels)
     return createClient(PlatformDefinition, channel)
   }
 }
