@@ -28,7 +28,7 @@ export class UtilsController {
     return await getEvonodeList(network)
   }
 
-  getRandomArrayItem (array: any[]): any[] {
+  getRandomArrayItem (array: any[]): any {
     return array[Math.floor((Math.random() * array.length))]
   }
 }
