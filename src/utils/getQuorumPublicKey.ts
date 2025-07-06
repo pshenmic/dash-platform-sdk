@@ -5,7 +5,7 @@ const cache: {
 export async function getQuorumPublicKey(quorumType: number, quorumHash: string) {
     const cached = cache[`${quorumType}_${quorumHash}`]
 
-    if(cached != null) {
+    if (cached != null) {
         return cached
     }
 
@@ -23,7 +23,12 @@ export async function getQuorumPublicKey(quorumType: number, quorumHash: string)
         body: payload
     })
 
+    if (resp.status === 420) {
+        throw new Error('Rate limit on Core RPC')
+    }
+
     const data = await resp.json()
+
     if (data.error) {
         const err = new Error(data.error.message)
         Object.assign(err, data.error)
