@@ -29,7 +29,7 @@ export default class DashPlatformSDK {
 
     this.utils = new UtilsController()
 
-    this.grpcPool = new GRPCConnectionPool(this.network, this.utils, options.dapiUrl)
+    this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
 
     this.stateTransitions = new StateTransitionsController(this.grpcPool)
     this.identities = new IdentitiesController(this.grpcPool, this.utils)

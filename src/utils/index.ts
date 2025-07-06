@@ -2,6 +2,7 @@ import convertToHomographSafeChars from './convertToHomographSafeChars'
 import getEvonodeList from './getEvonodeList'
 import { base58 } from '@scure/base'
 import { MasternodeList } from '../types'
+import getRandomArrayItem from "./getRandomArrayItem";
 
 export class UtilsController {
   base58ToBytes (str: string): Uint8Array<ArrayBufferLike> {
@@ -29,6 +30,6 @@ export class UtilsController {
   }
 
   getRandomArrayItem (array: any[]): any {
-    return array[Math.floor((Math.random() * array.length))]
+    getRandomArrayItem(array)
   }
 }
