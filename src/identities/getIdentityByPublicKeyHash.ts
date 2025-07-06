@@ -3,7 +3,7 @@ import {
 } from '../../proto/generated/platform'
 import { IdentityWASM } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import hexToBytes from "../utils/hexToBytes";
+import hexToBytes from '../utils/hexToBytes'
 
 export default async function getIdentityByPublicKeyHash (grpcPool: GRPCConnectionPool, hex: string): Promise<IdentityWASM> {
   const getIdentityByPublicKeyHashRequest = GetIdentityByPublicKeyHashRequest.fromPartial({
