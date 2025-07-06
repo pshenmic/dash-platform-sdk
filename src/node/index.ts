@@ -10,6 +10,6 @@ export class NodeController {
   }
 
   async status (): Promise<NodeStatus> {
-    return getStatus.call(this)
+    return await getStatus(this.grpcPool)
   }
 }
