@@ -2,8 +2,8 @@ import convertToHomographSafeChars from './convertToHomographSafeChars'
 import getEvonodeList from './getEvonodeList'
 import { base58 } from '@scure/base'
 import { MasternodeList } from '../types'
-import getRandomArrayItem from "./getRandomArrayItem";
-import hexToBytes from "./hexToBytes";
+import getRandomArrayItem from './getRandomArrayItem'
+import hexToBytes from './hexToBytes'
 
 export class UtilsController {
   base58ToBytes (str: string): Uint8Array<ArrayBufferLike> {
