@@ -62,7 +62,7 @@ Queries a DAPI for data contract and returns a IdentityWASM instance
 ```javascript
 const dataContractIdentifier = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
-const dataContract = await sdk.dataContracts.getByIdentifier(dataContractIdentifier)
+const dataContract = await sdk.dataContracts.getIdentityByIdentifier(dataContractIdentifier)
 ```
 
 #### Create Data Contract
@@ -140,7 +140,7 @@ const config = {
 
 const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, config, PlatformVersionWASM.PLATFORM_V1)
 
-const transition = await sdk.stateTransitions.dataContract.create(dataContract, identityNonce)
+const transition = await sdk.dataContracts.createStateTransition(dataContract, DataContractTransitionType.Create, identityNonce)
 ```
 
 #### Data Contract Update Transition
@@ -180,7 +180,7 @@ const config = {
 
 const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema, definitions, true, config, PlatformVersionWASM.PLATFORM_V1)
 
-const transition = await sdk.stateTransitions.dataContract.update(dataContract, identityNonce)
+const transition = await sdk.dataContracts.createStateTransition(dataContract, DataContractTransitionType.Update, identityNonce)
 ```
 
 ###  Documents
@@ -240,21 +240,21 @@ const recipient = '8VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
 
 const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
 
-const transitionCreate = await sdk.stateTransitions.documentsBatch.create(document, identityContractNonce)
-const transitionDelete = await sdk.stateTransitions.documentsBatch.delete(document, identityContractNonce)
-const transitionPurchase = await sdk.stateTransitions.documentsBatch.purchase(document, recipient, identityContractNonce, price)
-const transitionReplace = await sdk.stateTransitions.documentsBatch.replace(document, identityContractNonce)
-const transitionTransfer = await sdk.stateTransitions.documentsBatch.transfer(document, identityContractNonce, recipient)
-const transitionUpdatePrice = await sdk.stateTransitions.documentsBatch.updatePrice(document, identityContractNonce, price)
+const transitionCreate = await sdk.documents.createStateTransition(document, BatchType.Create, identityContractNonce)
+const transitionDelete = await sdk.documents.createStateTransition(document, BatchType.Delete, identityContractNonce)
+const transitionPurchase = await sdk.documents.createStateTransition(document, BatchType.Purchase, identityContractNonce, { price })
+const transitionReplace = await sdk.documents.createStateTransition(document, BatchType.Replace, identityContractNonce)
+const transitionTransfer = await sdk.documents.createStateTransition(document, BatchType.Transfer, identityContractNonce, { recipient })
+const transitionUpdatePrice = await sdk.documents.createStateTransition(document, BatchType.UpdatePrice, identityContractNonce, { price })
 ```
 
 ### Identities
 #### Get identity by identifier
 Searches an identity by identifier (base58) and returns an IdentityWASM instance
 ```javascript
-const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 
-const identity = await sdk.identities.getByIdentifier(identifier)
+const identity = await sdk.identities.getIdentityByIdentifier(identifier)
 
 console.log(identity)
 ```
@@ -263,7 +263,7 @@ console.log(identity)
 ```javascript
 const publicKeyHash = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
 
-const identity = await sdk.identities.getByPublicKeyHash(publicKeyHash)
+const identity = await sdk.identities.getIdentityByPublicKeyHash(publicKeyHash)
 
 console.log(identity)
 ```
@@ -272,7 +272,7 @@ console.log(identity)
 Returns a current BigInt identity nonce for a given Identity
 
 ```javascript
-const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 
 const idenityNonce = await sdk.identities.getIdentityNonce(identifier)
 
@@ -283,10 +283,10 @@ console.log(identityNonce)
 Returns a current BigInt identity contract nonce for a given Identity and Data Contract
 
 ```javascript
-const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
-const idenityContractNonce = await sdk.identities.idenityContractNonce(identifier, dataContract)
+const idenityContractNonce = await sdk.identities.getIdentityContractNonce(identifier, dataContract)
 
 console.log(idenityContractNonce)
 ```
@@ -295,7 +295,7 @@ console.log(idenityContractNonce)
 Return an array of IdentityPublicKeyWASM for a given identity if found
 
 ```javascript
-const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 
 const identityPublicKeys = await sdk.identities.getIdentityPublicKeys(identifier)
 
@@ -303,17 +303,6 @@ console.log(identityPublicKeys)
 ```
 
 ### State Transition
-#### From Document
-Creates a StateTransitionWASM instance that you can use to sign with your private key and later broadcast
-
-```javascript
-const document = await sdk.documents.create(dataContract, documentType, data, identityContractNonce, identity)
-
-const stateTransition = await sdk.stateTransitions.fromDocument(document, "CREATE", identityContractNonce)
-
-console.log(stateTransition)
-```
-
 #### Broadcast state transition
 
 Broadcasts your state transition in the Dash Platform network

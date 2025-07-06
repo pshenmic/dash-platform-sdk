@@ -1,27 +1,15 @@
 import {
-  DataContractWASM,
-  DocumentWASM,
   IdentifierWASM,
-  BatchType,
   StateTransitionWASM,
-  PlatformVersionWASM,
-  DocumentCreateTransitionWASM,
-  DocumentDeleteTransitionWASM,
-  DocumentPurchaseTransitionWASM,
-  DocumentReplaceTransitionWASM,
-  DocumentTransferTransitionWASM,
-  DocumentUpdatePriceTransitionWASM,
   IdentityWASM
 } from 'pshenmic-dpp'
-import { Utils as DashHdUtils } from 'dashhd'
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
 
 export { DashPlatformSDK } from './index'
-export type DocumentTransitionLike = DocumentCreateTransitionWASM | DocumentDeleteTransitionWASM | DocumentPurchaseTransitionWASM | DocumentReplaceTransitionWASM | DocumentTransferTransitionWASM | DocumentUpdatePriceTransitionWASM
 
 export type MasternodeList = Record<string, MasternodeInfo>
 
-export interface walletToIdentityKeyOpts {
+export interface WalletToIdentityKeyOpts {
   network?: 'mainnet' | 'testnet'
 }
 
@@ -116,89 +104,6 @@ export interface DataContractConfig {
   documentsCanBeDeletedContractDefault: boolean
   requiresIdentityEncryptionBoundedKey?: number | null
   requiresIdentityDecryptionBoundedKey?: number | null
-}
-
-export interface DataContractTransitions {
-  create: Function
-  update: Function
-}
-
-export interface DataContractsController {
-  create: (ownerId: IdentifierLike, identityNonce: bigint, schema: object, definitions?: object, fullValidation?: boolean, config?: DataContractConfig, platformVersion?: PlatformVersionWASM) => Promise<DataContractWASM>
-  getByIdentifier: (identifier: IdentifierLike) => Promise<DataContractWASM>
-}
-
-export interface DocumentsBatchController {
-  create: Function
-  delete: Function
-  purchase: Function
-  replace: Function
-  transfer: Function
-  updatePrice: Function
-}
-
-export interface DocumentsController {
-  query: Function
-  create: Function
-}
-
-export interface NamesController {
-  search: (name: string) => Promise<[DocumentWASM]>
-}
-
-export interface StateTransitionsController {
-  dataContract: DataContractTransitions
-  documentsBatch: DocumentsBatchController
-  fromDocument: (document: DocumentWASM, batchType: BatchType, identityContractNonce: BigInt) => Promise<StateTransitionWASM>
-  broadcast: (stateTransition: StateTransitionWASM) => Promise<void>
-  waitForStateTransitionResult: Function
-}
-
-export interface IdentitiesController {
-  getBalance: Function
-  getByIdentifier: Function
-  getByPublicKeyHash: Function
-  getIdentityContractNonce: Function
-  getIdentityNonce: Function
-  getIdentityPublicKeys: Function
-}
-
-export interface NodeController {
-  status: () => NodeStatus
-}
-
-export interface Utils {
-  hexToBytes: Function
-  bytesToHex: Function
-  base58ToUint8Array: Function
-  uint8ArrayToBase58: Function
-  convertToHomographSafeChars: Function
-}
-
-export interface KeyPairUtils {
-  mnemonicToSeed: Function
-  seedToWallet: Function
-  deriveChild: Function
-  derivePath: Function
-  keyToWalletId: Function
-  keyToPublicKey: Function
-  publicKeyToAddress: Function
-  privateKeyToWif: Function
-  keyToXPrivateKey: Function
-  keyToXPublicKey: Function
-  xkeyToHDXKey: Function
-  mnemonicToWallet: Function
-  walletToIdentityKey: Function
-}
-
-export interface KeyPair {
-  mnemonicToIdentityKey: Function
-  utils: DashHdUtils & KeyPairUtils
-}
-
-export interface Signer {
-  setSigner: Function
-  signer: AbstractSigner | null
 }
 
 export interface AbstractSigner {

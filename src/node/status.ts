@@ -1,10 +1,11 @@
 import { NodeStatus } from '../types'
 import { GetStatusRequest, GetStatusResponse } from '../../proto/generated/platform'
+import GRPCConnectionPool from '../grpcConnectionPool'
 
-export default async function status (): Promise<NodeStatus> {
+export default async function status (grpcPool: GRPCConnectionPool): Promise<NodeStatus> {
   const getStatusRequest = GetStatusRequest.fromPartial({ v0: {} })
 
-  const response: GetStatusResponse = await this.grpcPool.getClient().getStatus(getStatusRequest)
+  const response: GetStatusResponse = await grpcPool.getClient().getStatus(getStatusRequest)
 
   const { v0 } = response
 
