@@ -46,12 +46,15 @@
   },
   "dependencies": {
     "@dashincubator/secp256k1": "^1.7.1-5",
+    "@noble/curves": "^1.9.2",
+    "wasm-drive-verify": "github:owl352/wasm-drive-verify",
     "@scure/base": "^1.2.4",
     "cbor": "^10.0.3",
     "dashhd": "^3.3.3",
     "dashkeys": "^1.1.5",
     "dashphrase": "^1.4.0",
     "grpc-web": "^1.5.0",
+    "hash.js": "^1.1.7",
     "pshenmic-dpp": "1.0.8",
     "rfc4648": "^1.5.4"
   },

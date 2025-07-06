@@ -1,27 +1,53 @@
 import {
-  GetIdentityBalanceRequest,
-  GetIdentityBalanceResponse_GetIdentityBalanceResponseV0
+    GetIdentityBalanceRequest,
+    GetIdentityBalanceResponse_GetIdentityBalanceResponseV0
 } from '../../proto/generated/platform'
-import { IdentifierWASM } from 'pshenmic-dpp'
-import { IdentifierLike } from '../types'
+import {IdentifierWASM, PlatformVersionWASM} from 'pshenmic-dpp'
+import {IdentifierLike} from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
+import {verifyIdentityBalanceForIdentityId} from "../../node_modules/wasm-drive-verify";
+import verifyTenderdashProof from "../utils/verifyTenderdashProof";
+import {getQuorumPublicKey} from "../utils/getQuorumPublicKey";
+import bytesToHex from "../utils/bytesToHex";
 
-export default async function getIdentityBalance (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<bigint> {
-  const id = new IdentifierWASM(identifier)
+export default async function getIdentityBalance(grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<bigint> {
+    const id = new IdentifierWASM(identifier)
 
-  const getIdentityBalanceRequest = GetIdentityBalanceRequest.fromPartial({
-    v0: {
-      id: id.bytes()
+    const getIdentityBalanceRequest = GetIdentityBalanceRequest.fromPartial({
+        v0: {
+            id: id.bytes(),
+            prove: true
+        }
+    })
+
+    const {v0} = await grpcPool.getClient().getIdentityBalance(getIdentityBalanceRequest)
+
+    const {proof, metadata} = v0 as GetIdentityBalanceResponse_GetIdentityBalanceResponseV0
+
+    if (proof == null) {
+        throw new Error(`Proof not found`)
     }
-  })
 
-  const { v0 } = await grpcPool.getClient().getIdentityBalance(getIdentityBalanceRequest)
+    if (metadata == null) {
+        throw new Error(`Metadata not found`)
+    }
 
-  const { balance } = v0 as GetIdentityBalanceResponse_GetIdentityBalanceResponseV0
+    const {
+        root_hash: rootHash,
+        balance
+    } = verifyIdentityBalanceForIdentityId(proof.grovedbProof, id.bytes(), true, PlatformVersionWASM.PLATFORM_V8)
 
-  if (balance == null) {
-    throw new Error(`Could not find balance for identity ${id.base58()}`)
-  }
+    const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
-  return BigInt(balance)
+    const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+    if (!verify) {
+        throw new Error('Failed to verify query')
+    }
+
+    if (balance == null) {
+        throw new Error(`Failed to fetch balance for identifier ${id.base58()}`)
+    }
+
+    return BigInt(balance)
 }
