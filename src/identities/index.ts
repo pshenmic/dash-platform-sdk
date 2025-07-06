@@ -5,13 +5,11 @@ import getIdentityBalance from './getIdentityBalance'
 import getIdentityByPublicKeyHash from './getIdentityByPublicKeyHash'
 import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { UtilsController } from '../utils'
 import getIdentityByIdentifier from './getIdentityByIdentifier'
 import { IdentityPublicKeyWASM, IdentityWASM } from 'pshenmic-dpp'
 
 export class IdentitiesController {
   grpcPool: GRPCConnectionPool
-  utils: UtilsController
 
   constructor (grpcPool: GRPCConnectionPool) {
     this.grpcPool = grpcPool

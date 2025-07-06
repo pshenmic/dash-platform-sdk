@@ -2,8 +2,9 @@ import convertToHomographSafeChars from './convertToHomographSafeChars'
 import getEvonodeList from './getEvonodeList'
 import { base58 } from '@scure/base'
 import { MasternodeList } from '../types'
-import getRandomArrayItem from './getRandomArrayItem'
-import hexToBytes from './hexToBytes'
+import getRandomArrayItem from "./getRandomArrayItem";
+import hexToBytes from "./hexToBytes";
+import bytesToHex from "./bytesToHex";
 
 export class UtilsController {
   base58ToBytes (str: string): Uint8Array<ArrayBufferLike> {
@@ -15,7 +16,7 @@ export class UtilsController {
   }
 
   bytesToHex (bytes: Uint8Array): string {
-    return Array.prototype.map.call(bytes, (x: number) => ('00' + x.toString(16)).slice(-2)).join('')
+    return bytesToHex(bytes)
   }
 
   hexToBytes (hex: string): Uint8Array<ArrayBuffer> {
