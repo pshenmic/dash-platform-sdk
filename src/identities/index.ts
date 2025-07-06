@@ -13,9 +13,8 @@ export class IdentitiesController {
   grpcPool: GRPCConnectionPool
   utils: UtilsController
 
-  constructor (grpcPool: GRPCConnectionPool, utils: UtilsController) {
+  constructor (grpcPool: GRPCConnectionPool) {
     this.grpcPool = grpcPool
-    this.utils = utils
   }
 
   async getIdentityBalance (identifier: IdentifierLike): Promise<bigint> {
@@ -23,7 +22,7 @@ export class IdentitiesController {
   }
 
   async getIdentityByPublicKeyHash (hex: string): Promise<IdentityWASM> {
-    return await getIdentityByPublicKeyHash(this.grpcPool, this.utils, hex)
+    return await getIdentityByPublicKeyHash(this.grpcPool, hex)
   }
 
   async getIdentityByIdentifier (identifier: IdentifierLike): Promise<IdentityWASM> {

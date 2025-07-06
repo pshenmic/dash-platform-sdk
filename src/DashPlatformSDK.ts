@@ -35,9 +35,9 @@ export default class DashPlatformSDK {
 
     this.stateTransitions = new StateTransitionsController(this.grpcPool)
 
-    this.identities = new IdentitiesController(this.grpcPool, this.utils)
     this.contestedState = new ContestedStateController(this.grpcPool)
     this.dataContracts = new DataContractsController(this.grpcPool)
+    this.identities = new IdentitiesController(this.grpcPool)
     this.documents = new DocumentsController(this.grpcPool)
     this.names = new NamesController(this.grpcPool)
     this.node = new NodeController(this.grpcPool)
