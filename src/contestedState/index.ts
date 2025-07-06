@@ -10,7 +10,6 @@ export default class ContestedStateController {
   }
 
   getContestedResourceVoteState(
-    grpcPool: GRPCConnectionPool,
     contractId: IdentifierLike,
     documentTypeName: string,
     indexName: string,
@@ -20,6 +19,6 @@ export default class ContestedStateController {
     startAtIdentifierInfo?: StartAtIdentifierInfo,
     count?: number,
   ): Promise<ContestedResourceVoteStateContenders> {
-    return getContestedResourceVoteState(grpcPool, contractId, documentTypeName, indexName, indexValues, resultType, allowIncludeLockedAndAbstainingVoteTally, startAtIdentifierInfo, count);
+    return getContestedResourceVoteState(this.grpcPool, contractId, documentTypeName, indexName, indexValues, resultType, allowIncludeLockedAndAbstainingVoteTally, startAtIdentifierInfo, count);
   }
 }
