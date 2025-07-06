@@ -1,26 +1,52 @@
 import { DataContractWASM, IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
 import {
   GetDataContractRequest,
-  GetDataContractResponse_GetDataContractResponseV0
+  GetDataContractResponse_GetDataContractResponseV0, GetIdentityBalanceResponse_GetIdentityBalanceResponseV0
 } from '../../proto/generated/platform'
 import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
+import {verifyContract} from "../../node_modules/wasm-drive-verify";
+import {getQuorumPublicKey} from "../utils/getQuorumPublicKey";
+import bytesToHex from "../utils/bytesToHex";
+import verifyTenderdashProof from "../utils/verifyTenderdashProof";
 
 export default async function getByIdentifier (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<DataContractWASM> {
   const id = new IdentifierWASM(identifier)
   const getDataContractRequest = GetDataContractRequest.fromPartial({
     v0: {
-      id: id.bytes()
+      id: id.bytes(),
+      prove: true
     }
   })
 
   const { v0 } = await grpcPool.getClient().getDataContract(getDataContractRequest)
 
-  const { dataContract } = v0 as GetDataContractResponse_GetDataContractResponseV0
+  const {proof, metadata} = v0 as GetDataContractResponse_GetDataContractResponseV0
 
-  if (dataContract == null) {
+  if (proof == null) {
+    throw new Error(`Proof not found`)
+  }
+
+  if (metadata == null) {
+    throw new Error(`Metadata not found`)
+  }
+
+  const {
+    root_hash: rootHash,
+    contract
+  } = verifyContract(proof.grovedbProof, undefined, true, false, id.bytes(), 9)
+
+  const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+  if (!verify) {
+    throw new Error('Failed to verify query')
+  }
+
+  if (contract == null) {
     throw new Error(`Data Contract with identifier ${id.base58()} not found`)
   }
 
-  return DataContractWASM.fromBytes(dataContract, true, PlatformVersionWASM.PLATFORM_V1)
+  return DataContractWASM.fromBytes(contract, true, PlatformVersionWASM.PLATFORM_V1)
 }
