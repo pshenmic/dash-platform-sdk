@@ -8,6 +8,7 @@ import { KeyPairController } from './keyPair'
 import { NodeController } from './node'
 import { NamesController } from './names'
 import { DataContractsController } from './dataContracts'
+import ContestedStateController from "./contestedState";
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -15,14 +16,15 @@ const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
 }
 
 export default class DashPlatformSDK {
-  utils: UtilsController
+  stateTransitions: StateTransitionsController
+  contestedState: ContestedStateController
+  dataContracts: DataContractsController
   identities: IdentitiesController
   documents: DocumentsController
-  stateTransitions: StateTransitionsController
   keyPair: KeyPairController
-  node: NodeController
-  dataContracts: DataContractsController
+  utils: UtilsController
   names: NamesController
+  node: NodeController
 
   constructor (options: { network: 'testnet' | 'mainnet', dapiUrl?: string } = DEFAULT_OPTIONS) {
     this.network = options.network
@@ -32,7 +34,9 @@ export default class DashPlatformSDK {
     this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
 
     this.stateTransitions = new StateTransitionsController(this.grpcPool)
+
     this.identities = new IdentitiesController(this.grpcPool, this.utils)
+    this.contestedState = new ContestedStateController(this.grpcPool)
     this.dataContracts = new DataContractsController(this.grpcPool)
     this.documents = new DocumentsController(this.grpcPool)
     this.names = new NamesController(this.grpcPool)

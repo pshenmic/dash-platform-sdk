@@ -3,6 +3,9 @@ import {
   StateTransitionWASM,
   IdentityWASM
 } from 'pshenmic-dpp'
+import {
+  GetContestedResourceVoteStateResponse_GetContestedResourceVoteStateResponseV0_FinishedVoteInfo_FinishedVoteOutcome
+} from "../proto/generated/platform";
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
 
 export { DashPlatformSDK } from './index'
@@ -92,6 +95,35 @@ export interface NodeStatus {
     | undefined
     epoch?: number | undefined
   } | undefined
+}
+
+export enum FinishedVoteOutcome{
+  TOWARDS_IDENTITY = 0,
+  LOCKED = 1,
+  NO_PREVIOUS_WINNER = 2,
+  UNRECOGNIZED = -1,
+}
+
+export interface Contender {
+  identifier: IdentifierWASM,
+  voteCount?: number | undefined,
+  document?: Uint8Array
+}
+
+export interface FinishedVoteInfo {
+  finishedVoteOutcome?: FinishedVoteOutcome,
+  wonByIdentityId?: IdentifierWASM | undefined,
+  finishedAtBlockHeight: string;
+  finishedAtCoreBlockHeight: number;
+  finishedAtBlockTimeMs: string;
+  finishedAtEpoch: number;
+}
+
+export interface ContestedResourceVoteStateContenders {
+  contenders: Array<Contender>;
+  abstainVoteTally?: number | undefined;
+  lockVoteTally?: number | undefined;
+  finishedVoteInfo?: FinishedVoteInfo;
 }
 
 export interface DataContractConfig {
