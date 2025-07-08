@@ -12,7 +12,7 @@ export interface IdentityTokenBalances {
   balance?: string | undefined;
 }
 
-export default async function getIdentityTokenBalances(grpcPool: GRPCConnectionPool, identifier: IdentifierWASM, tokenIdentifiers: IdentifierLike[]): Promise<IdentityTokenBalances[]> {
+export default async function getIdentityTokensBalances(grpcPool: GRPCConnectionPool, identifier: IdentifierLike, tokenIdentifiers: IdentifierLike[]): Promise<IdentityTokenBalances[]> {
   const id = new IdentifierWASM(identifier);
   const tokenIds = tokenIdentifiers.map(tokenIdentifier => new IdentifierWASM(tokenIdentifier));
 

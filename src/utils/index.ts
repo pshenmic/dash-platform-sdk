@@ -4,6 +4,7 @@ import { base58 } from '@scure/base'
 import { MasternodeList } from '../types'
 import getRandomArrayItem from './getRandomArrayItem'
 import hexToBytes from './hexToBytes'
+import stringToIndexValueBytes from "./stringToIndexValueBytes";
 
 export class UtilsController {
   base58ToBytes (str: string): Uint8Array<ArrayBufferLike> {
@@ -24,6 +25,10 @@ export class UtilsController {
 
   convertToHomographSafeChars (str: string): string {
     return convertToHomographSafeChars(str)
+  }
+
+  stringToIndexBytes (value: string): Uint8Array {
+    return stringToIndexValueBytes(value)
   }
 
   async getEvonodeList (network: 'testnet' | 'mainnet'): Promise<MasternodeList> {

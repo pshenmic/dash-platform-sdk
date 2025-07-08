@@ -97,7 +97,13 @@ export interface NodeStatus {
   } | undefined
 }
 
-export enum FinishedVoteOutcome{
+export enum ContestedStateResultType {
+  DOCUMENTS = 0,
+  VOTE_TALLY = 1,
+  DOCUMENTS_AND_VOTE_TALLY = 2,
+}
+
+export enum FinishedVoteOutcome {
   TOWARDS_IDENTITY = 0,
   LOCKED = 1,
   NO_PREVIOUS_WINNER = 2,
@@ -119,7 +125,7 @@ export interface FinishedVoteInfo {
   finishedAtEpoch: number;
 }
 
-export interface ContestedResourceVoteStateContenders {
+export interface ContestedResourceVoteState {
   contenders: Array<Contender>;
   abstainVoteTally?: number | undefined;
   lockVoteTally?: number | undefined;

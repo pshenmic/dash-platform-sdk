@@ -9,6 +9,7 @@ import { NodeController } from './node'
 import { NamesController } from './names'
 import { DataContractsController } from './dataContracts'
 import ContestedStateController from "./contestedState";
+import TokensController from "./tokens";
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -22,6 +23,7 @@ export default class DashPlatformSDK {
   identities: IdentitiesController
   documents: DocumentsController
   keyPair: KeyPairController
+  tokens: TokensController
   utils: UtilsController
   names: NamesController
   node: NodeController
@@ -38,6 +40,7 @@ export default class DashPlatformSDK {
     this.dataContracts = new DataContractsController(this.grpcPool)
     this.identities = new IdentitiesController(this.grpcPool)
     this.documents = new DocumentsController(this.grpcPool)
+    this.tokens = new TokensController(this.grpcPool)
     this.names = new NamesController(this.grpcPool)
     this.node = new NodeController(this.grpcPool)
     this.keyPair = new KeyPairController()

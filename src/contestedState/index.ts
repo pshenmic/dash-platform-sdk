@@ -1,6 +1,7 @@
 import GRPCConnectionPool from "../grpcConnectionPool";
-import {ContestedResourceVoteStateContenders, IdentifierLike} from "../types";
-import getContestedResourceVoteState, {ResultType, StartAtIdentifierInfo} from "./getContestedResourceVoteState";
+import {ContestedResourceVoteState, ContestedStateResultType, IdentifierLike} from "../types";
+import getContestedResourceVoteState, {StartAtIdentifierInfo} from "./getContestedResourceVoteState";
+import stringToIndexValueBytes from "../utils/stringToIndexValueBytes";
 
 export default class ContestedStateController {
   grpcPool: GRPCConnectionPool
@@ -13,12 +14,17 @@ export default class ContestedStateController {
     contractId: IdentifierLike,
     documentTypeName: string,
     indexName: string,
-    indexValues: Uint8Array<ArrayBufferLike>[],
-    resultType: ResultType,
+    indexValues: string[] | Uint8Array<ArrayBufferLike>[],
+    resultType: ContestedStateResultType,
     allowIncludeLockedAndAbstainingVoteTally?: boolean,
     startAtIdentifierInfo?: StartAtIdentifierInfo,
     count?: number,
-  ): Promise<ContestedResourceVoteStateContenders> {
-    return getContestedResourceVoteState(this.grpcPool, contractId, documentTypeName, indexName, indexValues, resultType, allowIncludeLockedAndAbstainingVoteTally, startAtIdentifierInfo, count);
+  ): Promise<ContestedResourceVoteState> {
+    const indexValuesBytes =
+      indexValues.every(value => typeof value === 'string')
+        ? indexValues.map(stringToIndexValueBytes)
+        : indexValues as Uint8Array<ArrayBufferLike>[]
+
+    return getContestedResourceVoteState(this.grpcPool, contractId, documentTypeName, indexName, indexValuesBytes, resultType, allowIncludeLockedAndAbstainingVoteTally, startAtIdentifierInfo, count);
   }
 }

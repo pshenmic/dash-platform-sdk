@@ -1,4 +1,9 @@
-import {ContestedResourceVoteStateContenders, FinishedVoteOutcome, IdentifierLike} from "../types";
+import {
+  ContestedResourceVoteState,
+  ContestedStateResultType,
+  FinishedVoteOutcome,
+  IdentifierLike
+} from "../types";
 import GRPCConnectionPool from "../grpcConnectionPool";
 import {
   GetContestedResourceVoteStateRequest,
@@ -9,7 +14,6 @@ import {
 } from "../../proto/generated/platform";
 import {IdentifierWASM} from "pshenmic-dpp";
 
-export type ResultType = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_ResultType;
 
 export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo;
 
@@ -19,12 +23,12 @@ export default async function getContestedResourceVoteState(
   documentTypeName: string,
   indexName: string,
   indexValues: Uint8Array<ArrayBufferLike>[],
-  resultType: ResultType,
+  resultType: ContestedStateResultType,
   allowIncludeLockedAndAbstainingVoteTally?: boolean,
   startAtIdentifierInfo?: StartAtIdentifierInfo,
   count?: number,
-): Promise<ContestedResourceVoteStateContenders> {
-  if(startAtIdentifierInfo != null) {
+): Promise<ContestedResourceVoteState> {
+  if (startAtIdentifierInfo != null) {
     startAtIdentifierInfo = {
       startIdentifier: (new IdentifierWASM(startAtIdentifierInfo.startIdentifier)).bytes(),
       startIdentifierIncluded: startAtIdentifierInfo.startIdentifierIncluded,
@@ -37,7 +41,7 @@ export default async function getContestedResourceVoteState(
       documentTypeName,
       indexName,
       indexValues,
-      resultType: resultType,
+      resultType: resultType as number as GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_ResultType,
       allowIncludeLockedAndAbstainingVoteTally,
       startAtIdentifierInfo,
       count
@@ -46,10 +50,10 @@ export default async function getContestedResourceVoteState(
 
   const {v0} = await grpcPool.getClient().getContestedResourceVoteState(getContestedResourceVoteStateRequest);
 
-  const { contestedResourceContenders } = v0 as GetContestedResourceVoteStateResponse_GetContestedResourceVoteStateResponseV0
+  const {contestedResourceContenders} = v0 as GetContestedResourceVoteStateResponse_GetContestedResourceVoteStateResponseV0
 
-  const { contenders } = contestedResourceContenders ?? {contenders: []}
-  const { finishedVoteInfo } = contestedResourceContenders ?? {finishedVoteInfo: undefined};
+  const {contenders} = contestedResourceContenders ?? {contenders: []}
+  const {finishedVoteInfo} = contestedResourceContenders ?? {finishedVoteInfo: undefined};
 
 
   return {
