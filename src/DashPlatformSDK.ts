@@ -46,7 +46,7 @@ export default class DashPlatformSDK {
     this.documents = new DocumentsController(this.grpcPool)
     this.tokens = new TokensController(this.grpcPool)
     this.names = new NamesController(this.grpcPool)
-    this.node = new NodeController(this.grpcPool)
+    this.node = new NodeController(this.grpcPool, this.network)
     this.keyPair = new KeyPairController()
 
     const driveVerifyWASMBytes = base64.decode(wasmBase64)

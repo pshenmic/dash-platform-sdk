@@ -6,9 +6,11 @@ import getTotalCredits from './totalCredits'
 
 export class NodeController {
   grpcPool: GRPCConnectionPool
+  network: 'testnet' | 'mainnet'
 
-  constructor (grpcPool: GRPCConnectionPool) {
+  constructor (grpcPool: GRPCConnectionPool, network : 'testnet' | 'mainnet') {
     this.grpcPool = grpcPool
+    this.network = network
   }
 
   async status (): Promise<NodeStatus> {
@@ -16,10 +18,10 @@ export class NodeController {
   }
 
   async totalCredits (): Promise<bigint> {
-    return await getTotalCredits(this.grpcPool)
+    return await getTotalCredits(this.grpcPool, this.network)
   }
 
-  async getEpochsInfo (count: number, start?: number, ascending?: boolean): Promise<EpochInfo[]> {
-    return await getEpochsInfo(this.grpcPool, count, start, ascending)
+  async getEpochsInfo (count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
+    return await getEpochsInfo(this.grpcPool, count, ascending, start)
   }
 }
