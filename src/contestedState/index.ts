@@ -1,7 +1,8 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { ContestedResourceVoteState, ContestedStateResultType, IdentifierLike } from '../types'
+import { ContestedResourceVoteState, ContestedStateResultType } from '../types'
 import getContestedResourceVoteState, { StartAtIdentifierInfo } from './getContestedResourceVoteState'
 import stringToIndexValueBytes from '../utils/stringToIndexValueBytes'
+import { DataContractWASM } from 'pshenmic-dpp'
 
 export default class ContestedStateController {
   grpcPool: GRPCConnectionPool
@@ -11,12 +12,12 @@ export default class ContestedStateController {
   }
 
   async getContestedResourceVoteState (
-    contractId: IdentifierLike,
+    contract: DataContractWASM,
     documentTypeName: string,
     indexName: string,
     indexValues: string[] | Array<Uint8Array<ArrayBufferLike>>,
     resultType: ContestedStateResultType,
-    allowIncludeLockedAndAbstainingVoteTally?: boolean,
+    allowIncludeLockedAndAbstainingVoteTally: boolean,
     startAtIdentifierInfo?: StartAtIdentifierInfo,
     count?: number
   ): Promise<ContestedResourceVoteState> {
@@ -25,6 +26,6 @@ export default class ContestedStateController {
         ? indexValues.map(stringToIndexValueBytes)
         : indexValues
 
-    return await getContestedResourceVoteState(this.grpcPool, contractId, documentTypeName, indexName, indexValuesBytes, resultType, allowIncludeLockedAndAbstainingVoteTally, startAtIdentifierInfo, count)
+    return await getContestedResourceVoteState(this.grpcPool, contract, documentTypeName, indexName, indexValuesBytes, resultType, allowIncludeLockedAndAbstainingVoteTally, startAtIdentifierInfo, count)
   }
 }

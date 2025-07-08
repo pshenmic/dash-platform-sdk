@@ -114,7 +114,7 @@ export interface Contender {
 }
 
 export interface FinishedVoteInfo {
-  finishedVoteOutcome?: FinishedVoteOutcome
+  type: string
   wonByIdentityId?: IdentifierWASM | undefined
   finishedAtBlockHeight: string
   finishedAtCoreBlockHeight: number
