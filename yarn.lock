@@ -5647,7 +5647,7 @@ walker@^1.0.8:
 
 "wasm-drive-verify@github:owl352/wasm-drive-verify":
   version "1.8.0"
-  resolved "https://codeload.github.com/owl352/wasm-drive-verify/tar.gz/646788af50dd4aef371c616e6c0671fb3985516b"
+  resolved "https://codeload.github.com/owl352/wasm-drive-verify/tar.gz/fec3ef4f57e2369ef82d5f0a292f45b886ba9749"
 
 watchpack@^2.4.1:
   version "2.4.4"
