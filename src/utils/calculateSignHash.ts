@@ -1,11 +1,11 @@
-import {CanonicalVote} from "../../proto/generated/platform";
-import {calculateMsgHash} from "./calculateMsgHash";
-import signRequestId from "./signRequestId";
-import signHash from "./signHash";
+import { CanonicalVote } from '../../proto/generated/platform'
+import { calculateMsgHash } from './calculateMsgHash'
+import signRequestId from './signRequestId'
+import signHash from './signHash'
 
-export function calculateSignHash (commit: CanonicalVote, chainId: string, quorumType:number, quorumHash: Uint8Array, height: bigint, round: number) {
-    const requestId = signRequestId('dpbvote', height, round)
-    const signBytesHash = calculateMsgHash(chainId, height, round, commit.type, commit.blockId, commit.stateId)
+export function calculateSignHash (commit: CanonicalVote, chainId: string, quorumType: number, quorumHash: Uint8Array, height: bigint, round: number): Uint8Array {
+  const requestId = signRequestId('dpbvote', height, round)
+  const signBytesHash = calculateMsgHash(chainId, height, round, commit.type, commit.blockId, commit.stateId)
 
-    return signHash(quorumType, quorumHash, requestId, signBytesHash) as Uint8Array
+  return signHash(quorumType, quorumHash, requestId, signBytesHash)
 }

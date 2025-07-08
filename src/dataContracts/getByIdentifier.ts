@@ -1,14 +1,14 @@
 import { DataContractWASM, IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
 import {
   GetDataContractRequest,
-  GetDataContractResponse_GetDataContractResponseV0, GetIdentityBalanceResponse_GetIdentityBalanceResponseV0
+  GetDataContractResponse_GetDataContractResponseV0
 } from '../../proto/generated/platform'
 import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import {verifyContract} from "../../node_modules/wasm-drive-verify";
-import {getQuorumPublicKey} from "../utils/getQuorumPublicKey";
-import bytesToHex from "../utils/bytesToHex";
-import verifyTenderdashProof from "../utils/verifyTenderdashProof";
+import { verifyContract } from 'wasm-drive-verify'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
+import bytesToHex from '../utils/bytesToHex'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 
 export default async function getByIdentifier (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<DataContractWASM> {
   const id = new IdentifierWASM(identifier)
@@ -21,14 +21,14 @@ export default async function getByIdentifier (grpcPool: GRPCConnectionPool, ide
 
   const { v0 } = await grpcPool.getClient().getDataContract(getDataContractRequest)
 
-  const {proof, metadata} = v0 as GetDataContractResponse_GetDataContractResponseV0
+  const { proof, metadata } = v0 as GetDataContractResponse_GetDataContractResponseV0
 
   if (proof == null) {
-    throw new Error(`Proof not found`)
+    throw new Error('Proof not found')
   }
 
   if (metadata == null) {
-    throw new Error(`Metadata not found`)
+    throw new Error('Metadata not found')
   }
 
   const {

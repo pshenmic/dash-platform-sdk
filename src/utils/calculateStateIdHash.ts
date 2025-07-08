@@ -1,13 +1,13 @@
-import { StateId } from "../../proto/generated/platform";
-import {BinaryWriter} from "@bufbuild/protobuf/wire";
-import sha256 from "./sha256";
+import { StateId } from '../../proto/generated/platform'
+import { BinaryWriter } from '@bufbuild/protobuf/wire'
+import sha256 from './sha256'
 
-export function calculateStateIdHash (stateId: StateId) {
-    const encoded = StateId.encode(stateId).finish()
+export function calculateStateIdHash (stateId: StateId): Uint8Array {
+  const encoded = StateId.encode(stateId).finish()
 
-    const writer = new BinaryWriter()
+  const writer = new BinaryWriter()
 
-    writer.bytes(encoded)
+  writer.bytes(encoded)
 
-    return sha256(writer.finish()) as Uint8Array
+  return sha256(writer.finish()) as Uint8Array
 }

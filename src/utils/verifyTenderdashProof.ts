@@ -1,38 +1,38 @@
-import {CanonicalVote, Proof, ResponseMetadata, SignedMsgType, StateId} from "../../proto/generated/platform";
-import {calculateSignHash} from "./calculateSignHash";
-import {calculateStateIdHash} from "./calculateStateIdHash";
-import verifyBls from "./verifyBls";
+import { CanonicalVote, Proof, ResponseMetadata, SignedMsgType, StateId } from '../../proto/generated/platform'
+import { calculateSignHash } from './calculateSignHash'
+import { calculateStateIdHash } from './calculateStateIdHash'
+import verifyBls from './verifyBls'
 
-export default async function verifyTenderdashProof (proof: Proof, metadata: ResponseMetadata, rootHash: Uint8Array, quorumPublicKey: string) {
-    const stateId = StateId.fromPartial({
-        appVersion: String(metadata.protocolVersion),
-        coreChainLockedHeight: metadata.coreChainLockedHeight,
-        time: metadata.timeMs,
-        appHash: rootHash,
-        height: metadata.height
-    })
+export default function verifyTenderdashProof (proof: Proof, metadata: ResponseMetadata, rootHash: Uint8Array, quorumPublicKey: string): boolean {
+  const stateId = StateId.fromPartial({
+    appVersion: String(metadata.protocolVersion),
+    coreChainLockedHeight: metadata.coreChainLockedHeight,
+    time: metadata.timeMs,
+    appHash: rootHash,
+    height: metadata.height
+  })
 
-    const stateIdHash = calculateStateIdHash(stateId)
+  const stateIdHash = calculateStateIdHash(stateId)
 
-    const commit = CanonicalVote.fromPartial({
-        type: SignedMsgType.PRECOMMIT,
-        blockId: proof.blockIdHash,
-        chainId: metadata.chainId,
-        height: metadata.height,
-        round: String(proof.round),
-        stateId: stateIdHash
-    })
+  const commit = CanonicalVote.fromPartial({
+    type: SignedMsgType.PRECOMMIT,
+    blockId: proof.blockIdHash,
+    chainId: metadata.chainId,
+    height: metadata.height,
+    round: String(proof.round),
+    stateId: stateIdHash
+  })
 
-    const signDigest = calculateSignHash(
-        commit,
-        metadata.chainId,
-        proof.quorumType,
-        proof.quorumHash,
-        BigInt(metadata.height),
-        proof.round
-    )
+  const signDigest = calculateSignHash(
+    commit,
+    metadata.chainId,
+    proof.quorumType,
+    proof.quorumHash,
+    BigInt(metadata.height),
+    proof.round
+  )
 
-    const { signature } = proof
+  const { signature } = proof
 
-    return verifyBls(Buffer.from(quorumPublicKey, 'hex'), Uint8Array.from(signDigest), signature)
+  return verifyBls(Buffer.from(quorumPublicKey, 'hex'), Uint8Array.from(signDigest), signature)
 }

@@ -1,13 +1,13 @@
 import {
-  IdentifierWASM,
-  StateTransitionWASM,
-  IdentityWASM
+  IdentifierWASM
 } from 'pshenmic-dpp'
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
 
 export { DashPlatformSDK } from './index'
 
 export type MasternodeList = Record<string, MasternodeInfo>
+
+export { AbstractSigner } from './signer/AbstractSigner'
 
 export interface WalletToIdentityKeyOpts {
   network?: 'mainnet' | 'testnet'
@@ -104,10 +104,4 @@ export interface DataContractConfig {
   documentsCanBeDeletedContractDefault: boolean
   requiresIdentityEncryptionBoundedKey?: number | null
   requiresIdentityDecryptionBoundedKey?: number | null
-}
-
-export interface AbstractSigner {
-  connect: () => void
-  getCurrentIdentity: () => IdentityWASM
-  signStateTransition: (stateTransition: StateTransitionWASM, identity: IdentityWASM) => void
 }

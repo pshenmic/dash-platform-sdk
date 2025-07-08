@@ -8,9 +8,9 @@ import { KeyPairController } from './keyPair'
 import { NodeController } from './node'
 import { NamesController } from './names'
 import { DataContractsController } from './dataContracts'
-import {initSync} from "../node_modules/wasm-drive-verify";
-import wasmDriveVerifyWASMBase64 from "../node_modules/wasm-drive-verify/pkg/wasm_drive_verify_bg.js";
-import {base64} from "@scure/base";
+import { initSync, wasmBase64 } from 'wasm-drive-verify'
+import { base64 } from '@scure/base'
+import { AbstractSigner } from './signer/AbstractSigner'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -26,6 +26,7 @@ export default class DashPlatformSDK {
   node: NodeController
   dataContracts: DataContractsController
   names: NamesController
+  signer: AbstractSigner
 
   constructor (options: { network: 'testnet' | 'mainnet', dapiUrl?: string } = DEFAULT_OPTIONS) {
     this.network = options.network
@@ -42,9 +43,9 @@ export default class DashPlatformSDK {
     this.node = new NodeController(this.grpcPool)
     this.keyPair = new KeyPairController()
 
-    const driveVerifyWASMBytes = base64.decode(wasmDriveVerifyWASMBase64)
+    const driveVerifyWASMBytes = base64.decode(wasmBase64)
 
-    initSync({module: driveVerifyWASMBytes})
+    initSync({ module: driveVerifyWASMBytes })
   }
 
   network: 'testnet' | 'mainnet'
