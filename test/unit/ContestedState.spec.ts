@@ -1,6 +1,5 @@
-import {DashPlatformSDK} from "../../src";
-import {ContestedResourceVoteState, ContestedStateResultType, IdentifierLike} from "../../src/types";
-
+import { DashPlatformSDK } from '../../src'
+import { ContestedStateResultType, IdentifierLike } from '../../src/types'
 
 let sdk: DashPlatformSDK
 let contractId: IdentifierLike
@@ -12,14 +11,14 @@ describe('Contested State', () => {
     contractId = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
   })
 
-  test("should be able to get contested resource vote state with finishedVoteInfo", async () => {
+  test('should be able to get contested resource vote state with finishedVoteInfo', async () => {
     const voteState = await sdk.contestedState.getContestedResourceVoteState(
       contractId,
       'domain',
-        'parentNameAndLabel',
+      'parentNameAndLabel',
       [
-        "dash",
-        "test000"
+        'dash',
+        'test000'
       ],
       ContestedStateResultType.DOCUMENTS_AND_VOTE_TALLY,
       false
@@ -31,14 +30,14 @@ describe('Contested State', () => {
     expect(voteState.lockVoteTally).toBeTruthy()
   })
 
-  test("should be able to get contested resource vote state for incorrect values", async () => {
+  test('should be able to get contested resource vote state for incorrect values', async () => {
     const voteState = await sdk.contestedState.getContestedResourceVoteState(
       contractId,
       'domain',
       'parentNameAndLabel',
       [
-        "dash",
-        "testo1111111110"
+        'dash',
+        'testo1111111110'
       ],
       ContestedStateResultType.DOCUMENTS_AND_VOTE_TALLY,
       false

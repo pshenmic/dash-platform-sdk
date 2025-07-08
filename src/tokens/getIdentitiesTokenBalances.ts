@@ -1,19 +1,19 @@
-import GRPCConnectionPool from "../grpcConnectionPool";
+import GRPCConnectionPool from '../grpcConnectionPool'
 import {
   GetIdentitiesTokenBalancesRequest,
   GetIdentitiesTokenBalancesResponse_GetIdentitiesTokenBalancesResponseV0,
   GetIdentitiesTokenBalancesResponse_GetIdentitiesTokenBalancesResponseV0_IdentityTokenBalances
-} from "../../proto/generated/platform";
-import {IdentifierLike} from "../types";
-import {IdentifierWASM} from "pshenmic-dpp";
+} from '../../proto/generated/platform'
+import { IdentifierLike } from '../types'
+import { IdentifierWASM } from 'pshenmic-dpp'
 
 export interface IdentitiesTokenBalances {
-  identityId: IdentifierWASM;
-  balance?: string | undefined;
+  identityId: IdentifierWASM
+  balance?: string | undefined
 }
 
-export default async function getIdentitiesTokenBalances(grpcPool: GRPCConnectionPool, identifiers: IdentifierLike[], tokenIdentifier: IdentifierLike): Promise<IdentitiesTokenBalances[]> {
-  const ids = identifiers.map(identifier => new IdentifierWASM(identifier));
+export default async function getIdentitiesTokenBalances (grpcPool: GRPCConnectionPool, identifiers: IdentifierLike[], tokenIdentifier: IdentifierLike): Promise<IdentitiesTokenBalances[]> {
+  const ids = identifiers.map(identifier => new IdentifierWASM(identifier))
   const tokenId = new IdentifierWASM(tokenIdentifier)
 
   const request = GetIdentitiesTokenBalancesRequest.fromPartial({
@@ -31,6 +31,6 @@ export default async function getIdentitiesTokenBalances(grpcPool: GRPCConnectio
     .identityTokenBalances
     .map((identityTokenBalance) => ({
       identityId: new IdentifierWASM(identityTokenBalance.identityId),
-      balance: identityTokenBalance.balance,
+      balance: identityTokenBalance.balance
     }))
 }

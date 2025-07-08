@@ -8,8 +8,8 @@ import { KeyPairController } from './keyPair'
 import { NodeController } from './node'
 import { NamesController } from './names'
 import { DataContractsController } from './dataContracts'
-import ContestedStateController from "./contestedState";
-import TokensController from "./tokens";
+import ContestedStateController from './contestedState'
+import TokensController from './tokens'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',

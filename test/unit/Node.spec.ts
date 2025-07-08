@@ -55,7 +55,7 @@ describe('Node', () => {
   test('should be able to call getEpochsInfo in desc', async () => {
     const epochsInfo = await sdk.node.getEpochsInfo(10, 8400)
 
-    const expectedEpochsNumbers = Array.from({length: 10}, (_val, index) => 8391 + index)
+    const expectedEpochsNumbers = Array.from({ length: 10 }, (_val, index) => 8391 + index)
 
     expect(epochsInfo.length).toEqual(10)
     expect(epochsInfo.map(epochInfo => epochInfo.number)).toEqual(expectedEpochsNumbers)
@@ -64,7 +64,7 @@ describe('Node', () => {
   test('should be able to call getEpochsInfo in asc', async () => {
     const epochsInfo = await sdk.node.getEpochsInfo(10, 8400, true)
 
-    const expectedEpochsNumbers = Array.from({length: 10}, (_val, index) => 8400 + index)
+    const expectedEpochsNumbers = Array.from({ length: 10 }, (_val, index) => 8400 + index)
 
     expect(epochsInfo.length).toEqual(10)
     expect(epochsInfo.map(epochInfo => epochInfo.number)).toEqual(expectedEpochsNumbers)

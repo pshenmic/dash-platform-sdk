@@ -1,7 +1,7 @@
 import getStatus from './status'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import { NodeStatus } from '../types'
-import getEpochsInfo, {EpochInfo} from "./epochs";
+import getEpochsInfo, { EpochInfo } from './epochs'
 import getTotalCredits from './totalCredits'
 
 export class NodeController {
@@ -15,7 +15,7 @@ export class NodeController {
     return await getStatus(this.grpcPool)
   }
 
-  async totalCredits(): Promise<bigint> {
+  async totalCredits (): Promise<bigint> {
     return await getTotalCredits(this.grpcPool)
   }
 

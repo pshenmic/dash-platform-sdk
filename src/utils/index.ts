@@ -4,7 +4,7 @@ import { base58 } from '@scure/base'
 import { MasternodeList } from '../types'
 import getRandomArrayItem from './getRandomArrayItem'
 import hexToBytes from './hexToBytes'
-import stringToIndexValueBytes from "./stringToIndexValueBytes";
+import stringToIndexValueBytes from './stringToIndexValueBytes'
 
 export class UtilsController {
   base58ToBytes (str: string): Uint8Array<ArrayBufferLike> {

@@ -1,4 +1,4 @@
-import {DashPlatformSDK} from "../../src";
+import { DashPlatformSDK } from '../../src'
 
 let sdk: DashPlatformSDK
 
@@ -23,7 +23,7 @@ describe('Tokens', () => {
   })
 
   test('should be able to get identity tokens balances', async () => {
-    const tokensIdentityBalance = await sdk.tokens.getIdentityTokensBalances("8GnWmaDGZe9HBchfWPeq2cRPM88c4BvAahCk9vxr34mg", ["5kRUF1SRTFtdskfaaQE9pCdADq8wyLFB1TNttnrBq3F8"])
+    const tokensIdentityBalance = await sdk.tokens.getIdentityTokensBalances('8GnWmaDGZe9HBchfWPeq2cRPM88c4BvAahCk9vxr34mg', ['5kRUF1SRTFtdskfaaQE9pCdADq8wyLFB1TNttnrBq3F8'])
 
     expect(tokensIdentityBalance.length).toEqual(1)
     expect(tokensIdentityBalance[0].tokenId).toBeTruthy()
@@ -31,7 +31,7 @@ describe('Tokens', () => {
   })
 
   test('should be able to get token identities token balances', async () => {
-    const tokensIdentityBalance = await sdk.tokens.getIdentitiesTokenBalances(["8GnWmaDGZe9HBchfWPeq2cRPM88c4BvAahCk9vxr34mg", "ApGNc5xPfPqeJXMSVWgMqAyQu47a1BNGSf5ojtaqArbZ"], "BPgPrZsiiotMcZpT4ZWxk1fJk2dy7Hfe9FDxANnVHS3Z")
+    const tokensIdentityBalance = await sdk.tokens.getIdentitiesTokenBalances(['8GnWmaDGZe9HBchfWPeq2cRPM88c4BvAahCk9vxr34mg', 'ApGNc5xPfPqeJXMSVWgMqAyQu47a1BNGSf5ojtaqArbZ'], 'BPgPrZsiiotMcZpT4ZWxk1fJk2dy7Hfe9FDxANnVHS3Z')
 
     expect(tokensIdentityBalance.length).toEqual(2)
     expect(tokensIdentityBalance[0].identityId).toBeTruthy()

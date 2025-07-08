@@ -1,22 +1,22 @@
-import GRPCConnectionPool from "../grpcConnectionPool";
+import GRPCConnectionPool from '../grpcConnectionPool'
 import {
   GetTokenContractInfoRequest,
   GetTokenContractInfoResponse_GetTokenContractInfoResponseV0
-} from "../../proto/generated/platform";
-import {IdentifierLike} from "../types";
-import {IdentifierWASM} from "pshenmic-dpp";
+} from '../../proto/generated/platform'
+import { IdentifierLike } from '../types'
+import { IdentifierWASM } from 'pshenmic-dpp'
 
 export interface TokenContractInfo {
-  contractId: IdentifierWASM;
-  tokenContractPosition: number;
+  contractId: IdentifierWASM
+  tokenContractPosition: number
 }
 
-export default async function getTokenContractInfo(grpcPool: GRPCConnectionPool, tokenIdentifier: IdentifierLike): Promise<TokenContractInfo> {
+export default async function getTokenContractInfo (grpcPool: GRPCConnectionPool, tokenIdentifier: IdentifierLike): Promise<TokenContractInfo> {
   const tokenId = new IdentifierWASM(tokenIdentifier)
 
   const request = GetTokenContractInfoRequest.fromPartial({
     v0: {
-      tokenId: (tokenId).bytes(),
+      tokenId: (tokenId).bytes()
     }
   })
 
@@ -30,6 +30,6 @@ export default async function getTokenContractInfo(grpcPool: GRPCConnectionPool,
 
   return {
     contractId: new IdentifierWASM(data.contractId),
-    tokenContractPosition: data.tokenContractPosition,
+    tokenContractPosition: data.tokenContractPosition
   }
 }

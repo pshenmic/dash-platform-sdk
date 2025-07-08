@@ -1,15 +1,14 @@
-import GRPCConnectionPool from "../grpcConnectionPool";
-import {IdentifierLike} from "../types";
-import getIdentitiesTokenBalances, {IdentitiesTokenBalances} from "./getIdentitiesTokenBalances";
-import getIdentityTokensBalances, {IdentityTokenBalances} from "./getIdentityTokensBalances";
-import {IdentifierWASM} from "pshenmic-dpp";
-import getTokenContractInfo, {TokenContractInfo} from "./getTokenContractInfo";
-import getTokenTotalSupply, {TokenTotalSupply} from "./getTokenTotalSupply";
+import GRPCConnectionPool from '../grpcConnectionPool'
+import { IdentifierLike } from '../types'
+import getIdentitiesTokenBalances, { IdentitiesTokenBalances } from './getIdentitiesTokenBalances'
+import getIdentityTokensBalances, { IdentityTokenBalances } from './getIdentityTokensBalances'
+import getTokenContractInfo, { TokenContractInfo } from './getTokenContractInfo'
+import getTokenTotalSupply, { TokenTotalSupply } from './getTokenTotalSupply'
 
 export default class TokensController {
   grpcPool: GRPCConnectionPool
 
-  constructor(grpcPool: GRPCConnectionPool) {
+  constructor (grpcPool: GRPCConnectionPool) {
     this.grpcPool = grpcPool
   }
 

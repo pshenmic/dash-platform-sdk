@@ -3,35 +3,33 @@ import {
   ContestedStateResultType,
   FinishedVoteOutcome,
   IdentifierLike
-} from "../types";
-import GRPCConnectionPool from "../grpcConnectionPool";
+} from '../types'
+import GRPCConnectionPool from '../grpcConnectionPool'
 import {
   GetContestedResourceVoteStateRequest,
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_ResultType,
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo,
-  GetContestedResourceVoteStateResponse_GetContestedResourceVoteStateResponseV0,
-  GetContestedResourceVoteStateResponse_GetContestedResourceVoteStateResponseV0_ContestedResourceContenders
-} from "../../proto/generated/platform";
-import {IdentifierWASM} from "pshenmic-dpp";
+  GetContestedResourceVoteStateResponse_GetContestedResourceVoteStateResponseV0
+} from '../../proto/generated/platform'
+import { IdentifierWASM } from 'pshenmic-dpp'
 
+export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 
-export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo;
-
-export default async function getContestedResourceVoteState(
+export default async function getContestedResourceVoteState (
   grpcPool: GRPCConnectionPool,
   contractId: IdentifierLike,
   documentTypeName: string,
   indexName: string,
-  indexValues: Uint8Array<ArrayBufferLike>[],
+  indexValues: Array<Uint8Array<ArrayBufferLike>>,
   resultType: ContestedStateResultType,
   allowIncludeLockedAndAbstainingVoteTally?: boolean,
   startAtIdentifierInfo?: StartAtIdentifierInfo,
-  count?: number,
+  count?: number
 ): Promise<ContestedResourceVoteState> {
   if (startAtIdentifierInfo != null) {
     startAtIdentifierInfo = {
       startIdentifier: (new IdentifierWASM(startAtIdentifierInfo.startIdentifier)).bytes(),
-      startIdentifierIncluded: startAtIdentifierInfo.startIdentifierIncluded,
+      startIdentifierIncluded: startAtIdentifierInfo.startIdentifierIncluded
     }
   }
 
@@ -48,22 +46,23 @@ export default async function getContestedResourceVoteState(
     }
   })
 
-  const {v0} = await grpcPool.getClient().getContestedResourceVoteState(getContestedResourceVoteStateRequest);
+  const { v0 } = await grpcPool.getClient().getContestedResourceVoteState(getContestedResourceVoteStateRequest)
 
-  const {contestedResourceContenders} = v0 as GetContestedResourceVoteStateResponse_GetContestedResourceVoteStateResponseV0
+  const { contestedResourceContenders } = v0 as GetContestedResourceVoteStateResponse_GetContestedResourceVoteStateResponseV0
 
-  const {contenders} = contestedResourceContenders ?? {contenders: []}
-  const {finishedVoteInfo} = contestedResourceContenders ?? {finishedVoteInfo: undefined};
-
+  const { contenders } = contestedResourceContenders ?? { contenders: [] }
+  const { finishedVoteInfo } = contestedResourceContenders ?? { finishedVoteInfo: undefined }
 
   return {
-    contenders: contenders.map(contender => ({...contender, identifier: new IdentifierWASM(contender.identifier)})),
+    contenders: contenders.map(contender => ({ ...contender, identifier: new IdentifierWASM(contender.identifier) })),
     abstainVoteTally: contestedResourceContenders?.abstainVoteTally,
     lockVoteTally: contestedResourceContenders?.lockVoteTally,
-    finishedVoteInfo: finishedVoteInfo ? {
-      ...finishedVoteInfo,
-      finishedVoteOutcome: finishedVoteInfo.finishedVoteOutcome ? finishedVoteInfo.finishedVoteOutcome as number as FinishedVoteOutcome : undefined,
-      wonByIdentityId: finishedVoteInfo.wonByIdentityId ? (new IdentifierWASM(finishedVoteInfo.wonByIdentityId)) : undefined,
-    } : undefined,
-  };
+    finishedVoteInfo: (finishedVoteInfo != null)
+      ? {
+          ...finishedVoteInfo,
+          finishedVoteOutcome: finishedVoteInfo.finishedVoteOutcome != null ? finishedVoteInfo.finishedVoteOutcome as number as FinishedVoteOutcome : undefined,
+          wonByIdentityId: (finishedVoteInfo.wonByIdentityId != null) ? (new IdentifierWASM(finishedVoteInfo.wonByIdentityId)) : undefined
+        }
+      : undefined
+  }
 }
