@@ -1,22 +1,21 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
 import {
   GetEpochsInfoRequest,
-  GetEpochsInfoResponse_GetEpochsInfoResponseV0,
-  GetEpochsInfoResponse_GetEpochsInfoResponseV0_EpochInfo
+  GetEpochsInfoResponse_GetEpochsInfoResponseV0
 } from '../../proto/generated/platform'
-import {verifyEpochInfos} from "wasm-drive-verify";
-import {PlatformVersionWASM} from "pshenmic-dpp";
-import {getQuorumPublicKey} from "../utils/getQuorumPublicKey";
-import bytesToHex from "../utils/bytesToHex";
-import verifyTenderdashProof from "../utils/verifyTenderdashProof";
+import { verifyEpochInfos } from 'wasm-drive-verify'
+import { PlatformVersionWASM } from 'pshenmic-dpp'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
+import bytesToHex from '../utils/bytesToHex'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 
-export type EpochInfo = {
-  number: number;
-  firstBlockHeight: number;
-  firstCoreBlockHeight: number;
-  startTime: bigint;
-  feeMultiplier: bigint;
-  protocolVersion: 9;
+export interface EpochInfo {
+  number: number
+  firstBlockHeight: number
+  firstCoreBlockHeight: number
+  startTime: bigint
+  feeMultiplier: bigint
+  protocolVersion: 9
 }
 
 export default async function epochs (grpcPool: GRPCConnectionPool, count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
@@ -31,7 +30,7 @@ export default async function epochs (grpcPool: GRPCConnectionPool, count: numbe
 
   const { v0 } = await grpcPool.getClient().getEpochsInfo(request)
 
-  const {proof, metadata} = v0 as GetEpochsInfoResponse_GetEpochsInfoResponseV0
+  const { proof, metadata } = v0 as GetEpochsInfoResponse_GetEpochsInfoResponseV0
 
   if (proof == null) {
     throw new Error('Proof not found')

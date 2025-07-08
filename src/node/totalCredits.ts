@@ -1,18 +1,17 @@
 import {
   GetDocumentsResponse_GetDocumentsResponseV0,
-  GetTotalCreditsInPlatformRequest,
-  GetTotalCreditsInPlatformResponse_GetTotalCreditsInPlatformResponseV0
+  GetTotalCreditsInPlatformRequest
 } from '../../proto/generated/platform'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import {verifyTotalCreditsInSystem} from "wasm-drive-verify";
-import {HALVING_INTERVAL, MAINNET_ACTIVATION_HEIGHT, TESTNET_ACTIVATION_HEIGHT} from "../constants";
-import {PlatformVersionWASM} from "pshenmic-dpp";
-import {getQuorumPublicKey} from "../utils/getQuorumPublicKey";
-import bytesToHex from "../utils/bytesToHex";
-import verifyTenderdashProof from "../utils/verifyTenderdashProof";
+import { verifyTotalCreditsInSystem } from 'wasm-drive-verify'
+import { HALVING_INTERVAL, MAINNET_ACTIVATION_HEIGHT, TESTNET_ACTIVATION_HEIGHT } from '../constants'
+import { PlatformVersionWASM } from 'pshenmic-dpp'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
+import bytesToHex from '../utils/bytesToHex'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 
 export default async function totalCredits (grpcPool: GRPCConnectionPool, network: 'testnet' | 'mainnet'): Promise<bigint> {
-  const request = GetTotalCreditsInPlatformRequest.fromPartial({ v0: {prove: true} })
+  const request = GetTotalCreditsInPlatformRequest.fromPartial({ v0: { prove: true } })
 
   const { v0 } = await grpcPool.getClient().getTotalCreditsInPlatform(request)
 
@@ -28,7 +27,7 @@ export default async function totalCredits (grpcPool: GRPCConnectionPool, networ
 
   const activationHeight = network === 'testnet' ? TESTNET_ACTIVATION_HEIGHT : MAINNET_ACTIVATION_HEIGHT
 
-  const {root_hash: rootHash, total_credits: totalCredits} = verifyTotalCreditsInSystem(
+  const { root_hash: rootHash, total_credits: totalCredits } = verifyTotalCreditsInSystem(
     proof.grovedbProof,
     HALVING_INTERVAL,
     activationHeight,
@@ -38,7 +37,7 @@ export default async function totalCredits (grpcPool: GRPCConnectionPool, networ
 
   const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+  const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')

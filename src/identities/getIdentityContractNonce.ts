@@ -43,7 +43,7 @@ export default async function getIdentityContractNonce (grpcPool: GRPCConnection
 
   const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+  const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')

@@ -8,7 +8,7 @@ export class NodeController {
   grpcPool: GRPCConnectionPool
   network: 'testnet' | 'mainnet'
 
-  constructor (grpcPool: GRPCConnectionPool, network : 'testnet' | 'mainnet') {
+  constructor (grpcPool: GRPCConnectionPool, network: 'testnet' | 'mainnet') {
     this.grpcPool = grpcPool
     this.network = network
   }
