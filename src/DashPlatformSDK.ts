@@ -10,6 +10,9 @@ import { NamesController } from './names'
 import { DataContractsController } from './dataContracts'
 import ContestedStateController from './contestedState'
 import TokensController from './tokens'
+import { initSync, wasmBase64 } from 'wasm-drive-verify'
+import { base64 } from '@scure/base'
+import { AbstractSigner } from './signer/AbstractSigner'
 
 const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   network: 'testnet',
@@ -27,6 +30,7 @@ export default class DashPlatformSDK {
   utils: UtilsController
   names: NamesController
   node: NodeController
+  signer: AbstractSigner
 
   constructor (options: { network: 'testnet' | 'mainnet', dapiUrl?: string } = DEFAULT_OPTIONS) {
     this.network = options.network
@@ -44,6 +48,10 @@ export default class DashPlatformSDK {
     this.names = new NamesController(this.grpcPool)
     this.node = new NodeController(this.grpcPool)
     this.keyPair = new KeyPairController()
+
+    const driveVerifyWASMBytes = base64.decode(wasmBase64)
+
+    initSync({ module: driveVerifyWASMBytes })
   }
 
   network: 'testnet' | 'mainnet'

@@ -4,6 +4,7 @@ import { base58 } from '@scure/base'
 import { MasternodeList } from '../types'
 import getRandomArrayItem from './getRandomArrayItem'
 import hexToBytes from './hexToBytes'
+import bytesToHex from './bytesToHex'
 import stringToIndexValueBytes from './stringToIndexValueBytes'
 
 export class UtilsController {
@@ -16,7 +17,7 @@ export class UtilsController {
   }
 
   bytesToHex (bytes: Uint8Array): string {
-    return Array.prototype.map.call(bytes, (x: number) => ('00' + x.toString(16)).slice(-2)).join('')
+    return bytesToHex(bytes)
   }
 
   hexToBytes (hex: string): Uint8Array<ArrayBuffer> {

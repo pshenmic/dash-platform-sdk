@@ -252,7 +252,7 @@ const transitionUpdatePrice = await sdk.documents.createStateTransition(document
 #### Get identity by identifier
 Searches an identity by identifier (base58) and returns an IdentityWASM instance
 ```javascript
-const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 
 const identity = await sdk.identities.getIdentityByIdentifier(identifier)
 
@@ -272,7 +272,7 @@ console.log(identity)
 Returns a current BigInt identity nonce for a given Identity
 
 ```javascript
-const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 
 const idenityNonce = await sdk.identities.getIdentityNonce(identifier)
 
@@ -283,7 +283,7 @@ console.log(identityNonce)
 Returns a current BigInt identity contract nonce for a given Identity and Data Contract
 
 ```javascript
-const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 const dataContract = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
 const idenityContractNonce = await sdk.identities.getIdentityContractNonce(identifier, dataContract)
@@ -295,7 +295,7 @@ console.log(idenityContractNonce)
 Return an array of IdentityPublicKeyWASM for a given identity if found
 
 ```javascript
-const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 
 const identityPublicKeys = await sdk.identities.getIdentityPublicKeys(identifier)
 

@@ -15,7 +15,7 @@ describe('Identity', () => {
   })
 
   test('should be able to get identity by identifier', async () => {
-    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+    const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 
     const identity = await sdk.identities.getIdentityByIdentifier(identifier)
 
@@ -40,7 +40,7 @@ describe('Identity', () => {
   })
 
   test('should be able to get identity nonce', async () => {
-    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+    const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 
     const identityNonce = await sdk.identities.getIdentityNonce(identifier)
 
@@ -48,7 +48,7 @@ describe('Identity', () => {
   })
 
   test('should be able to get identity public keys', async () => {
-    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+    const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 
     const identityPublicKeys = await sdk.identities.getIdentityPublicKeys(identifier)
 
@@ -56,7 +56,7 @@ describe('Identity', () => {
   })
 
   test('should be able to get balance', async () => {
-    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
+    const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 
     const balance = await sdk.identities.getIdentityBalance(identifier)
 

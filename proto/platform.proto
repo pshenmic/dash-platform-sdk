@@ -803,7 +803,7 @@ message GetFinalizedEpochInfosRequest {
   message GetFinalizedEpochInfosRequestV0 {
     uint32 start_epoch_index = 1;          // The starting epoch index
     bool start_epoch_index_included = 2;   // Whether to include the start epoch
-    uint32 end_epoch_index = 3;            // The ending epoch index  
+    uint32 end_epoch_index = 3;            // The ending epoch index
     bool end_epoch_index_included = 4;     // Whether to include the end epoch
     bool prove = 5;                        // Flag to request a proof as the response
   }
@@ -815,7 +815,7 @@ message GetFinalizedEpochInfosResponse {
   message GetFinalizedEpochInfosResponseV0 {
     // FinalizedEpochInfos holds a collection of finalized epoch information entries
     message FinalizedEpochInfos {
-      repeated FinalizedEpochInfo finalized_epoch_infos = 
+      repeated FinalizedEpochInfo finalized_epoch_infos =
           1; // List of finalized information for each requested epoch
     }
 
@@ -824,7 +824,7 @@ message GetFinalizedEpochInfosResponse {
       uint32 number = 1; // The number of the epoch
       uint64 first_block_height = 2
           [ jstype = JS_STRING ]; // The height of the first block in this epoch
-      uint32 first_core_block_height = 
+      uint32 first_core_block_height =
           3; // The height of the first Core block in this epoch
       uint64 first_block_time = 4
           [ jstype = JS_STRING ]; // The timestamp of the first block (milliseconds)
@@ -851,9 +851,9 @@ message GetFinalizedEpochInfosResponse {
     }
 
     oneof result {
-      FinalizedEpochInfos epochs = 
+      FinalizedEpochInfos epochs =
           1; // The actual finalized information about the requested epochs
-      Proof proof = 
+      Proof proof =
           2; // Cryptographic proof of the finalized epoch information, if requested
     }
     ResponseMetadata metadata = 3; // Metadata about the blockchain state
@@ -1935,4 +1935,30 @@ message GetGroupActionSignersResponse {
   }
 
   oneof version { GetGroupActionSignersResponseV0 v0 = 1; }
+}
+
+// For Drive Verification functions
+
+enum SignedMsgType {
+    UNKNOWN = 0;
+    PREVOTE = 1;
+    PRECOMMIT = 2;
+    PROPOSAL = 32;
+}
+
+message StateId {
+    fixed64 app_version = 1;
+    fixed64 height = 2;
+    bytes app_hash = 3;
+    fixed32 core_chain_locked_height = 4;
+    fixed64 time = 5;
+}
+
+message CanonicalVote {
+    SignedMsgType type = 1;
+    sfixed64 height = 2;
+    sfixed64 round = 3;
+    bytes block_id = 4;
+    bytes state_id = 5;
+    string chain_id = 99;
 }
