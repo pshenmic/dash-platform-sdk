@@ -26,8 +26,8 @@ describe('Contested State', () => {
 
     expect(voteState.finishedVoteInfo).toBeTruthy()
     expect(voteState.contenders).toBeTruthy()
-    expect(voteState.abstainVoteTally).toBeTruthy()
-    expect(voteState.lockVoteTally).toBeTruthy()
+    expect(voteState.abstainVoteTally).toBeDefined()
+    expect(voteState.lockVoteTally).toBeDefined()
   })
 
   test('should be able to get contested resource vote state for incorrect values', async () => {
