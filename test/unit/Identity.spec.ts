@@ -31,7 +31,7 @@ describe('Identity', () => {
   })
 
   test('should be able to get identity contract nonce', async () => {
-    const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
     const dataContract = '6QMfQTdKpC3Y9uWBcTwXeY3KdzRLDqASUsDnQ4MEc9XC'
 
     const identityContractNonce = await sdk.identities.getIdentityContractNonce(identifier, dataContract)

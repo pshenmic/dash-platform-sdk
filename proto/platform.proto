@@ -1584,7 +1584,7 @@ message GetGroupActionsRequest {
     bytes start_action_id = 1;
     bool start_action_id_included = 2;
   }
-    
+
   message GetGroupActionsRequestV0 {
     bytes contract_id = 1;
     uint32 group_contract_position = 2;
@@ -1765,4 +1765,30 @@ message GetGroupActionSignersResponse {
   oneof version {
     GetGroupActionSignersResponseV0 v0 = 1;
   }
+}
+
+// For Drive Verification functions
+
+enum SignedMsgType {
+    UNKNOWN = 0;
+    PREVOTE = 1;
+    PRECOMMIT = 2;
+    PROPOSAL = 32;
+}
+
+message StateId {
+    fixed64 app_version = 1;
+    fixed64 height = 2;
+    bytes app_hash = 3;
+    fixed32 core_chain_locked_height = 4;
+    fixed64 time = 5;
+}
+
+message CanonicalVote {
+    SignedMsgType type = 1;
+    sfixed64 height = 2;
+    sfixed64 round = 3;
+    bytes block_id = 4;
+    bytes state_id = 5;
+    string chain_id = 99;
 }
