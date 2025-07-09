@@ -48,6 +48,10 @@ export class DashPlatformSDK {
     initSync({ module: driveVerifyWASMBytes })
   }
 
+  setNetwork(network: 'testnet' | 'mainnet') {
+    this.grpcPool = new GRPCConnectionPool(this.network)
+  }
+
   network: 'testnet' | 'mainnet'
   grpcPool: GRPCConnectionPool
   dpp: DashPlatformProtocolWASM
