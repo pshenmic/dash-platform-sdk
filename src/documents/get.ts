@@ -8,7 +8,7 @@ import { verifyDocumentProof } from 'wasm-drive-verify'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
-import { encode } from 'cbor-x';
+import { encode } from 'cbor-x'
 
 export default async function get (
   grpcPool: GRPCConnectionPool,

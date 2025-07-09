@@ -4,7 +4,7 @@ export function calculateMsgHash (chainId: string, height: bigint, round: number
   const fixedSize = 4 + 8 + 8 + 32 + 32
   const chainIdBytes = new TextEncoder().encode(chainId)
   const totalSize = fixedSize + chainIdBytes.length
-  
+
   const buffer = new ArrayBuffer(totalSize)
   const view = new DataView(buffer)
   const uint8View = new Uint8Array(buffer)
