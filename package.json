@@ -55,7 +55,7 @@
     "dashphrase": "^1.4.0",
     "grpc-web": "^1.5.0",
     "hash.js": "^1.1.7",
-    "pshenmic-dpp": "1.0.8",
+    "pshenmic-dpp": "1.0.9",
     "rfc4648": "^1.5.4"
   }
 }

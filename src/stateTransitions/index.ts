@@ -13,10 +13,10 @@ export class StateTransitionsController {
   }
 
   async broadcast (stateTransition: StateTransitionWASM): Promise<void> {
-    return await broadcast(stateTransition)
+    return await broadcast(this.grpcPool, stateTransition)
   }
 
   async waitForStateTransitionResult (stateTransition: StateTransitionWASM): Promise<void> {
-    return await waitForStateTransitionResult(stateTransition)
+    return await waitForStateTransitionResult(this.grpcPool, stateTransition)
   }
 }

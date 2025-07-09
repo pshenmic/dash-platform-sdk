@@ -4759,10 +4759,10 @@ prop-types@^15.8.1:
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
-pshenmic-dpp@1.0.8:
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.0.8.tgz#880ee08dc2ddbe17eea87aea5d37df277b44d84c"
-  integrity sha512-Dy0ncF+2CpiYGnkReKGR4GL6Dwe/Hhh77wB9vJmO7p+7bodc26jwjsZokhZIU/rYZ7CvCIL7fVUKf0LYExeWbQ==
+pshenmic-dpp@1.0.9:
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.0.9.tgz#38e40bcc255fa502bddec9e62b51bee0a47eacba"
+  integrity sha512-d5LTHo/7BUc73eto45GmiHtnn/JkqZtPcDiNNcCE1BYZxO8nJxT4VLeKuAyH88yxwUeWvxnzCaECDZ0pF5CRxA==
 
 punycode@^2.1.0:
   version "2.3.1"
@@ -5647,7 +5647,7 @@ walker@^1.0.8:
 
 "wasm-drive-verify@github:owl352/wasm-drive-verify":
   version "1.8.0"
-  resolved "https://codeload.github.com/owl352/wasm-drive-verify/tar.gz/fec3ef4f57e2369ef82d5f0a292f45b886ba9749"
+  resolved "https://codeload.github.com/owl352/wasm-drive-verify/tar.gz/269a6e1c6a352a8ed1bec9a0816bd809f01aa413"
 
 watchpack@^2.4.1:
   version "2.4.4"
