@@ -23,13 +23,14 @@ jobs:
       - run: yarn build:grpc
       - run: yarn test
       - run: yarn build
+      - run: cp package.json dist
       - run: |
           VERSION=$(node -p "require('./package.json').version")
           if [[ "$VERSION" == *"-"* ]]; then
             TAG=$(echo "$VERSION" | sed -E 's/^[0-9]+\.[0-9]+\.[0-9]+-([a-zA-Z0-9]+).*/\1/')
-            yarn publish --tag "$TAG" --non-interactive
+            yarn publish dist --tag "$TAG" --non-interactive
           else
-            yarn publish --tag latest --non-interactive
+            yarn publish dist --tag latest --non-interactive
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
