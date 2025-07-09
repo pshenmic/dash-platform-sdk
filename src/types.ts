@@ -3,11 +3,11 @@ import {
 } from 'pshenmic-dpp'
 export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
 
-export { DashPlatformSDK } from './index'
+export { DashPlatformSDK } from './DashPlatformSDK'
 
 export type MasternodeList = Record<string, MasternodeInfo>
 
-export { AbstractSigner } from './signer/AbstractSigner'
+export { AbstractSigner, AppConnectInfo } from './signer/AbstractSigner'
 
 export interface WalletToIdentityKeyOpts {
   network?: 'mainnet' | 'testnet'

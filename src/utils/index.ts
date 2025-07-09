@@ -42,6 +42,6 @@ export class UtilsController {
   }
 
   getRandomArrayItem (array: any[]): any {
-    getRandomArrayItem(array)
+    return getRandomArrayItem(array)
   }
 }

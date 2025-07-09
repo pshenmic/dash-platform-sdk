@@ -8,6 +8,7 @@
     "emitDeclarationOnly": false
   },
   "include": [
+    "./index.ts",
     "./src/**/*",
     "./types/**/*",
     "./test/**/*",

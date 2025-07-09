@@ -1,4 +1,3 @@
-import { DashPlatformProtocolWASM } from 'pshenmic-dpp'
 import GRPCConnectionPool from './grpcConnectionPool'
 import { IdentitiesController } from './identities'
 import { StateTransitionsController } from './stateTransitions'
@@ -19,7 +18,11 @@ const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   dapiUrl: undefined
 }
 
-export default class DashPlatformSDK {
+export class DashPlatformSDK {
+  network: 'testnet' | 'mainnet'
+  grpcPool: GRPCConnectionPool
+
+  utils: UtilsController
   stateTransitions: StateTransitionsController
   contestedState: ContestedStateController
   dataContracts: DataContractsController
@@ -39,22 +42,32 @@ export default class DashPlatformSDK {
 
     this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
 
-    this.stateTransitions = new StateTransitionsController(this.grpcPool)
-    this.contestedState = new ContestedStateController(this.grpcPool)
-    this.dataContracts = new DataContractsController(this.grpcPool)
-    this.identities = new IdentitiesController(this.grpcPool)
-    this.documents = new DocumentsController(this.grpcPool)
-    this.tokens = new TokensController(this.grpcPool)
-    this.names = new NamesController(this.grpcPool)
-    this.node = new NodeController(this.grpcPool, this.network)
-    this.keyPair = new KeyPairController()
+    this._initialize(this.grpcPool, this.network)
 
     const driveVerifyWASMBytes = base64.decode(wasmBase64)
 
     initSync({ module: driveVerifyWASMBytes })
   }
 
-  network: 'testnet' | 'mainnet'
-  grpcPool: GRPCConnectionPool
-  dpp: DashPlatformProtocolWASM
+  _initialize (grpcPool: GRPCConnectionPool, network: 'testnet' | 'mainnet'): void {
+    this.stateTransitions = new StateTransitionsController(grpcPool)
+    this.dataContracts = new DataContractsController(grpcPool)
+    this.identities = new IdentitiesController(grpcPool)
+    this.documents = new DocumentsController(grpcPool)
+    this.names = new NamesController(grpcPool)
+    this.node = new NodeController(grpcPool, network)
+    this.keyPair = new KeyPairController()
+  }
+
+  setNetwork (network: 'testnet' | 'mainnet'): void {
+    if (network !== 'testnet' && network !== 'mainnet') {
+      throw new Error('Unknown network, should be mainnet or testnet')
+    }
+
+    this.network = network
+
+    const grpcPool = new GRPCConnectionPool(this.network)
+
+    this._initialize(grpcPool, this.network)
+  }
 }

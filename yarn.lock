@@ -1458,9 +1458,9 @@
   integrity sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==
 
 "@types/node@*":
-  version "24.0.11"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-24.0.11.tgz#ea6d221eecc9f30f6a9af6ae10e2702b3a1b42cf"
-  integrity sha512-CJV8eqrYnwQJGMrvcRhQmZfpyniDavB+7nAZYJc6w99hFYJyFN3INV1/2W3QfQrqM36WTLrijJ1fxxvGBmCSxA==
+  version "24.0.10"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-24.0.10.tgz#f65a169779bf0d70203183a1890be7bee8ca2ddb"
+  integrity sha512-ENHwaH+JIRTDIEEbDK6QSQntAYGtbvdDXnMXnZaZ6k13Du1dPMmprkEHIL7ok2Wl2aZevetwTAb5S+7yIF+enA==
   dependencies:
     undici-types "~7.8.0"
 
@@ -5647,7 +5647,7 @@ walker@^1.0.8:
 
 "wasm-drive-verify@github:owl352/wasm-drive-verify":
   version "1.8.0"
-  resolved "https://codeload.github.com/owl352/wasm-drive-verify/tar.gz/7d7ecb6b9ec36498b072bc4bead0ae0d2058d050"
+  resolved "https://codeload.github.com/owl352/wasm-drive-verify/tar.gz/269a6e1c6a352a8ed1bec9a0816bd809f01aa413"
 
 watchpack@^2.4.1:
   version "2.4.4"
