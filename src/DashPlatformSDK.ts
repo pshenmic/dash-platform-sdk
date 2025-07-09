@@ -1,4 +1,3 @@
-import { DashPlatformProtocolWASM } from 'pshenmic-dpp'
 import GRPCConnectionPool from './grpcConnectionPool'
 import { IdentitiesController } from './identities'
 import { StateTransitionsController } from './stateTransitions'
@@ -18,6 +17,9 @@ const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
 }
 
 export class DashPlatformSDK {
+  network: 'testnet' | 'mainnet'
+  grpcPool: GRPCConnectionPool
+
   utils: UtilsController
   identities: IdentitiesController
   documents: DocumentsController
@@ -35,24 +37,32 @@ export class DashPlatformSDK {
 
     this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
 
-    this.stateTransitions = new StateTransitionsController(this.grpcPool)
-    this.dataContracts = new DataContractsController(this.grpcPool)
-    this.identities = new IdentitiesController(this.grpcPool)
-    this.documents = new DocumentsController(this.grpcPool)
-    this.names = new NamesController(this.grpcPool)
-    this.node = new NodeController(this.grpcPool)
-    this.keyPair = new KeyPairController()
+    this._initialize(this.grpcPool)
 
     const driveVerifyWASMBytes = base64.decode(wasmBase64)
 
     initSync({ module: driveVerifyWASMBytes })
   }
 
-  setNetwork(network: 'testnet' | 'mainnet') {
-    this.grpcPool = new GRPCConnectionPool(this.network)
+  _initialize (grpcPool: GRPCConnectionPool): void {
+    this.stateTransitions = new StateTransitionsController(grpcPool)
+    this.dataContracts = new DataContractsController(grpcPool)
+    this.identities = new IdentitiesController(grpcPool)
+    this.documents = new DocumentsController(grpcPool)
+    this.names = new NamesController(grpcPool)
+    this.node = new NodeController(grpcPool)
+    this.keyPair = new KeyPairController()
   }
 
-  network: 'testnet' | 'mainnet'
-  grpcPool: GRPCConnectionPool
-  dpp: DashPlatformProtocolWASM
+  setNetwork (network: 'testnet' | 'mainnet'): void {
+    if (network !== 'testnet' && network !== 'mainnet') {
+      throw new Error('Unknown network, should be mainnet or testnet')
+    }
+
+    this.network = network
+
+    const grpcPool = new GRPCConnectionPool(this.network)
+
+    this._initialize(grpcPool)
+  }
 }
