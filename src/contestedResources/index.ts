@@ -1,7 +1,6 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
 import { ContestedResourceVoteState, ContestedStateResultType } from '../types'
 import getContestedResourceVoteState, { StartAtIdentifierInfo } from './getContestedResourceVoteState'
-import stringToIndexValueBytes from '../utils/stringToIndexValueBytes'
 import { DataContractWASM } from 'pshenmic-dpp'
 
 export default class ContestedResourcesController {
@@ -15,17 +14,12 @@ export default class ContestedResourcesController {
     contract: DataContractWASM,
     documentTypeName: string,
     indexName: string,
-    indexValues: string[] | Array<Uint8Array<ArrayBufferLike>>,
+    indexValuesBytes: Uint8Array[],
     resultType: ContestedStateResultType,
     allowIncludeLockedAndAbstainingVoteTally: boolean,
     startAtIdentifierInfo?: StartAtIdentifierInfo,
     count?: number
   ): Promise<ContestedResourceVoteState> {
-    const indexValuesBytes =
-      indexValues.every(value => typeof value === 'string')
-        ? indexValues.map(stringToIndexValueBytes)
-        : indexValues
-
     return await getContestedResourceVoteState(this.grpcPool, contract, documentTypeName, indexName, indexValuesBytes, resultType, allowIncludeLockedAndAbstainingVoteTally, startAtIdentifierInfo, count)
   }
 }

@@ -1,5 +1,6 @@
 import { DashPlatformSDK, ContestedStateResultType } from '../../src/types'
 import { DataContractWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import stringToIndexValueBytes from '../../src/utils/stringToIndexValueBytes'
 
 let sdk: DashPlatformSDK
 let contract: DataContractWASM
@@ -193,14 +194,15 @@ describe('Contested State', () => {
       'parentNameAndLabel',
       [
         'dash',
-        'test000'
-      ],
+        'agreatman'
+      ].map(stringToIndexValueBytes),
       ContestedStateResultType.DOCUMENTS_AND_VOTE_TALLY,
       true
     )
 
     expect(voteState.finishedVoteInfo).toBeTruthy()
     expect(voteState.contenders).toBeTruthy()
+    expect(voteState.contenders.length).toBeGreaterThan(0)
     expect(voteState.abstainVoteTally).toBeDefined()
     expect(voteState.lockVoteTally).toBeDefined()
   })
@@ -213,7 +215,7 @@ describe('Contested State', () => {
       [
         'dash',
         'agreatma1n'
-      ],
+      ].map(stringToIndexValueBytes),
       ContestedStateResultType.DOCUMENTS_AND_VOTE_TALLY,
       false
     )

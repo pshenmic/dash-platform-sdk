@@ -14,7 +14,6 @@ import { verifyVotePollVoteStateProof } from 'wasm-drive-verify'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
-import indexValueBytesToString from '../utils/indexBytesToString'
 
 export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 
@@ -70,7 +69,7 @@ export default async function getContestedResourceVoteState (
     contract.bytes(PlatformVersionWASM.PLATFORM_V9),
     documentTypeName,
     indexName,
-    indexValues.map(indexValueBytesToString),
+    indexValues,
     resultType,
     allowIncludeLockedAndAbstainingVoteTally,
     count,
