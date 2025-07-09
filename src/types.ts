@@ -13,6 +13,20 @@ export interface WalletToIdentityKeyOpts {
   network?: 'mainnet' | 'testnet'
 }
 
+export type CreateStateTransitionDocumentBatchParams = DocumentBatchTransitionPurchaseParams | DocumentBatchTransitionTransferParams | DocumentBatchTransitionUpdatePriceParams
+
+export interface DocumentBatchTransitionPurchaseParams {
+  price: bigint | null
+}
+
+export interface DocumentBatchTransitionTransferParams {
+  recipient: string | null
+}
+
+export interface DocumentBatchTransitionUpdatePriceParams {
+  price: bigint | null
+}
+
 export interface MasternodeInfo {
   proTxHash: string
   address: string
