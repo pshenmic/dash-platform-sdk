@@ -9,8 +9,6 @@ It uses an WASM bindings layer to a Dash Platform Protocol to create documents, 
 
 SDK uses a pre-defined set of seed nodes (public RPC) at the start, and then tries to switch to the latest list of nodes fetched from the Dash network through https://rpc.digitalcash.dev if possible
 
-### This is development version, breaking changes may be each release
-
 Currently, only minimal features are included, such as document querying and creation of the documents, and all necessary related functions to do that
 There is no input validation and error handling implemented yet relying on a happy path, this is going to be fixed in next versions
 
@@ -521,17 +519,10 @@ const evonodes = await sdk.utils.getEvonodeList(network)
 console.log(evonodes)
 ```
 
-#### Get random array item
-Returns a random item from an array
-```javascript
-const array = [1, 2, 3, 4, 5]
-const randomItem = sdk.utils.getRandomArrayItem(array)
-```
-
 ### Signer (Advanced)
 The SDK supports custom signers for transaction signing. A signer must implement the AbstractSigner interface:
 
-```javascript
+```typescript
 interface AbstractSigner {
   connect(): Promise<AppConnectInfo>
   signAndBroadcast(stateTransition: StateTransitionWASM): Promise<StateTransitionWASM>
@@ -581,7 +572,7 @@ Type that can be an IdentifierWASM, string, or array-like number sequence.
 
 ### DataContractConfig
 Configuration object for data contracts:
-```javascript
+```typescript
 interface DataContractConfig {
   $format_version: string
   canBeDeleted: boolean
