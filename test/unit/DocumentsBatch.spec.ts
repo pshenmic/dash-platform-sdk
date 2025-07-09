@@ -1,8 +1,8 @@
-import { DashPlatformSDK } from '../../src'
 import {
   BatchType,
   StateTransitionWASM
 } from 'pshenmic-dpp'
+import { DashPlatformSDK } from '../../src/DashPlatformSDK'
 
 let sdk: DashPlatformSDK
 

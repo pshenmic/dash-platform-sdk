@@ -17,7 +17,7 @@ const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
   dapiUrl: undefined
 }
 
-export default class DashPlatformSDK {
+export class DashPlatformSDK {
   utils: UtilsController
   identities: IdentitiesController
   documents: DocumentsController

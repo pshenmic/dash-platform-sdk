@@ -4,7 +4,7 @@ const TerserPlugin = require('terser-webpack-plugin')
 
 module.exports = {
   mode: 'production',
-  entry: './src/index.ts',
+  entry: './index.ts',
   optimization: {
     concatenateModules: true,
     minimizer: [
@@ -38,6 +38,7 @@ module.exports = {
     globalObject: 'this',
     path: path.resolve(__dirname, 'dist'),
     library: 'DashPlatformSDK',
-    libraryTarget: 'umd'
+    libraryTarget: 'umd',
+    filename: 'bundle.min.js'
   }
 }

@@ -1,5 +1,5 @@
 import { DocumentWASM } from 'pshenmic-dpp'
-import { DashPlatformSDK } from '../../src'
+import { DashPlatformSDK } from '../../src/DashPlatformSDK'
 
 let sdk: DashPlatformSDK
 
@@ -30,6 +30,20 @@ describe('Document', () => {
     const documentType = 'domain'
 
     const [document] = await sdk.documents.query(dataContract, documentType)
+
+    expect(document.createdAtBlockHeight).toEqual(undefined)
+
+    expect(document.dataContractId.base58()).toEqual(dataContract)
+    expect(document).toEqual(expect.any(DocumentWASM))
+  })
+
+  test('should be able to get document', async () => {
+    const dataContract = '6hVQW16jyvZyGSQk2YVty4ND6bgFXozizYWnPt753uW5'
+    const documentType = 'torrent'
+    const limit = 100
+
+    // @ts-expect-error
+    const [document] = await sdk.documents.query(dataContract, documentType, null, null, limit)
 
     expect(document.createdAtBlockHeight).toEqual(undefined)
 

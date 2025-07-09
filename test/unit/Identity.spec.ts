@@ -1,5 +1,5 @@
 import { DocumentWASM, IdentityPublicKeyWASM, IdentityWASM } from 'pshenmic-dpp'
-import { DashPlatformSDK } from '../../src'
+import { DashPlatformSDK } from '../../src/DashPlatformSDK'
 
 let sdk: DashPlatformSDK
 
