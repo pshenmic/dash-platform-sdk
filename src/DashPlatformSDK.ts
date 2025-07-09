@@ -22,7 +22,6 @@ export class DashPlatformSDK {
   network: 'testnet' | 'mainnet'
   grpcPool: GRPCConnectionPool
 
-  utils: UtilsController
   stateTransitions: StateTransitionsController
   contestedState: ContestedStateController
   dataContracts: DataContractsController
