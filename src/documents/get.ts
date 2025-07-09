@@ -1,5 +1,4 @@
 import { GetDocumentsRequest, GetDocumentsResponse_GetDocumentsResponseV0 } from '../../proto/generated/platform'
-import { encode } from 'cbor'
 import { DocumentWASM, IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
 import getByIdentifier from '../dataContracts/getByIdentifier'
 import { DAPI_DEFAULT_LIMIT } from '../constants'
@@ -9,6 +8,7 @@ import { verifyDocumentProof } from 'wasm-drive-verify'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
+import { encode } from 'cbor-x';
 
 export default async function get (
   grpcPool: GRPCConnectionPool,
