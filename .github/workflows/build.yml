@@ -38,6 +38,10 @@ jobs:
       run: |
         yarn build
 
+    - name: Build docs
+      run: |
+        yarn docs
+
     - name: Setup Pages
       uses: actions/configure-pages@v5
 
