@@ -45,9 +45,9 @@
   "dependencies": {
     "@dashincubator/secp256k1": "^1.7.1-5",
     "@noble/curves": "^1.9.2",
-    "wasm-drive-verify": "github:owl352/wasm-drive-verify",
+    "wasm-drive-verify": "github:owl352/wasm-drive-verify#fe2a9406609ee2a9d42a6b4be7214395bd164155",
     "@scure/base": "^1.2.4",
-    "cbor": "^10.0.3",
+    "cbor-x": "^1.6.0",
     "dashhd": "^3.3.3",
     "dashkeys": "^1.1.5",
     "dashphrase": "^1.4.0",
