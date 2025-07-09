@@ -1,4 +1,4 @@
-import { DashPlatformSDK } from '../../src'
+import { DashPlatformSDK } from '../../src/types'
 
 let sdk: DashPlatformSDK
 

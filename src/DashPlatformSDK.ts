@@ -7,7 +7,7 @@ import { KeyPairController } from './keyPair'
 import { NodeController } from './node'
 import { NamesController } from './names'
 import { DataContractsController } from './dataContracts'
-import ContestedStateController from './contestedState'
+import ContestedResourcesController from './contestedResources'
 import TokensController from './tokens'
 import { initSync, wasmBase64 } from 'wasm-drive-verify'
 import { base64 } from '@scure/base'
@@ -22,8 +22,8 @@ export class DashPlatformSDK {
   network: 'testnet' | 'mainnet'
   grpcPool: GRPCConnectionPool
 
+  contestedResources: ContestedResourcesController
   stateTransitions: StateTransitionsController
-  contestedState: ContestedStateController
   dataContracts: DataContractsController
   identities: IdentitiesController
   documents: DocumentsController
@@ -50,11 +50,13 @@ export class DashPlatformSDK {
 
   _initialize (grpcPool: GRPCConnectionPool, network: 'testnet' | 'mainnet'): void {
     this.stateTransitions = new StateTransitionsController(grpcPool)
+    this.contestedResources = new ContestedResourcesController(grpcPool)
     this.dataContracts = new DataContractsController(grpcPool)
     this.identities = new IdentitiesController(grpcPool)
     this.documents = new DocumentsController(grpcPool)
-    this.names = new NamesController(grpcPool)
     this.node = new NodeController(grpcPool, network)
+    this.tokens = new TokensController(grpcPool)
+    this.names = new NamesController(grpcPool)
     this.keyPair = new KeyPairController()
   }
 

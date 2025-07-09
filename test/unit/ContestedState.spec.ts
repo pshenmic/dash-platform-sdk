@@ -1,5 +1,4 @@
-import { DashPlatformSDK } from '../../src'
-import { ContestedStateResultType } from '../../src/types'
+import { DashPlatformSDK, ContestedStateResultType } from '../../src/types'
 import { DataContractWASM, PlatformVersionWASM } from 'pshenmic-dpp'
 
 let sdk: DashPlatformSDK
@@ -188,7 +187,7 @@ describe('Contested State', () => {
   })
 
   test('should be able to get contested resource vote state with finishedVoteInfo', async () => {
-    const voteState = await sdk.contestedState.getContestedResourceVoteState(
+    const voteState = await sdk.contestedResources.getContestedResourceVoteState(
       contract,
       'domain',
       'parentNameAndLabel',
@@ -207,7 +206,7 @@ describe('Contested State', () => {
   })
 
   test('should be able to get contested resource vote state for incorrect values', async () => {
-    const voteState = await sdk.contestedState.getContestedResourceVoteState(
+    const voteState = await sdk.contestedResources.getContestedResourceVoteState(
       contract,
       'domain',
       'parentNameAndLabel',

@@ -4,7 +4,7 @@ import getContestedResourceVoteState, { StartAtIdentifierInfo } from './getConte
 import stringToIndexValueBytes from '../utils/stringToIndexValueBytes'
 import { DataContractWASM } from 'pshenmic-dpp'
 
-export default class ContestedStateController {
+export default class ContestedResourcesController {
   grpcPool: GRPCConnectionPool
 
   constructor (grpcPool: GRPCConnectionPool) {

@@ -55,6 +55,10 @@ export default async function getTokenContractInfo (grpcPool: GRPCConnectionPool
     throw new Error('Failed to verify query')
   }
 
+  if (contractInfo == null) {
+    throw new Error('ContractInfo not found')
+  }
+
   return {
     contractId: new IdentifierWASM(contractInfo.contractId),
     tokenContractPosition: contractInfo.tokenContractPosition
