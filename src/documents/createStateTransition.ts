@@ -8,7 +8,7 @@ import {
   DocumentUpdatePriceTransitionWASM,
   DocumentWASM, StateTransitionWASM
 } from 'pshenmic-dpp'
-import {CreateStateTransitionDocumentBatchParams} from "../types";
+import { CreateStateTransitionDocumentBatchParams } from '../types'
 
 const documentBatchTypesMap = {
   [BatchType.Create]: DocumentCreateTransitionWASM,
