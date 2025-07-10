@@ -55,7 +55,7 @@ export class DashPlatformSDK {
     this.keyPair = new KeyPairController()
   }
 
-  setSigner(signer: AbstractSigner): void {
+  setSigner (signer: AbstractSigner): void {
     this.signer = signer
   }
 

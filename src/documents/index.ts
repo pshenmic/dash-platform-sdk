@@ -1,5 +1,5 @@
 import get from './get'
-import {CreateStateTransitionDocumentBatchParams, IdentifierLike} from '../types'
+import { CreateStateTransitionDocumentBatchParams, IdentifierLike } from '../types'
 import createDocument from './create'
 import { BatchType, DocumentWASM, IdentifierWASM, StateTransitionWASM } from 'pshenmic-dpp'
 import createStateTransition from './createStateTransition'
