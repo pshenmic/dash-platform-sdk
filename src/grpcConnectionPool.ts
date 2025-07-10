@@ -1,6 +1,6 @@
 import getRandomArrayItem from './utils/getRandomArrayItem'
 import { Channel, Client, createChannel, createClient } from 'nice-grpc-web'
-import { PlatformDefinition } from '../proto/generated/platform'
+import {DeepPartial, MessageFns, PlatformDefinition} from '../proto/generated/platform'
 import getEvonodeList from './utils/getEvonodeList'
 
 const seedNodes = {
@@ -50,5 +50,21 @@ export default class GRPCConnectionPool {
   getClient (): Client<PlatformDefinition> {
     const channel = getRandomArrayItem(this.channels)
     return createClient(PlatformDefinition, channel)
+  }
+
+  async call<ReqType, Out, Req>(method: {
+    requestType: ReqType,
+    responseType: MessageFns<Out>,
+    name: string
+  }, request: Req): Promise<DeepPartial<Out>> {
+    try {
+      const client = this.getClient()
+
+      return client[method.name](request)
+
+    } catch (e) {
+      // request error handling
+      throw new Error(e);
+    }
   }
 }

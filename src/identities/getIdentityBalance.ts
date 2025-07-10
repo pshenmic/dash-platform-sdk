@@ -1,6 +1,6 @@
 import {
   GetIdentityBalanceRequest,
-  GetIdentityBalanceResponse_GetIdentityBalanceResponseV0
+  GetIdentityBalanceResponse_GetIdentityBalanceResponseV0, PlatformDefinition
 } from '../../proto/generated/platform'
 import { IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
 import { IdentifierLike } from '../types'
@@ -20,7 +20,7 @@ export default async function getIdentityBalance (grpcPool: GRPCConnectionPool, 
     }
   })
 
-  const { v0 } = await grpcPool.getClient().getIdentityBalance(getIdentityBalanceRequest)
+  const { v0 } = await grpcPool.call(PlatformDefinition.methods.getIdentityBalance, getIdentityBalanceRequest)
 
   const { proof, metadata } = v0 as GetIdentityBalanceResponse_GetIdentityBalanceResponseV0
 
