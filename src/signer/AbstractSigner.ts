@@ -1,11 +1,11 @@
 import { StateTransitionWASM } from 'pshenmic-dpp'
 
-export interface ConnectInfo {
+export interface WalletInfo {
   identities: string[]
   currentIdentity: string | null
 }
 
 export interface AbstractSigner {
-  connect: () => Promise<ConnectInfo>
+  connect: () => Promise<WalletInfo>
   signAndBroadcast: (stateTransition: StateTransitionWASM) => Promise<StateTransitionWASM>
 }

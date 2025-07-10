@@ -53,6 +53,10 @@ Or load it straight from the web page:
 
 ## API Documentation
 
+
+https://pshenmic.github.io/dash-platform-sdk/index.html
+
+
 ###  Data Contracts
 
 #### Get Data Contract By Identifier
@@ -524,11 +528,11 @@ The SDK supports custom signers for transaction signing. A signer must implement
 
 ```typescript
 interface AbstractSigner {
-  connect(): Promise<AppConnectInfo>
+  connect(): Promise<WalletInfo>
   signAndBroadcast(stateTransition: StateTransitionWASM): Promise<StateTransitionWASM>
 }
 
-interface AppConnectInfo {
+interface WalletInfo {
   identities: string[]
   currentIdentity: string | null
 }
@@ -561,7 +565,7 @@ import {
   NodeStatus,
   DataContractConfig,
   AbstractSigner,
-  AppConnectInfo,
+  WalletInfo,
   BatchType,
   DataContractTransitionType
 } from 'dash-platform-sdk'
