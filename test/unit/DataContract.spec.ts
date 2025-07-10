@@ -1,16 +1,14 @@
 import {
   DataContractWASM,
-  PlatformVersionWASM, StateTransitionWASM
+  StateTransitionWASM
 } from 'pshenmic-dpp'
-import { DashPlatformSDK, DataContractConfig } from '../../src/types'
-import { DataContractTransitionType } from '../../src/dataContracts/createStateTransition'
+import { DashPlatformSDK, DataContractConfig, DataContractTransitionType } from '../../src/types'
 
 let sdk: DashPlatformSDK
 
 let dataContractIdentifier: string
 let ownerIdentifier: string
 let identityNonce: bigint
-let definitions: object
 let config: DataContractConfig
 let schema: object
 
@@ -21,10 +19,6 @@ describe('DataContract', () => {
     dataContractIdentifier = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
     ownerIdentifier = 'GARSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
     identityNonce = BigInt(11)
-
-    definitions = {
-      def1: true
-    }
 
     config = {
       $format_version: '0',
@@ -57,27 +51,25 @@ describe('DataContract', () => {
   })
 
   test('should be able to get data contract', async () => {
-    const dataContract = await sdk.dataContracts.getByIdentifier(dataContractIdentifier)
+    const dataContract = await sdk.dataContracts.getDataContractByIdentifier(dataContractIdentifier)
 
     expect(dataContract).toEqual(expect.any(DataContractWASM))
   })
 
   test('should be able to create data contract', async () => {
-    const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema)
+    const dataContract = sdk.dataContracts.create(ownerIdentifier, identityNonce, schema)
 
     expect(dataContract).toEqual(expect.any(DataContractWASM))
   })
 
   test('should be able to create data contract with optional params', async () => {
-    const dataContract = await sdk.dataContracts.create(
+    const dataContract = sdk.dataContracts.create(
       ownerIdentifier,
       identityNonce,
       schema,
-      definitions,
       true,
       undefined,
-      config,
-      PlatformVersionWASM.PLATFORM_V2
+      config
     )
 
     expect(dataContract).toEqual(expect.any(DataContractWASM))
@@ -85,17 +77,17 @@ describe('DataContract', () => {
   })
 
   test('should be able to create data contract create transition', async () => {
-    const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema)
+    const dataContract = sdk.dataContracts.create(ownerIdentifier, identityNonce, schema)
 
-    const transition = await sdk.dataContracts.createStateTransition(dataContract, DataContractTransitionType.Create, identityNonce)
+    const transition = sdk.dataContracts.createStateTransition(dataContract, DataContractTransitionType.Create, identityNonce)
 
     expect(transition).toEqual(expect.any(StateTransitionWASM))
   })
 
   test('should be able to create data contract update transition', async () => {
-    const dataContract = await sdk.dataContracts.create(ownerIdentifier, identityNonce, schema)
+    const dataContract = sdk.dataContracts.create(ownerIdentifier, identityNonce, schema)
 
-    const transition = await sdk.dataContracts.createStateTransition(dataContract, DataContractTransitionType.Update, identityNonce)
+    const transition = sdk.dataContracts.createStateTransition(dataContract, DataContractTransitionType.Update, identityNonce)
 
     expect(transition).toEqual(expect.any(StateTransitionWASM))
   })

@@ -7,7 +7,7 @@ export { DashPlatformSDK } from './DashPlatformSDK'
 
 export type MasternodeList = Record<string, MasternodeInfo>
 
-export { AbstractSigner, ConnectInfo } from './signer/AbstractSigner'
+export { AbstractSigner } from './signer/AbstractSigner'
 
 export interface WalletToIdentityKeyOpts {
   network?: 'mainnet' | 'testnet'
@@ -106,6 +106,11 @@ export interface NodeStatus {
     | undefined
     epoch?: number | undefined
   } | undefined
+}
+
+export enum DataContractTransitionType {
+  Create = 0,
+  Update = 1
 }
 
 export interface DataContractConfig {

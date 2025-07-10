@@ -48,5 +48,5 @@ export default async function getByIdentifier (grpcPool: GRPCConnectionPool, ide
     throw new Error(`Data Contract with identifier ${id.base58()} not found`)
   }
 
-  return DataContractWASM.fromBytes(contract, true, PlatformVersionWASM.PLATFORM_V1)
+  return DataContractWASM.fromBytes(contract, true, PlatformVersionWASM.PLATFORM_V8)
 }

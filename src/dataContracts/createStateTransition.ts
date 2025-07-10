@@ -2,18 +2,14 @@ import {
   DataContractCreateTransitionWASM, DataContractUpdateTransitionWASM,
   DataContractWASM, StateTransitionWASM
 } from 'pshenmic-dpp'
-
-export enum DataContractTransitionType {
-  Create = 0,
-  Update = 1
-}
+import { DataContractTransitionType } from '../types'
 
 const dataContractTransitionsMap = {
   [DataContractTransitionType.Create]: DataContractCreateTransitionWASM,
   [DataContractTransitionType.Update]: DataContractUpdateTransitionWASM
 }
 
-export default async function createStateTransition (dataContract: DataContractWASM, type: DataContractTransitionType, identityContractNonce: bigint): Promise<StateTransitionWASM> {
+export default function createStateTransition (dataContract: DataContractWASM, type: DataContractTransitionType, identityContractNonce: bigint): StateTransitionWASM {
   const TransitionClass = dataContractTransitionsMap[type]
 
   if (TransitionClass == null) {
