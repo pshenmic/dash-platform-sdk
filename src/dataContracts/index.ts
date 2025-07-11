@@ -6,10 +6,13 @@ import createDataContract from './create'
 import createStateTransition from './createStateTransition'
 
 /**
- * All the functions necessary to work with Data Contracts in the network
+ * Collection of methods necessary to work with Data Contracts in the network,
+ * such as data contract creation or retrieval
  *
+ * @hideconstructor
  */
 export class DataContractsController {
+  /** @ignore */
   grpcPool: GRPCConnectionPool
 
   constructor (grpcPool: GRPCConnectionPool) {
@@ -37,7 +40,7 @@ export class DataContractsController {
   /**
    * Retrieves a Data Contract by an identifier from the network
    *
-   * @param identifier {IdentifierLike}
+   * @param identifier {IdentifierLike} Identifier of the Data Contract
    *
    * @return {Promise<DataContractWASM>}
    */
@@ -47,7 +50,7 @@ export class DataContractsController {
 
   /**
    * Helper function to create a state transition from a {DataContractWASM} instance
-   * Pass {DataContractTransitionType} to specify which type of operation you want
+   * Pass {DataContractTransitionType} in type param to specify which type of operation you want
    * to make: create or update.
    *
    * @param dataContract {DataContractWASM} An instance of DataContractWASM to create or update

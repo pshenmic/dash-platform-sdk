@@ -5,7 +5,13 @@ import createStateTransition from './createStateTransition'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import query from './query'
 
+/**
+ * Collection of methods to work with documents like creation, querying or preparing a transition action
+ *
+ * @hideconstructor
+ */
 export class DocumentsController {
+  /** @ignore **/
   grpcPool: GRPCConnectionPool
 
   constructor (grpcPool: GRPCConnectionPool) {

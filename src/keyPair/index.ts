@@ -14,6 +14,11 @@ import seedToWallet from './seedToWallet'
 import walletToIdentityKey from './walletToIdentityKey'
 import xKeyToHDXKey from './xkeyToHDXKey'
 
+/**
+ * Collection of functions to work with private keys and seed phrases
+ *
+ * @hideconstructor
+ */
 export class KeyPairController {
   /**
    * Allows to derive child HD Key
@@ -44,7 +49,7 @@ export class KeyPairController {
    * @param {HDKey} key - The HDKey to be converted into a public key
    * @return {Promise<HDKey>} - converted public key
    */
-  async keyToPublicKey (hdKey: HDKey, opts?: { version: Versions | number }): Promise<Uint8Array<ArrayBufferLike>> {
+  async keyToPublicKey (hdKey: HDKey, opts?: { version: Versions | number }): Promise<Uint8Array> {
     return await keyToXPublicKey(hdKey, opts)
   }
 
@@ -75,7 +80,7 @@ export class KeyPairController {
    * @param {{ version: Versions | number }} [opts] - Optional, containing the version
    * @return {Promise<Uint8Array>}
    */
-  async keyToXPublicKey (hdKey: HDKey, opts?: { version: Versions | number }): Promise<Uint8Array<ArrayBufferLike>> {
+  async keyToXPublicKey (hdKey: HDKey, opts?: { version: Versions | number }): Promise<Uint8Array> {
     return await keyToXPublicKey(hdKey, opts)
   }
 
@@ -102,7 +107,7 @@ export class KeyPairController {
    * @param {boolean} [verify] - Whether to verify the mnemonic during derivation.
    * @return {Promise<Uint8Array>} Seed bytes
    */
-  async mnemonicToSeed (mnemonic: string, salt?: string, verify?: boolean): Promise<Uint8Array<ArrayBufferLike>> {
+  async mnemonicToSeed (mnemonic: string, salt?: string, verify?: boolean): Promise<Uint8Array> {
     return await mnemonicToSeed(mnemonic, salt, verify)
   }
 

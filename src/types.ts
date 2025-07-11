@@ -1,7 +1,7 @@
 import {
   IdentifierWASM
 } from 'pshenmic-dpp'
-export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
+export type IdentifierLike = IdentifierWASM | string | Uint8Array
 
 export { DashPlatformSDK } from './DashPlatformSDK'
 

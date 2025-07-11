@@ -5,6 +5,9 @@ export interface WalletInfo {
   currentIdentity: string | null
 }
 
+/**
+ * Abstract interface for custom signer implementation
+ */
 export interface AbstractSigner {
   connect: () => Promise<WalletInfo>
   signAndBroadcast: (stateTransition: StateTransitionWASM) => Promise<StateTransitionWASM>

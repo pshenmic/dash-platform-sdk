@@ -1,3 +1,4 @@
 {
-  "entryPoints": ["src/index.ts", "src/*"]
+  "entryPoints": ["src/index.ts", "src/*"],
+  "exclude": ["./src/constants.ts", "./src/grpcConnectionPool.ts"]
 }
