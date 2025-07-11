@@ -1,4 +1,4 @@
 {
-  "entryPoints": ["src/*", "./node_modules/pshenmic-dpp/*"],
+  "entryPoints": ["src/*"],
   "exclude": ["./src/constants.ts", "./src/grpcConnectionPool.ts"]
 }
