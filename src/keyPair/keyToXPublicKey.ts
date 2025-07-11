@@ -1,6 +1,6 @@
-import { HDKey, Versions } from 'dashhd'
+import { HDKey } from 'dashhd'
 import * as DashHD from 'dashhd'
-import {NetworkVersion} from "../types";
+import { NetworkVersion } from '../types'
 
 export default async function keyToXPublicKey (hdKey: HDKey, opts?: NetworkVersion): Promise<Uint8Array> {
   return await DashHD.toXPub(hdKey, opts)

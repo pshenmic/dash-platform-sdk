@@ -1,11 +1,11 @@
 import deriveChild from './deriveChild'
-import { HDFromSeedOptions, HDFromXKeyOptions, HDKey, HDWallet, HDXKey, Versions } from 'dashhd'
+import { HDFromSeedOptions, HDFromXKeyOptions, HDKey, HDWallet, HDXKey } from 'dashhd'
 import derivePath from './derivePath'
 import keyToXPublicKey from './keyToXPublicKey'
 import keyToWalletId from './keyToWalletId'
 import keyToXPrivateKey from './keyToXPrivateKey'
 import mnemonicToIdentityKey from './mnemonicToIdentityKey'
-import {NetworkVersion, WalletToIdentityKeyOpts} from '../types'
+import { NetworkVersion, WalletToIdentityKeyOpts } from '../types'
 import mnemonicToSeed from './mnemonicToSeed'
 import mnemonicToWallet from './mnemonicToWallet'
 import privateKeyToWif from './privateKeyToWif'
@@ -29,7 +29,7 @@ export class KeyPairController {
    *
    * @return {Promise<HDKey>} A promise that resolves child key
    */
-  async deriveChild(parent: HDKey, index: number, hardened: boolean): Promise<HDKey> {
+  async deriveChild (parent: HDKey, index: number, hardened: boolean): Promise<HDKey> {
     return await deriveChild(parent, index, hardened)
   }
 
@@ -41,7 +41,7 @@ export class KeyPairController {
    *
    * @return {Promise<HDKey>} A promise that resolves key by path
    */
-  async derivePath(parent: HDKey, path: string): Promise<HDKey> {
+  async derivePath (parent: HDKey, path: string): Promise<HDKey> {
     return await derivePath(parent, path)
   }
 
@@ -53,7 +53,7 @@ export class KeyPairController {
    *
    * @return {Promise<Uint8Array>} - converted public key
    */
-  async keyToPublicKey(hdKey: HDKey, opts?: NetworkVersion): Promise<Uint8Array> {
+  async keyToPublicKey (hdKey: HDKey, opts?: NetworkVersion): Promise<Uint8Array> {
     return await keyToXPublicKey(hdKey, opts)
   }
 
@@ -64,7 +64,7 @@ export class KeyPairController {
    *
    * @return {Promise<string>} Wallet id from used key
    */
-  async keyToWalletId(hdKey: HDKey): Promise<string> {
+  async keyToWalletId (hdKey: HDKey): Promise<string> {
     return await keyToWalletId(hdKey)
   }
 
@@ -76,7 +76,7 @@ export class KeyPairController {
    *
    * @returns {Promise<string>} A promise that resolves to the xPrivateKey string
    */
-  async keyToXPrivateKey(hdKey: HDKey, opts?: NetworkVersion): Promise<string> {
+  async keyToXPrivateKey (hdKey: HDKey, opts?: NetworkVersion): Promise<string> {
     return await keyToXPrivateKey(hdKey, opts)
   }
 
@@ -87,7 +87,7 @@ export class KeyPairController {
    *
    * @return {Promise<Uint8Array>}
    */
-  async keyToXPublicKey(hdKey: HDKey, opts?: NetworkVersion): Promise<Uint8Array> {
+  async keyToXPublicKey (hdKey: HDKey, opts?: NetworkVersion): Promise<Uint8Array> {
     return await keyToXPublicKey(hdKey, opts)
   }
 
@@ -103,7 +103,7 @@ export class KeyPairController {
    *
    * @returns {Promise<HDKey>} A promise that resolves to the derived identity HDKey.
    */
-  async mnemonicToIdentityKey(mnemonic: string, identityIndex?: number, keyIndex?: number, salt?: string, verify?: boolean, opts?: HDFromSeedOptions & WalletToIdentityKeyOpts): Promise<HDKey> {
+  async mnemonicToIdentityKey (mnemonic: string, identityIndex?: number, keyIndex?: number, salt?: string, verify?: boolean, opts?: HDFromSeedOptions & WalletToIdentityKeyOpts): Promise<HDKey> {
     return await mnemonicToIdentityKey(mnemonic, identityIndex ?? 0, keyIndex ?? 0, salt, verify, opts)
   }
 
@@ -116,7 +116,7 @@ export class KeyPairController {
    *
    * @return {Promise<Uint8Array>} Seed bytes
    */
-  async mnemonicToSeed(mnemonic: string, salt?: string, verify?: boolean): Promise<Uint8Array> {
+  async mnemonicToSeed (mnemonic: string, salt?: string, verify?: boolean): Promise<Uint8Array> {
     return await mnemonicToSeed(mnemonic, salt, verify)
   }
 
@@ -130,7 +130,7 @@ export class KeyPairController {
    *
    * @return {Promise<HDWallet>} Wallet from mnemonic
    */
-  async mnemonicToWallet(mnemonic: string, salt?: string, verify?: boolean, opts?: HDFromSeedOptions): Promise<HDKey> {
+  async mnemonicToWallet (mnemonic: string, salt?: string, verify?: boolean, opts?: HDFromSeedOptions): Promise<HDKey> {
     return await mnemonicToWallet(mnemonic, salt, verify, opts)
   }
 
@@ -142,7 +142,7 @@ export class KeyPairController {
    *
    * @return {Promise<string>} WIF
    */
-  async privateKeyToWif(privateKeyBytes: Uint8Array, opts?: NetworkVersion): Promise<string> {
+  async privateKeyToWif (privateKeyBytes: Uint8Array, opts?: NetworkVersion): Promise<string> {
     return await privateKeyToWif(privateKeyBytes, opts)
   }
 
@@ -154,7 +154,7 @@ export class KeyPairController {
    *
    * @return {Promise<string>} address string
    */
-  async publicKeyToAddress(publicKeyBytes: Uint8Array, opts?: NetworkVersion): Promise<string> {
+  async publicKeyToAddress (publicKeyBytes: Uint8Array, opts?: NetworkVersion): Promise<string> {
     return await publicKeyToAddress(publicKeyBytes, opts)
   }
 
@@ -166,7 +166,7 @@ export class KeyPairController {
    *
    * @return {Promise<HDWallet>}
    */
-  async seedToWallet(seed: Uint8Array, opts?: HDFromSeedOptions): Promise<HDWallet> {
+  async seedToWallet (seed: Uint8Array, opts?: HDFromSeedOptions): Promise<HDWallet> {
     return await seedToWallet(seed, opts)
   }
 
@@ -180,7 +180,7 @@ export class KeyPairController {
    *
    * @return {Promise<HDKey>}
    */
-  async walletToIdentityKey(wallet: HDWallet | HDKey, identityIndex: number, keyIndex: number, opts: WalletToIdentityKeyOpts = { network: 'testnet' }): Promise<HDKey> {
+  async walletToIdentityKey (wallet: HDWallet | HDKey, identityIndex: number, keyIndex: number, opts: WalletToIdentityKeyOpts = { network: 'testnet' }): Promise<HDKey> {
     return await walletToIdentityKey(wallet, identityIndex, keyIndex, opts)
   }
 
@@ -191,7 +191,7 @@ export class KeyPairController {
    * @param opts {HDFromXKeyOptions=} - Optional options
    * @return {Promise<HDXKey>}
    */
-  async xKeyToHDXKey(xKey: string, opts?: HDFromXKeyOptions): Promise<HDXKey> {
+  async xKeyToHDXKey (xKey: string, opts?: HDFromXKeyOptions): Promise<HDXKey> {
     return await xKeyToHDXKey(xKey, opts)
   }
 }
