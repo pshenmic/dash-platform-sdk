@@ -1,13 +1,7 @@
 import { HDKey, Versions } from 'dashhd'
 import * as DashHD from 'dashhd'
+import {NetworkVersion} from "../types";
 
-/**
- * Converts an HDKey instance to an extended private key (xprv)
- *
- * @param {HDKey} hdKey - The HDKey instance to convert
- * @param {{version: Versions | number}=} [opts] - Optional, containing the version
- * @returns {Promise<string>} A promise that resolves to the xPrivateKey string
- */
-export default async function keyToXPrivateKey (hdKey: HDKey, opts?: { version: Versions | number }): Promise<string> {
+export default async function keyToXPrivateKey (hdKey: HDKey, opts?: NetworkVersion): Promise<string> {
   return await DashHD.toXPrv(hdKey, opts)
 }

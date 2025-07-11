@@ -1,6 +1,7 @@
 import {
   IdentifierWASM
 } from 'pshenmic-dpp'
+import {Versions} from "dashhd";
 export type IdentifierLike = IdentifierWASM | string | Uint8Array
 
 export { DashPlatformSDK } from './DashPlatformSDK'
@@ -11,6 +12,10 @@ export { AbstractSigner } from './signer/AbstractSigner'
 
 export interface WalletToIdentityKeyOpts {
   network?: 'mainnet' | 'testnet'
+}
+
+export interface NetworkVersion {
+  version: Versions
 }
 
 export type CreateStateTransitionDocumentBatchParams = DocumentBatchTransitionPurchaseParams | DocumentBatchTransitionTransferParams | DocumentBatchTransitionUpdatePriceParams
