@@ -2,7 +2,7 @@ import {
   IdentifierWASM
 } from 'pshenmic-dpp'
 
-export {IdentifierWASM, DocumentWASM, DataContractWASM, StateTransitionWASM, IdentityPublicKeyWASM} from 'pshenmic-dpp'
+export {IdentifierWASM, IdentityWASM, DocumentWASM, DataContractWASM, StateTransitionWASM, IdentityPublicKeyWASM} from 'pshenmic-dpp'
 
 import { Versions } from 'dashhd'
 
