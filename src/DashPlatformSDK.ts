@@ -11,7 +11,7 @@ import { initSync, wasmBase64 } from 'wasm-drive-verify'
 import { base64 } from '@scure/base'
 import { AbstractSigner } from './signer/AbstractSigner'
 
-interface SDKOptions {
+export interface SDKOptions {
   network: 'testnet' | 'mainnet'
   dapiUrl?: string | string[]
   signer?: AbstractSigner
@@ -39,7 +39,7 @@ export class DashPlatformSDK {
    * Constructs a new DashPlatformSDK instance, optionally pass options
    * if you want to configure the SDK instance (network, dapiUrl, signer)
     *
-   * @param options= {SDKOptions}
+   * @param options {SDKOptions=}
    */
   constructor (options?: SDKOptions) {
     if (options != null && (options.network == null || !['testnet', 'mainnet'].includes(options.network))) {
