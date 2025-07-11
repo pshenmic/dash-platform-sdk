@@ -1,4 +1,7 @@
 {
   "entryPoints": ["src/*"],
-  "exclude": ["./src/constants.ts", "./src/grpcConnectionPool.ts"]
+  "exclude": ["./src/constants.ts", "./src/grpcConnectionPool.ts"],
+  "externalPattern": [
+    "./node_modules/(?!(pshenmic-dpp))"
+  ],
 }
