@@ -2,9 +2,9 @@ import {
   IdentifierWASM
 } from 'pshenmic-dpp'
 
-export {IdentifierWASM, IdentityWASM, DocumentWASM, DataContractWASM, StateTransitionWASM, IdentityPublicKeyWASM} from 'pshenmic-dpp'
-
 import { Versions } from 'dashhd'
+
+export { IdentifierWASM, IdentityWASM, DocumentWASM, DataContractWASM, StateTransitionWASM, IdentityPublicKeyWASM } from 'pshenmic-dpp'
 
 export type IdentifierLike = IdentifierWASM | string | Uint8Array
 
