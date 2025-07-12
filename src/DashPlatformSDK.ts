@@ -31,11 +31,12 @@ export class DashPlatformSDK {
   tokens: TokensController
   utils: UtilsController
   names: NamesController
+  signer?: AbstractSigner
   node: NodeController
-  signer: AbstractSigner
 
-  constructor (options: { network: 'testnet' | 'mainnet', dapiUrl?: string } = DEFAULT_OPTIONS) {
+  constructor (options: { network: 'testnet' | 'mainnet', dapiUrl?: string, signer?: AbstractSigner } = DEFAULT_OPTIONS) {
     this.network = options.network
+    this.signer = options.signer
 
     this.utils = new UtilsController()
 
@@ -58,6 +59,10 @@ export class DashPlatformSDK {
     this.tokens = new TokensController(grpcPool)
     this.names = new NamesController(grpcPool)
     this.keyPair = new KeyPairController()
+  }
+
+  setSigner (signer: AbstractSigner): void {
+    this.signer = signer
   }
 
   setNetwork (network: 'testnet' | 'mainnet'): void {

@@ -2,6 +2,7 @@ import { CanonicalVote, Proof, ResponseMetadata, SignedMsgType, StateId } from '
 import { calculateSignHash } from './calculateSignHash'
 import { calculateStateIdHash } from './calculateStateIdHash'
 import verifyBls from './verifyBls'
+import hexToBytes from './hexToBytes'
 
 export default function verifyTenderdashProof (proof: Proof, metadata: ResponseMetadata, rootHash: Uint8Array, quorumPublicKey: string): boolean {
   const stateId = StateId.fromPartial({
@@ -34,5 +35,5 @@ export default function verifyTenderdashProof (proof: Proof, metadata: ResponseM
 
   const { signature } = proof
 
-  return verifyBls(Buffer.from(quorumPublicKey, 'hex'), Uint8Array.from(signDigest), signature)
+  return verifyBls(hexToBytes(quorumPublicKey), Uint8Array.from(signDigest), signature)
 }

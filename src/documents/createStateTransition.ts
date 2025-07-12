@@ -8,20 +8,7 @@ import {
   DocumentUpdatePriceTransitionWASM,
   DocumentWASM, StateTransitionWASM
 } from 'pshenmic-dpp'
-
-export interface DocumentBatchTransitionPurchaseParams {
-  price: bigint | null
-}
-
-export interface DocumentBatchTransitionTransferParams {
-  recipient: string | null
-}
-
-export interface DocumentBatchTransitionUpdatePriceParams {
-  price: bigint | null
-}
-
-export type CreateStateTransitionDocumentBatchParams = DocumentBatchTransitionPurchaseParams | DocumentBatchTransitionTransferParams | DocumentBatchTransitionUpdatePriceParams
+import { CreateStateTransitionDocumentBatchParams } from '../types'
 
 const documentBatchTypesMap = {
   [BatchType.Create]: DocumentCreateTransitionWASM,
