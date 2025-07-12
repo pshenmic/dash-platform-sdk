@@ -5,6 +5,8 @@ import { MasternodeList } from '../types'
 import getRandomArrayItem from './getRandomArrayItem'
 import hexToBytes from './hexToBytes'
 import bytesToHex from './bytesToHex'
+import stringToIndexValueBytes from './stringToIndexValueBytes'
+import indexValueBytesToString from './indexBytesToString'
 
 export class UtilsController {
   base58ToBytes (str: string): Uint8Array<ArrayBufferLike> {
@@ -25,6 +27,14 @@ export class UtilsController {
 
   convertToHomographSafeChars (str: string): string {
     return convertToHomographSafeChars(str)
+  }
+
+  stringToIndexBytes (value: string): Uint8Array<ArrayBufferLike> {
+    return stringToIndexValueBytes(value)
+  }
+
+  indexValueBytesToString (value: Uint8Array<ArrayBufferLike>): string {
+    return indexValueBytesToString(value)
   }
 
   async getEvonodeList (network: 'testnet' | 'mainnet'): Promise<MasternodeList> {

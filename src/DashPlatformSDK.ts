@@ -7,6 +7,8 @@ import { KeyPairController } from './keyPair'
 import { NodeController } from './node'
 import { NamesController } from './names'
 import { DataContractsController } from './dataContracts'
+import ContestedResourcesController from './contestedResources'
+import TokensController from './tokens'
 import { initSync, wasmBase64 } from 'wasm-drive-verify'
 import { base64 } from '@scure/base'
 import { AbstractSigner } from './signer/AbstractSigner'
@@ -20,15 +22,17 @@ export class DashPlatformSDK {
   network: 'testnet' | 'mainnet'
   grpcPool: GRPCConnectionPool
 
-  utils: UtilsController
+  contestedResources: ContestedResourcesController
+  stateTransitions: StateTransitionsController
+  dataContracts: DataContractsController
   identities: IdentitiesController
   documents: DocumentsController
-  stateTransitions: StateTransitionsController
   keyPair: KeyPairController
-  node: NodeController
-  dataContracts: DataContractsController
+  tokens: TokensController
+  utils: UtilsController
   names: NamesController
   signer?: AbstractSigner
+  node: NodeController
 
   constructor (options: { network: 'testnet' | 'mainnet', dapiUrl?: string, signer?: AbstractSigner } = DEFAULT_OPTIONS) {
     this.network = options.network
@@ -38,20 +42,22 @@ export class DashPlatformSDK {
 
     this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
 
-    this._initialize(this.grpcPool)
+    this._initialize(this.grpcPool, this.network)
 
     const driveVerifyWASMBytes = base64.decode(wasmBase64)
 
     initSync({ module: driveVerifyWASMBytes })
   }
 
-  _initialize (grpcPool: GRPCConnectionPool): void {
+  _initialize (grpcPool: GRPCConnectionPool, network: 'testnet' | 'mainnet'): void {
     this.stateTransitions = new StateTransitionsController(grpcPool)
+    this.contestedResources = new ContestedResourcesController(grpcPool)
     this.dataContracts = new DataContractsController(grpcPool)
     this.identities = new IdentitiesController(grpcPool)
     this.documents = new DocumentsController(grpcPool)
+    this.node = new NodeController(grpcPool, network)
+    this.tokens = new TokensController(grpcPool)
     this.names = new NamesController(grpcPool)
-    this.node = new NodeController(grpcPool)
     this.keyPair = new KeyPairController()
   }
 
@@ -68,6 +74,6 @@ export class DashPlatformSDK {
 
     const grpcPool = new GRPCConnectionPool(this.network)
 
-    this._initialize(grpcPool)
+    this._initialize(grpcPool, this.network)
   }
 }
