@@ -1,6 +1,5 @@
 import { GetDocumentsRequest, GetDocumentsResponse_GetDocumentsResponseV0 } from '../../proto/generated/platform'
 import { DocumentWASM, IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
-import getByIdentifier from '../dataContracts/getByIdentifier'
 import { DAPI_DEFAULT_LIMIT } from '../constants'
 import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
@@ -9,8 +8,9 @@ import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 import { encode } from 'cbor-x'
+import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier'
 
-export default async function get (
+export default async function query (
   grpcPool: GRPCConnectionPool,
   dataContractId: IdentifierLike,
   documentTypeName: string,
@@ -33,7 +33,7 @@ export default async function get (
     }
   })
 
-  const dataContract = await getByIdentifier(grpcPool, dataContractId)
+  const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
 
   const { v0 } = await grpcPool.getClient().getDocuments(getDocumentsRequest)
 
@@ -61,5 +61,5 @@ export default async function get (
     throw new Error('Failed to verify query')
   }
 
-  return documents?.map(document => DocumentWASM.fromBytes(document, dataContract, documentTypeName, PlatformVersionWASM.PLATFORM_V1)) ?? []
+  return documents?.map(document => DocumentWASM.fromBytes(document, dataContract, documentTypeName, PlatformVersionWASM.PLATFORM_V8)) ?? []
 }

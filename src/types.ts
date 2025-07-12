@@ -1,16 +1,25 @@
 import {
   IdentifierWASM
 } from 'pshenmic-dpp'
-export type IdentifierLike = IdentifierWASM | string | ArrayLike<number>
+
+import { Versions } from 'dashhd'
+
+export { IdentifierWASM, IdentityWASM, DocumentWASM, DataContractWASM, StateTransitionWASM, IdentityPublicKeyWASM } from 'pshenmic-dpp'
+
+export type IdentifierLike = IdentifierWASM | string | Uint8Array
 
 export { DashPlatformSDK } from './DashPlatformSDK'
 
 export type MasternodeList = Record<string, MasternodeInfo>
 
-export { AbstractSigner, AppConnectInfo } from './signer/AbstractSigner'
+export { AbstractSigner } from './signer/AbstractSigner'
 
 export interface WalletToIdentityKeyOpts {
   network?: 'mainnet' | 'testnet'
+}
+
+export interface NetworkVersion {
+  version: Versions
 }
 
 export type CreateStateTransitionDocumentBatchParams = DocumentBatchTransitionPurchaseParams | DocumentBatchTransitionTransferParams | DocumentBatchTransitionUpdatePriceParams
@@ -106,6 +115,11 @@ export interface NodeStatus {
     | undefined
     epoch?: number | undefined
   } | undefined
+}
+
+export enum DataContractTransitionType {
+  Create = 0,
+  Update = 1
 }
 
 export interface DataContractConfig {

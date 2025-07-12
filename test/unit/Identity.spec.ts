@@ -9,7 +9,7 @@ describe('Identity', () => {
   })
 
   test('should be able to search names by DPNS name', async () => {
-    const [document] = await sdk.names.search('xyz.dash')
+    const document = await sdk.names.search('xyz.dash')
 
     expect(document).toEqual(expect.any(DocumentWASM))
   })

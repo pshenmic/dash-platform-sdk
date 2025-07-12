@@ -19,15 +19,11 @@ const documentBatchTypesMap = {
   [BatchType.Purchase]: DocumentPurchaseTransitionWASM
 }
 
-export default async function createStateTransition (document: DocumentWASM, type: BatchType, identityContractNonce: bigint, params?: CreateStateTransitionDocumentBatchParams | undefined): Promise<StateTransitionWASM> {
+export default function createStateTransition (document: DocumentWASM, type: BatchType, identityContractNonce: bigint, params?: CreateStateTransitionDocumentBatchParams | undefined): StateTransitionWASM {
   const TransitionClass = documentBatchTypesMap[type]
 
   if (TransitionClass == null) {
     throw new Error(`Unknown batch type: ${type}`)
-  }
-
-  if ([BatchType.Transfer, BatchType.UpdatePrice, BatchType.Purchase].includes(type) && params == null) {
-    throw new Error('Params required for Transfer, UpdatePrice or Purchase document transitions')
   }
 
   // @ts-expect-error
