@@ -24,27 +24,37 @@ export default class GRPCConnectionPool {
   channels: Channel[]
 
   constructor (network: 'testnet' | 'mainnet', dapiUrl?: string | string[]) {
-    if (typeof dapiUrl === 'string') {
-      this.channels = [createChannel(dapiUrl)]
-    } else if (Array.isArray(dapiUrl)) {
+    if (dapiUrl == null) {
       this.channels = seedNodes[network].map((dapiUrl: string) => createChannel(dapiUrl))
 
       getEvonodeList(network)
-        .then((evonodeList) => {
-          const evonodeListDapiURLs = Object
-            .entries(evonodeList)
-            .map(([, info]) => info)
-            .filter((info: any) => info.status === 'ENABLED')
-            .map((info: any) => {
-              const [host] = info.address.split(':')
+          .then((evonodeList) => {
+            const evonodeListDapiURLs = Object
+                .entries(evonodeList)
+                .map(([, info]) => info)
+                .filter((info: any) => info.status === 'ENABLED')
+                .map((info: any) => {
+                  const [host] = info.address.split(':')
 
-              return `https://${host as string}:${info.platformHTTPPort as number}`
-            })
+                  return `https://${host as string}:${info.platformHTTPPort as number}`
+                })
 
-          this.channels = evonodeListDapiURLs.map(dapiUrl => createChannel(dapiUrl))
-        })
-        .catch(console.error)
+            this.channels = evonodeListDapiURLs.map(dapiUrl => createChannel(dapiUrl))
+          })
+          .catch(console.error)
+
+      return
     }
+
+    if (typeof dapiUrl === 'string') {
+      this.channels = [createChannel(dapiUrl)]
+    } else if (Array.isArray(dapiUrl)) {
+      this.channels = dapiUrl.map(dapiUrl => createChannel(dapiUrl))
+    } else {
+      throw new Error('Invalid dapiUrl')
+    }
+
+
   }
 
   getClient (): Client<PlatformDefinition> {
