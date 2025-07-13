@@ -194,7 +194,7 @@ describe('Contested State', () => {
       'parentNameAndLabel',
       [
         'dash',
-        'agreatman'
+        'asdmaye1ght'
       ].map(stringToIndexValueBytes),
       ContestedStateResultType.DOCUMENTS_AND_VOTE_TALLY,
       true

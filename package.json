@@ -55,6 +55,6 @@
     "nice-grpc-web": "^3.3.6",
     "pshenmic-dpp": "1.0.9",
     "rfc4648": "^1.5.4",
-    "wasm-drive-verify": "github:owl352/wasm-drive-verify#fe2a9406609ee2a9d42a6b4be7214395bd164155"
+    "wasm-drive-verify": "github:owl352/wasm-drive-verify#9aa187b273672d19a677067bed2909364e6934c8"
   }
 }
