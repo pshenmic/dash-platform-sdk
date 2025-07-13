@@ -117,6 +117,41 @@ export interface NodeStatus {
   } | undefined
 }
 
+export enum ContestedStateResultType {
+  DOCUMENTS = 0,
+  VOTE_TALLY = 1,
+  DOCUMENTS_AND_VOTE_TALLY = 2,
+}
+
+export enum FinishedVoteOutcome {
+  TOWARDS_IDENTITY = 0,
+  LOCKED = 1,
+  NO_PREVIOUS_WINNER = 2,
+  UNRECOGNIZED = -1,
+}
+
+export interface Contender {
+  identifier: IdentifierWASM
+  voteCount?: number | undefined
+  document?: Uint8Array
+}
+
+export interface FinishedVoteInfo {
+  type: string
+  wonByIdentityId?: IdentifierWASM | undefined
+  finishedAtBlockHeight: string
+  finishedAtCoreBlockHeight: number
+  finishedAtBlockTimeMs: string
+  finishedAtEpoch: number
+}
+
+export interface ContestedResourceVoteState {
+  contenders: Contender[]
+  abstainVoteTally?: number | undefined
+  lockVoteTally?: number | undefined
+  finishedVoteInfo?: FinishedVoteInfo
+}
+
 export interface DataContractConfig {
   $format_version: string
   canBeDeleted: boolean
