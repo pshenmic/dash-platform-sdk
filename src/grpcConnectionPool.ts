@@ -5,18 +5,16 @@ import getEvonodeList from './utils/getEvonodeList'
 
 const seedNodes = {
   testnet: [
-    'https://54.201.32.131:1443',
-    'https://52.42.202.128:1443',
-    'https://52.40.219.41:1443',
-    'https://52.89.154.48:1443',
-    'https://52.34.144.50:1443'
+    // seed-1.pshenmic.dev
+    'https://158.160.14.115:1443'
   ],
   mainnet: [
-    'https://149.202.78.214',
-    'https://52.10.213.198',
-    'https://194.163.166.185',
-    'https://66.70.170.22',
-    'https://31.220.85.180'
+    // seed-1.pshenmic.dev
+    'https://158.160.14.115:443',
+    // mainnet dcg seeds
+    'https://158.160.14.115',
+    'https://3.0.60.103',
+    'https://34.211.174.194'
   ]
 }
 
@@ -27,21 +25,14 @@ export default class GRPCConnectionPool {
     if (dapiUrl == null) {
       this.channels = seedNodes[network].map((dapiUrl: string) => createChannel(dapiUrl))
 
-      getEvonodeList(network)
-          .then((evonodeList) => {
-            const evonodeListDapiURLs = Object
-                .entries(evonodeList)
-                .map(([, info]) => info)
-                .filter((info: any) => info.status === 'ENABLED')
-                .map((info: any) => {
-                  const [host] = info.address.split(':')
+      // todo refactor to stream
+      this._loadRecentEvonodeList(network)
+        .then((dapiUrls) => console.log(`Found ${dapiUrls.length} healthy nodes in the network`))
+        .catch(() => {
+          console.error('Failed to fetch working DAPI nodes from the network, defaulting to seed nodes')
 
-                  return `https://${host as string}:${info.platformHTTPPort as number}`
-                })
-
-            this.channels = evonodeListDapiURLs.map(dapiUrl => createChannel(dapiUrl))
-          })
-          .catch(console.error)
+          this.channels = seedNodes[network].map((dapiUrl: string) => createChannel(dapiUrl))
+        })
 
       return
     }
@@ -53,8 +44,35 @@ export default class GRPCConnectionPool {
     } else {
       throw new Error('Invalid dapiUrl')
     }
+  }
 
+  async _loadRecentEvonodeList (network: 'testnet' | 'mainnet'): Promise<string[]> {
+    // retrieve last evonodes list
+    const evonodeList = await getEvonodeList(network)
 
+    // map to array of urls
+    const allDAPIUrls = Object.entries(evonodeList)
+      .map(([, info]) => info)
+      .filter((info: any) => info.status === 'ENABLED')
+      .map((info: any) => {
+        const [host] = info.address.split(':')
+
+        return `https://${host as string}:${info.platformHTTPPort as number}`
+      })
+
+    // healthcheck the DAPI
+    const results = await Promise.allSettled(allDAPIUrls.map(async (dapiUrl) => {
+      await fetch(dapiUrl)
+
+      return dapiUrl
+    }))
+
+    const healthchecked = results.filter(result => result.status === 'fulfilled').map(result => result.value)
+    const dapiUrls = [...seedNodes[network], ...healthchecked]
+
+    this.channels = dapiUrls.map((dapiUrl: string) => createChannel(dapiUrl))
+
+    return dapiUrls
   }
 
   getClient (): Client<PlatformDefinition> {
