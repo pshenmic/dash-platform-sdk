@@ -18,6 +18,10 @@ This library is isomorphic and works in both Node.js and Web browsers without po
 
 The SDK is isomorphic and works in both Node.js and web browsers without requiring polyfills. When using in browsers, make sure to include the library from CDN or bundle it with your application.
 
+## Documentation
+
+https://pshenmic.github.io/dash-platform-sdk/index.html
+
 ## Quickstart
 
 ### Install
