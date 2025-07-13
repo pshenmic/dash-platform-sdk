@@ -13,7 +13,7 @@ const dataContractTransitionsMap = {
   [DataContractTransitionType.Update]: DataContractUpdateTransitionWASM
 }
 
-export default async function createStateTransition (dataContract: DataContractWASM, type: DataContractTransitionType, identityContractNonce: bigint): Promise<StateTransitionWASM> {
+export default function createStateTransition (dataContract: DataContractWASM, type: DataContractTransitionType, identityNonce: bigint): StateTransitionWASM {
   const TransitionClass = dataContractTransitionsMap[type]
 
   if (TransitionClass == null) {
@@ -21,7 +21,7 @@ export default async function createStateTransition (dataContract: DataContractW
   }
 
   // @ts-expect-error
-  const dataContractTransition = new TransitionClass(dataContract, identityContractNonce)
+  const dataContractTransition = new TransitionClass(dataContract, identityNonce)
 
   return dataContractTransition.toStateTransition()
 }

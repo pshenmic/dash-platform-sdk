@@ -11,13 +11,18 @@ import { initSync, wasmBase64 } from 'wasm-drive-verify'
 import { base64 } from '@scure/base'
 import { AbstractSigner } from './signer/AbstractSigner'
 
-const DEFAULT_OPTIONS: { network: 'testnet' | 'mainnet', dapiUrl?: string } = {
-  network: 'testnet',
-  dapiUrl: undefined
+export interface SDKOptions {
+  network: 'testnet' | 'mainnet'
+  dapiUrl?: string | string[]
+  signer?: AbstractSigner
 }
 
+/**
+ * Javascript SDK for that let you interact with a Dash Platform blockchain
+ */
 export class DashPlatformSDK {
   network: 'testnet' | 'mainnet'
+  /** @ignore **/
   grpcPool: GRPCConnectionPool
 
   utils: UtilsController
@@ -30,13 +35,23 @@ export class DashPlatformSDK {
   names: NamesController
   signer?: AbstractSigner
 
-  constructor (options: { network: 'testnet' | 'mainnet', dapiUrl?: string, signer?: AbstractSigner } = DEFAULT_OPTIONS) {
-    this.network = options.network
-    this.signer = options.signer
+  /**
+   * Constructs a new DashPlatformSDK instance, optionally pass options
+   * if you want to configure the SDK instance (network, dapiUrl, signer)
+    *
+   * @param options {SDKOptions=}
+   */
+  constructor (options?: SDKOptions) {
+    if (options != null && (options.network == null || !['testnet', 'mainnet'].includes(options.network))) {
+      throw new Error('If options is passed, network must be set (either mainnet or testnet)')
+    }
+
+    this.network = options?.network ?? 'testnet'
+    this.signer = options?.signer
 
     this.utils = new UtilsController()
 
-    this.grpcPool = new GRPCConnectionPool(this.network, options.dapiUrl)
+    this.grpcPool = new GRPCConnectionPool(this.network, options?.dapiUrl)
 
     this._initialize(this.grpcPool)
 
@@ -45,6 +60,13 @@ export class DashPlatformSDK {
     initSync({ module: driveVerifyWASMBytes })
   }
 
+  /**
+   * @private
+   *
+   * Internal function to initialize SDK GRPC connection pool. Is not meant to be used outside the SDK
+   *
+   * @param grpcPool
+   */
   _initialize (grpcPool: GRPCConnectionPool): void {
     this.stateTransitions = new StateTransitionsController(grpcPool)
     this.dataContracts = new DataContractsController(grpcPool)
@@ -59,6 +81,20 @@ export class DashPlatformSDK {
     this.signer = signer
   }
 
+  /**
+   * Get currently used network
+   *
+   * @return {string}
+   */
+  getNetwork (): string {
+    return this.network
+  }
+
+  /**
+   * Switches a network that SDK is currently connected to
+   *
+   * @param network {string}
+   */
   setNetwork (network: 'testnet' | 'mainnet'): void {
     if (network !== 'testnet' && network !== 'mainnet') {
       throw new Error('Unknown network, should be mainnet or testnet')
