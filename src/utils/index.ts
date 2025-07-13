@@ -2,8 +2,6 @@ import convertToHomographSafeChars from './convertToHomographSafeChars'
 import { base58 } from '@scure/base'
 import hexToBytes from './hexToBytes'
 import bytesToHex from './bytesToHex'
-import stringToIndexValueBytes from './stringToIndexValueBytes'
-import indexValueBytesToString from './indexBytesToString'
 
 /**
  * Collection of conversion functions

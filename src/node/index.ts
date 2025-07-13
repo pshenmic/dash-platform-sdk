@@ -29,10 +29,21 @@ export class NodeController {
     return await getStatus(this.grpcPool)
   }
 
+  /**
+   * Returns total credits amount in platform
+   *
+   * @return {Promise<bigint>}
+   */
   async totalCredits (): Promise<bigint> {
     return await getTotalCredits(this.grpcPool, this.network)
   }
 
+  /**
+   * Retrieves an info about epochs
+   * Includes information about first block height, time, fee multiplier, number
+   *
+   * @return {Promise<EpochInfo[]>}
+   */
   async getEpochsInfo (count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
     return await getEpochsInfo(this.grpcPool, count, ascending, start)
   }

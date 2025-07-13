@@ -88,6 +88,10 @@ export default async function getContestedResourceVoteState (
   const { contenders } = result ?? { contenders: [] }
   const { winner } = result ?? { winner: undefined }
 
+  if (contenders.length === 0) {
+    throw new Error('Vote state not found')
+  }
+
   return {
     contenders: contenders.map(contender => ({
       ...contender,

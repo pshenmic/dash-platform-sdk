@@ -208,21 +208,22 @@ describe('Contested State', () => {
   })
 
   test('should be able to get contested resource vote state for incorrect values', async () => {
-    const voteState = await sdk.contestedResources.getContestedResourceVoteState(
-      contract,
-      'domain',
-      'parentNameAndLabel',
-      [
-        'dash',
-        'agreatma1n'
-      ].map(stringToIndexValueBytes),
-      ContestedStateResultType.DOCUMENTS_AND_VOTE_TALLY,
-      false
-    )
-
-    expect(voteState.contenders).toBeTruthy()
-    expect(voteState.finishedVoteInfo).not.toBeTruthy()
-    expect(voteState.abstainVoteTally).toBeDefined()
-    expect(voteState.lockVoteTally).toBeDefined()
+    try {
+      const voteState = await sdk.contestedResources.getContestedResourceVoteState(
+        contract,
+        'domain',
+        'parentNameAndLabel',
+        [
+          'dash',
+          'agreatma1n'
+        ].map(stringToIndexValueBytes),
+        ContestedStateResultType.DOCUMENTS_AND_VOTE_TALLY,
+        false
+      )
+    }catch (e) {
+      expect(true).toBeTruthy()
+      return
+    }
+    expect(false).toBeTruthy()
   })
 })
