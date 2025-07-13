@@ -30,21 +30,27 @@ jobs:
             TAG=$(echo "$VERSION" | sed -E 's/^[0-9]+\.[0-9]+\.[0-9]+-([a-zA-Z0-9]+).*/\1/')
             yarn publish dist --tag "$TAG" --non-interactive
           else
+            echo "LATEST=true" >> $GITHUB_ENV
             yarn publish dist --tag latest --non-interactive
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Build docs
+        if: env.LATEST == 'true'
         run: |
           yarn docs
 
       - name: Setup Pages
+        if: env.LATEST == 'true'
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
+        if: env.LATEST == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: './docs'
+
       - name: Deploy to GitHub Pages
+        if: env.LATEST == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
