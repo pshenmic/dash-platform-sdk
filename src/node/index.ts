@@ -4,7 +4,13 @@ import { NodeStatus } from '../types'
 import getEpochsInfo, { EpochInfo } from './epochs'
 import getTotalCredits from './totalCredits'
 
+/**
+ * Node controller for requesting information about DAPI node
+ *
+ * @hideconstructor
+ */
 export class NodeController {
+  /** @ignore **/
   grpcPool: GRPCConnectionPool
   network: 'testnet' | 'mainnet'
 
@@ -13,6 +19,12 @@ export class NodeController {
     this.network = network
   }
 
+  /**
+   * Retrieves an info about node
+   * Includes information about genesis, chain, software versions
+   *
+   * @return {Promise<NodeStatus>}
+   */
   async status (): Promise<NodeStatus> {
     return await getStatus(this.grpcPool)
   }

@@ -1,24 +1,26 @@
-import { DataContractWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import { DataContractWASM, IdentifierWASM, PlatformVersionWASM, TokenConfigurationWASM } from 'pshenmic-dpp'
 import { DataContractConfig, IdentifierLike } from '../types'
 
-export default async function createDataContract (
+export default function createDataContract (
   ownerId: IdentifierLike,
   identityNonce: bigint,
   schema: object,
-  definitions?: object,
-  tokenConfiguration?: object,
+  tokenConfiguration?: TokenConfigurationWASM,
   config?: DataContractConfig,
-  fullValidation: boolean | undefined = true,
-  platformVersion: PlatformVersionWASM | undefined = PlatformVersionWASM.PLATFORM_V1
-): Promise<DataContractWASM> {
+  fullValidation?: boolean | undefined,
+  platformVersion?: PlatformVersionWASM | undefined
+): DataContractWASM {
+  const id = new IdentifierWASM(ownerId)
+
   const dataContract = new DataContractWASM(
-    ownerId,
+    id,
     identityNonce,
     schema,
-    definitions,
+    // we don't know what that param means yet
+    null,
     tokenConfiguration,
-    fullValidation,
-    platformVersion
+    fullValidation ?? true,
+    platformVersion ?? PlatformVersionWASM.PLATFORM_V8
   )
 
   if (config != null) {

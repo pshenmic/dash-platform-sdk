@@ -43,7 +43,7 @@ describe('KeyPair', () => {
 
       const key = await sdk.keyPair.derivePath(wallet, "m/44'/1'/0'/0/0")
 
-      const address = await sdk.keyPair.publicKeyToAddress(key.publicKey)
+      const address = await sdk.keyPair.publicKeyToAddress(key.publicKey, { version: 'testnet' })
 
       expect(address).toEqual('yRGEqFgmuqJct4jzH48sFrvBCc3WuPKDTp')
     })
