@@ -2,7 +2,8 @@ import {
   DataContractWASM,
   StateTransitionWASM
 } from 'pshenmic-dpp'
-import { DashPlatformSDK, DataContractConfig, DataContractTransitionType } from '../../src/types'
+import {DashPlatformSDK, DataContractConfig } from '../../src/types'
+import {DataContractTransitionType} from "../../src/dataContracts/createStateTransition";
 
 let sdk: DashPlatformSDK
 

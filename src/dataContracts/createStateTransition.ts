@@ -2,7 +2,11 @@ import {
   DataContractCreateTransitionWASM, DataContractUpdateTransitionWASM,
   DataContractWASM, StateTransitionWASM
 } from 'pshenmic-dpp'
-import { DataContractTransitionType } from '../types'
+
+export enum DataContractTransitionType {
+  Create = 0,
+  Update = 1
+}
 
 const dataContractTransitionsMap = {
   [DataContractTransitionType.Create]: DataContractCreateTransitionWASM,

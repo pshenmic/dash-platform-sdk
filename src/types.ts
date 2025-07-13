@@ -117,11 +117,6 @@ export interface NodeStatus {
   } | undefined
 }
 
-export enum DataContractTransitionType {
-  Create = 0,
-  Update = 1
-}
-
 export interface DataContractConfig {
   $format_version: string
   canBeDeleted: boolean
