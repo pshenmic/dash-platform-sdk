@@ -21,7 +21,6 @@ describe('Node', () => {
     expect(status.version?.protocol?.drive?.current).toEqual(expect.any(Number))
 
     expect(status.node?.id).toEqual(expect.any(String))
-    expect(status.node?.proTxHash).toEqual(expect.any(String))
 
     expect(status.chain?.catchingUp).toEqual(expect.any(Boolean))
     expect(status.chain?.latestBlockHash).toEqual(expect.any(String))

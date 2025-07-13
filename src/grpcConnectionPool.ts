@@ -27,12 +27,7 @@ export default class GRPCConnectionPool {
 
       // todo refactor to stream
       this._loadRecentEvonodeList(network)
-        .then((dapiUrls) => console.log(`Found ${dapiUrls.length} healthy nodes in the network`))
-        .catch(() => {
-          console.error('Failed to fetch working DAPI nodes from the network, defaulting to seed nodes')
-
-          this.channels = seedNodes[network].map((dapiUrl: string) => createChannel(dapiUrl))
-        })
+        .catch(console.error)
 
       return
     }
