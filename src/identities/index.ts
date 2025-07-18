@@ -36,7 +36,7 @@ export class IdentitiesController {
   /**
    * Retrieves an Identity from the network by give public key hash
    *
-   * @param hex {string=} public key hash value in hex, should be a length of 40
+   * @param hex {string} public key hash value in hex, should be a length of 40
    *
    * @return {Promise<IdentityWASM>}
    */
@@ -51,7 +51,7 @@ export class IdentitiesController {
   /**
    * Retrieves an Identity from the network by non-unique public key hash (like Voter Identity, SHA160)
    *
-   * @param hex {string=} public key hash value in hex, should be a length of 40
+   * @param hex {string} public key hash value in hex, should be a length of 40
    *
    * @return {Promise<IdentityWASM>}
    */
