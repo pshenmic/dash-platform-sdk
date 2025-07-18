@@ -3,7 +3,7 @@ import getDataContractByIdentifier from './getDataContractByIdentifier'
 import { DataContractWASM, PlatformVersionWASM, StateTransitionWASM, TokenConfigurationWASM } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import createDataContract from './create'
-import createStateTransition, { DataContractTransitionType } from './createStateTransition'
+import createStateTransition from './createStateTransition'
 
 /**
  * Collection of methods necessary to work with Data Contracts in the network,

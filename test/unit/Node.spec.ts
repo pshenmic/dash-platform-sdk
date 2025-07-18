@@ -4,7 +4,7 @@ let sdk: DashPlatformSDK
 
 describe('Node', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK({ network: 'testnet', dapiUrl: 'https://54.201.32.131:1443' })
+    sdk = new DashPlatformSDK()
   })
 
   test('should be able to call getStatus', async () => {

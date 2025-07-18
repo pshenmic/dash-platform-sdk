@@ -5,7 +5,7 @@ let sdk: DashPlatformSDK
 
 describe('Identity', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK({ network: 'testnet', dapiUrl: 'https://54.201.32.131:1443' })
+    sdk = new DashPlatformSDK()
   })
 
   test('should be able to search names by DPNS name', async () => {

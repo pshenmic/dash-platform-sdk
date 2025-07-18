@@ -3,7 +3,6 @@ import {
   StateTransitionWASM
 } from 'pshenmic-dpp'
 import { DashPlatformSDK, DataContractConfig } from '../../src/types'
-import { DataContractTransitionType } from '../../src/dataContracts/createStateTransition'
 
 let sdk: DashPlatformSDK
 
@@ -87,7 +86,7 @@ describe('DataContract', () => {
   test('should be able to create data contract create transition', async () => {
     const dataContract = sdk.dataContracts.create(ownerIdentifier, identityNonce, schema)
 
-    const transition = sdk.dataContracts.createStateTransition(dataContract, DataContractTransitionType.Create, identityNonce)
+    const transition = sdk.dataContracts.createStateTransition(dataContract, 'create', identityNonce)
 
     expect(transition).toEqual(expect.any(StateTransitionWASM))
   })
@@ -95,7 +94,7 @@ describe('DataContract', () => {
   test('should be able to create data contract update transition', async () => {
     const dataContract = sdk.dataContracts.create(ownerIdentifier, identityNonce, schema)
 
-    const transition = sdk.dataContracts.createStateTransition(dataContract, DataContractTransitionType.Update, identityNonce)
+    const transition = sdk.dataContracts.createStateTransition(dataContract, 'update', identityNonce)
 
     expect(transition).toEqual(expect.any(StateTransitionWASM))
   })
