@@ -59,7 +59,7 @@ const sdk = new DashPlatformSDK({network: 'testnet'})
 Or load it straight from the web page:
 
 ```html
-<script src="https://unpkg.com/dash-platform-sdk/dist/main.js"></script>
+<script src="https://unpkg.com/dash-platform-sdk/bundle.min.js"></script>
 <script>
     const sdk = new DashPlatformSDK({network: 'testnet'})
 </script>
