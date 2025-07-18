@@ -22,9 +22,16 @@ describe('Identity', () => {
     expect(identity).toEqual(expect.any(IdentityWASM))
   })
 
-  test('should be able to get identity by public key hash', async () => {
-    const privateKey = PrivateKeyWASM.fromWIF('XJeUuzkHiZZsrHLCnVxiDj7fCvibrZaeudPxkCVSxBwUdm5JLGdk')
 
+  test('should be able to get identity by public key hash', async () => {
+    const publicKeyHash = 'c5b7fdfa5731e1b31b1b42c13959756e8db22b3b'
+
+    const identity = await sdk.identities.getIdentityByPublicKeyHash(publicKeyHash)
+
+    expect(identity).toEqual(expect.any(IdentityWASM))
+  })
+
+  test('should be able to get identity by non unique public key hash', async () => {
     const identity = await sdk.identities.getIdentityByNonUniquePublicKeyHash('8b30a2cda275d1110874c0380b8447db3a9b04ee')
 
     expect(identity).toEqual(expect.any(IdentityWASM))
