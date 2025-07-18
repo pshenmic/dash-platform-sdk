@@ -220,7 +220,7 @@ describe('Contested State', () => {
         ContestedStateResultType.DOCUMENTS_AND_VOTE_TALLY,
         false
       )
-    }catch (e) {
+    } catch (e) {
       expect(true).toBeTruthy()
       return
     }

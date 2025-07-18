@@ -30,7 +30,7 @@ export class DocumentsController {
    * @return {DataContractWASM}
    */
   async create (dataContractId: IdentifierLike, documentType: string, data: object, owner: IdentifierLike, revision?: bigint): Promise<DocumentWASM> {
-    return await createDocument(dataContractId, documentType, data, owner, revision)
+    return createDocument(dataContractId, documentType, data, owner, revision)
   }
 
   /**

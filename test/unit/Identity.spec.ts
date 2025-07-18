@@ -1,11 +1,11 @@
-import { DocumentWASM, IdentityPublicKeyWASM, IdentityWASM } from 'pshenmic-dpp'
+import { DocumentWASM, IdentityPublicKeyWASM, IdentityWASM, PrivateKeyWASM } from 'pshenmic-dpp'
 import { DashPlatformSDK } from '../../src/DashPlatformSDK'
 
 let sdk: DashPlatformSDK
 
 describe('Identity', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK()
+    sdk = new DashPlatformSDK({ network: 'testnet', dapiUrl: 'https://54.201.32.131:1443' })
   })
 
   test('should be able to search names by DPNS name', async () => {
@@ -23,16 +23,16 @@ describe('Identity', () => {
   })
 
   test('should be able to get identity by public key hash', async () => {
-    const publicKeyHash = 'c5b7fdfa5731e1b31b1b42c13959756e8db22b3b'
+    const privateKey = PrivateKeyWASM.fromWIF('XJeUuzkHiZZsrHLCnVxiDj7fCvibrZaeudPxkCVSxBwUdm5JLGdk')
 
-    const identity = await sdk.identities.getIdentityByPublicKeyHash(publicKeyHash)
+    const identity = await sdk.identities.getIdentityByNonUniquePublicKeyHash('8b30a2cda275d1110874c0380b8447db3a9b04ee')
 
     expect(identity).toEqual(expect.any(IdentityWASM))
   })
 
   test('should be able to get identity contract nonce', async () => {
-    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
-    const dataContract = '6QMfQTdKpC3Y9uWBcTwXeY3KdzRLDqASUsDnQ4MEc9XC'
+    const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+    const dataContract = 'DrEhmVJz56ukHbaFt8xLVRasnNWsrx3x8dGtcu9xg6rV'
 
     const identityContractNonce = await sdk.identities.getIdentityContractNonce(identifier, dataContract)
 

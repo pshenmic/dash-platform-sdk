@@ -7,7 +7,6 @@ import { DataContractTransitionType } from '../../src/dataContracts/createStateT
 
 let sdk: DashPlatformSDK
 
-let dataContractIdentifier: string
 let ownerIdentifier: string
 let identityNonce: bigint
 let config: DataContractConfig
@@ -17,7 +16,6 @@ describe('DataContract', () => {
   beforeAll(() => {
     sdk = new DashPlatformSDK()
 
-    dataContractIdentifier = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
     ownerIdentifier = 'GARSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
     identityNonce = BigInt(11)
 
@@ -52,7 +50,16 @@ describe('DataContract', () => {
   })
 
   test('should be able to get data contract', async () => {
-    const dataContract = await sdk.dataContracts.getDataContractByIdentifier(dataContractIdentifier)
+    let dataContract
+
+    // System Data Contract
+    dataContract = await sdk.dataContracts.getDataContractByIdentifier('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec')
+
+    // User Data Contract
+    dataContract = await sdk.dataContracts.getDataContractByIdentifier('Aukz296s36am6wKStoMbxm4YhC6kTpu3mERVrC7vHokP')
+
+    // User Data Contract with keep history
+    dataContract = await sdk.dataContracts.getDataContractByIdentifier('DrEhmVJz56ukHbaFt8xLVRasnNWsrx3x8dGtcu9xg6rV')
 
     expect(dataContract).toEqual(expect.any(DataContractWASM))
   })

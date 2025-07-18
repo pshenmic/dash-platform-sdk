@@ -35,7 +35,11 @@ export default async function getIdentityBalance (grpcPool: GRPCConnectionPool, 
   const {
     root_hash: rootHash,
     balance
-  } = verifyIdentityBalanceForIdentityId(proof.grovedbProof, id.bytes(), true, PlatformVersionWASM.PLATFORM_V8)
+  } = verifyIdentityBalanceForIdentityId(proof.grovedbProof, id.bytes(), true, PlatformVersionWASM.PLATFORM_V9)
+
+  if (balance == null) {
+    throw new Error(`Failed to fetch balance for identifier ${id.base58()}`)
+  }
 
   const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
@@ -43,10 +47,6 @@ export default async function getIdentityBalance (grpcPool: GRPCConnectionPool, 
 
   if (!verify) {
     throw new Error('Failed to verify query')
-  }
-
-  if (balance == null) {
-    throw new Error(`Failed to fetch balance for identifier ${id.base58()}`)
   }
 
   return BigInt(balance)
