@@ -14,7 +14,7 @@ export default async function getIdentityByPublicKeyHash (grpcPool: GRPCConnecti
   const getIdentityByPublicKeyHashRequest = GetIdentityByPublicKeyHashRequest.fromPartial({
     v0: {
       publicKeyHash: hexToBytes(hex),
-      prove: false
+      prove: true
     }
   })
 

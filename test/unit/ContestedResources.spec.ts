@@ -209,7 +209,7 @@ describe('Contested State', () => {
 
   test('should be able to get contested resource vote state for incorrect values', async () => {
     try {
-      const voteState = await sdk.contestedResources.getContestedResourceVoteState(
+      await sdk.contestedResources.getContestedResourceVoteState(
         contract,
         'domain',
         'parentNameAndLabel',

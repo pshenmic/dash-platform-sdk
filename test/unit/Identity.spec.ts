@@ -1,4 +1,4 @@
-import { DocumentWASM, IdentityPublicKeyWASM, IdentityWASM, PrivateKeyWASM } from 'pshenmic-dpp'
+import { DocumentWASM, IdentityPublicKeyWASM, IdentityWASM } from 'pshenmic-dpp'
 import { DashPlatformSDK } from '../../src/DashPlatformSDK'
 
 let sdk: DashPlatformSDK
@@ -22,9 +22,8 @@ describe('Identity', () => {
     expect(identity).toEqual(expect.any(IdentityWASM))
   })
 
-
   test('should be able to get identity by public key hash', async () => {
-    const publicKeyHash = 'c5b7fdfa5731e1b31b1b42c13959756e8db22b3b'
+    const publicKeyHash = 'c1b95d254c405a3d9d82ef88a47f9f792ac8efd7'
 
     const identity = await sdk.identities.getIdentityByPublicKeyHash(publicKeyHash)
 
