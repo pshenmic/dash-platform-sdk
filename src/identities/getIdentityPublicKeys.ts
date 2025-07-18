@@ -36,7 +36,11 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPoo
   const {
     root_hash: rootHash,
     loaded_identity_keys: loadedIdentityKeys
-  } = verifyIdentityKeysByIdentityId(proof.grovedbProof, id.bytes(), null, false, false, true, null, null, PlatformVersionWASM.PLATFORM_V8)
+  } = verifyIdentityKeysByIdentityId(proof.grovedbProof, id.bytes(), null, false, false, true, null, null, PlatformVersionWASM.PLATFORM_V9)
+
+  if (loadedIdentityKeys == null) {
+    throw new Error(`Identity with identifier ${id.base58()} not found`)
+  }
 
   const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
@@ -44,10 +48,6 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPoo
 
   if (!verify) {
     throw new Error('Failed to verify query')
-  }
-
-  if (loadedIdentityKeys == null) {
-    throw new Error(`Identity with identifier ${id.base58()} not found`)
   }
 
   return loadedIdentityKeys.map((loadedIdentityKey) => IdentityPublicKeyWASM.fromBytes(loadedIdentityKey))

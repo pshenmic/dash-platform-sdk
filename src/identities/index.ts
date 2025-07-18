@@ -7,6 +7,7 @@ import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import getIdentityByIdentifier from './getIdentityByIdentifier'
 import { IdentityPublicKeyWASM, IdentityWASM } from 'pshenmic-dpp'
+import getIdentityByNonUniquePublicKeyHash from './getIdentityByNonUniquePublicKeyHash'
 
 /**
  * Collection of methods to query identities and its related data
@@ -35,7 +36,7 @@ export class IdentitiesController {
   /**
    * Retrieves an Identity from the network by give public key hash
    *
-   * @param hex {string=} public key hash value in hex, should be a length of 40
+   * @param hex {string} public key hash value in hex, should be a length of 40
    *
    * @return {Promise<IdentityWASM>}
    */
@@ -45,6 +46,21 @@ export class IdentitiesController {
     }
 
     return await getIdentityByPublicKeyHash(this.grpcPool, hex)
+  }
+
+  /**
+   * Retrieves an Identity from the network by non-unique public key hash (like Voter Identity, SHA160)
+   *
+   * @param hex {string} public key hash value in hex, should be a length of 40
+   *
+   * @return {Promise<IdentityWASM>}
+   */
+  async getIdentityByNonUniquePublicKeyHash (hex: string): Promise<IdentityWASM> {
+    if (hex.length !== 40) {
+      throw new Error('Public key hash should equal 40')
+    }
+
+    return await getIdentityByNonUniquePublicKeyHash(this.grpcPool, hex)
   }
 
   /**

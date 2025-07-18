@@ -23,16 +23,22 @@ describe('Identity', () => {
   })
 
   test('should be able to get identity by public key hash', async () => {
-    const publicKeyHash = 'c5b7fdfa5731e1b31b1b42c13959756e8db22b3b'
+    const publicKeyHash = 'c1b95d254c405a3d9d82ef88a47f9f792ac8efd7'
 
     const identity = await sdk.identities.getIdentityByPublicKeyHash(publicKeyHash)
 
     expect(identity).toEqual(expect.any(IdentityWASM))
   })
 
+  test('should be able to get identity by non unique public key hash', async () => {
+    const identity = await sdk.identities.getIdentityByNonUniquePublicKeyHash('8b30a2cda275d1110874c0380b8447db3a9b04ee')
+
+    expect(identity).toEqual(expect.any(IdentityWASM))
+  })
+
   test('should be able to get identity contract nonce', async () => {
-    const identifier = 'B7kcE1juMBWEWkuYRJhVdAE2e6RaevrGxRsa1DrLCpQH'
-    const dataContract = '6QMfQTdKpC3Y9uWBcTwXeY3KdzRLDqASUsDnQ4MEc9XC'
+    const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+    const dataContract = 'DrEhmVJz56ukHbaFt8xLVRasnNWsrx3x8dGtcu9xg6rV'
 
     const identityContractNonce = await sdk.identities.getIdentityContractNonce(identifier, dataContract)
 

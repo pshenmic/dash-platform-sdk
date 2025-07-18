@@ -34,7 +34,11 @@ export default async function getIdentityByIdentifier (grpcPool: GRPCConnectionP
   const {
     root_hash: rootHash,
     identity
-  } = verifyFullIdentityByIdentityId(proof.grovedbProof, true, id.bytes(), PlatformVersionWASM.PLATFORM_V8)
+  } = verifyFullIdentityByIdentityId(proof.grovedbProof, true, id.bytes(), PlatformVersionWASM.PLATFORM_V9)
+
+  if (identity == null) {
+    throw new Error(`Identity with identifier ${id.base58()} not found`)
+  }
 
   const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
@@ -42,10 +46,6 @@ export default async function getIdentityByIdentifier (grpcPool: GRPCConnectionP
 
   if (!verify) {
     throw new Error('Failed to verify query')
-  }
-
-  if (identity == null) {
-    throw new Error(`Identity with identifier ${id.base58()} not found`)
   }
 
   return IdentityWASM.fromBytes(identity)

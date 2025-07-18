@@ -1,7 +1,6 @@
 import {
   BatchedTransitionWASM,
   BatchTransitionWASM,
-  BatchType,
   DocumentCreateTransitionWASM,
   DocumentDeleteTransitionWASM, DocumentPurchaseTransitionWASM,
   DocumentReplaceTransitionWASM, DocumentTransferTransitionWASM,
@@ -11,19 +10,19 @@ import {
 import { CreateStateTransitionDocumentBatchParams } from '../types'
 
 const documentBatchTypesMap = {
-  [BatchType.Create]: DocumentCreateTransitionWASM,
-  [BatchType.Replace]: DocumentReplaceTransitionWASM,
-  [BatchType.Delete]: DocumentDeleteTransitionWASM,
-  [BatchType.UpdatePrice]: DocumentUpdatePriceTransitionWASM,
-  [BatchType.Transfer]: DocumentTransferTransitionWASM,
-  [BatchType.Purchase]: DocumentPurchaseTransitionWASM
+  create: DocumentCreateTransitionWASM,
+  replace: DocumentReplaceTransitionWASM,
+  delete: DocumentDeleteTransitionWASM,
+  updatePrice: DocumentUpdatePriceTransitionWASM,
+  transfer: DocumentTransferTransitionWASM,
+  purchase: DocumentPurchaseTransitionWASM
 }
 
-export default function createStateTransition (document: DocumentWASM, type: BatchType, identityContractNonce: bigint, params?: CreateStateTransitionDocumentBatchParams | undefined): StateTransitionWASM {
+export default function createStateTransition (document: DocumentWASM, type: 'create' | 'replace' | 'delete' | 'updatePrice' | 'transfer' | 'purchase', identityContractNonce: bigint, params?: CreateStateTransitionDocumentBatchParams | undefined): StateTransitionWASM {
   const TransitionClass = documentBatchTypesMap[type]
 
   if (TransitionClass == null) {
-    throw new Error(`Unknown batch type: ${type}`)
+    throw new Error(`Unknown batch type: ${type}. Should be 'create' or 'replace' or 'delete' or 'updatePrice' or 'transfer' or 'purchase'`)
   }
 
   // @ts-expect-error

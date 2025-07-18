@@ -2,6 +2,8 @@ import getRandomArrayItem from './utils/getRandomArrayItem'
 import { Channel, Client, createChannel, createClient } from 'nice-grpc-web'
 import { PlatformDefinition } from '../proto/generated/platform'
 import getEvonodeList from './utils/getEvonodeList'
+import { GRPC_DEFAULT_POOL_LIMIT } from './constants'
+import { GRPCOptions } from './DashPlatformSDK'
 
 const seedNodes = {
   testnet: [
@@ -21,32 +23,37 @@ const seedNodes = {
 export default class GRPCConnectionPool {
   channels: Channel[]
 
-  constructor (network: 'testnet' | 'mainnet', dapiUrl?: string | string[]) {
-    if (dapiUrl == null) {
-      this.channels = seedNodes[network].map((dapiUrl: string) => createChannel(dapiUrl))
+  constructor (network: 'testnet' | 'mainnet', grpcOptions?: GRPCOptions) {
+    const grpcPoolLimit = grpcOptions?.poolLimit ?? GRPC_DEFAULT_POOL_LIMIT
 
-      // todo refactor to stream
-      this._loadRecentEvonodeList(network)
-        .catch(console.error)
+    this._initialize(network, grpcPoolLimit, grpcOptions?.dapiUrl).catch(console.error)
+  }
+
+  async _initialize (network: 'testnet' | 'mainnet', poolLimit: number, dapiUrl?: string | string[]): Promise<void> {
+    if (typeof dapiUrl === 'string') {
+      this.channels = [createChannel(dapiUrl)]
 
       return
     }
 
-    if (typeof dapiUrl === 'string') {
-      this.channels = [createChannel(dapiUrl)]
-    } else if (Array.isArray(dapiUrl)) {
+    if (Array.isArray(dapiUrl)) {
       this.channels = dapiUrl.map(dapiUrl => createChannel(dapiUrl))
-    } else {
-      throw new Error('Invalid dapiUrl')
-    }
-  }
 
-  async _loadRecentEvonodeList (network: 'testnet' | 'mainnet'): Promise<string[]> {
+      return
+    }
+
+    if (dapiUrl != null) {
+      throw new Error('Unrecognized DAPI URL')
+    }
+
+    // Add default seed nodes
+    this.channels = (seedNodes[network].map((dapiUrl: string) => createChannel(dapiUrl)))
+
     // retrieve last evonodes list
     const evonodeList = await getEvonodeList(network)
 
-    // map to array of urls
-    const allDAPIUrls = Object.entries(evonodeList)
+    // map it to array of dapiUrls
+    const networkDAPIUrls = Object.entries(evonodeList)
       .map(([, info]) => info)
       .filter((info: any) => info.status === 'ENABLED')
       .map((info: any) => {
@@ -55,19 +62,21 @@ export default class GRPCConnectionPool {
         return `https://${host as string}:${info.platformHTTPPort as number}`
       })
 
-    // healthcheck the DAPI
-    const results = await Promise.allSettled(allDAPIUrls.map(async (dapiUrl) => {
-      await fetch(dapiUrl)
+    // healthcheck nodes
+    for (const url of networkDAPIUrls) {
+      if (this.channels.length > poolLimit) {
+        break
+      }
 
-      return dapiUrl
-    }))
+      try {
+        const response = await fetch(url)
 
-    const healthchecked = results.filter(result => result.status === 'fulfilled').map(result => result.value)
-    const dapiUrls = [...seedNodes[network], ...healthchecked]
-
-    this.channels = dapiUrls.map((dapiUrl: string) => createChannel(dapiUrl))
-
-    return dapiUrls
+        if (response.status === 405) {
+          this.channels.push(createChannel(url))
+        }
+      } catch (e) {
+      }
+    }
   }
 
   getClient (): Client<PlatformDefinition> {

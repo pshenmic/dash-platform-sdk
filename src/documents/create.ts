@@ -1,14 +1,14 @@
 import { DocumentWASM } from 'pshenmic-dpp'
 import { IdentifierLike } from '../types'
 
-export default async function createDocument (
+export default function createDocument (
   dataContractId: IdentifierLike,
   documentType: string,
   data: object,
   owner: IdentifierLike,
   revision?: bigint,
   documentId?: IdentifierLike
-): Promise<DocumentWASM> {
+): DocumentWASM {
   return new DocumentWASM(
     data,
     documentType,
