@@ -47,16 +47,16 @@ export default async function getTokenContractInfo (grpcPool: GRPCConnectionPool
     PlatformVersionWASM.PLATFORM_V9
   )
 
+  if (contractInfo == null) {
+    throw new Error('ContractInfo not found')
+  }
+
   const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')
-  }
-
-  if (contractInfo == null) {
-    throw new Error('ContractInfo not found')
   }
 
   return {

@@ -1,7 +1,4 @@
-import {
-  BatchType,
-  StateTransitionWASM
-} from 'pshenmic-dpp'
+import { StateTransitionWASM } from 'pshenmic-dpp'
 import { DashPlatformSDK } from '../../src/DashPlatformSDK'
 
 let sdk: DashPlatformSDK
@@ -35,7 +32,7 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document create transition', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
 
-    const stateTransitions = await sdk.documents.createStateTransition(document, BatchType.Create, identityContractNonce)
+    const stateTransitions = await sdk.documents.createStateTransition(document, 'create', identityContractNonce)
 
     expect(stateTransitions).toEqual(expect.any(StateTransitionWASM))
   })
@@ -43,7 +40,7 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document delete transition', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
 
-    const stateTransitions = await sdk.documents.createStateTransition(document, BatchType.Delete, identityContractNonce)
+    const stateTransitions = await sdk.documents.createStateTransition(document, 'delete', identityContractNonce)
 
     expect(stateTransitions).toEqual(expect.any(StateTransitionWASM))
   })
@@ -51,7 +48,7 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document purchase transition', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
 
-    const stateTransition = await sdk.documents.createStateTransition(document, BatchType.Purchase, identityContractNonce, { price })
+    const stateTransition = await sdk.documents.createStateTransition(document, 'purchase', identityContractNonce, { price })
 
     expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
   })
@@ -59,7 +56,7 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document replace transition', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
 
-    const stateTransition = await sdk.documents.createStateTransition(document, BatchType.Replace, identityContractNonce)
+    const stateTransition = await sdk.documents.createStateTransition(document, 'replace', identityContractNonce)
 
     expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
   })
@@ -67,7 +64,7 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document transfer transition', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
 
-    const stateTransition = await sdk.documents.createStateTransition(document, BatchType.Transfer, identityContractNonce, { recipient })
+    const stateTransition = await sdk.documents.createStateTransition(document, 'transfer', identityContractNonce, { recipient })
 
     expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
   })
@@ -75,7 +72,7 @@ describe('DocumentsBatch', () => {
   test('should be able to create document batch from document update price transition', async () => {
     const document = await sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
 
-    const stateTransition = await sdk.documents.createStateTransition(document, BatchType.UpdatePrice, identityContractNonce, { price })
+    const stateTransition = await sdk.documents.createStateTransition(document, 'updatePrice', identityContractNonce, { price })
 
     expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
   })

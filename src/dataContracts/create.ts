@@ -20,7 +20,7 @@ export default function createDataContract (
     null,
     tokenConfiguration,
     fullValidation ?? true,
-    platformVersion ?? PlatformVersionWASM.PLATFORM_V8
+    platformVersion ?? PlatformVersionWASM.PLATFORM_V9
   )
 
   if (config != null) {
