@@ -54,12 +54,12 @@ export class DataContractsController {
    * to make: create or update.
    *
    * @param dataContract {DataContractWASM} An instance of DataContractWASM to create or update
-   * @param type {DataContractTransitionType} type of state transition to create
+   * @param type {string} type of identity state transition to do, must be 'create' or 'update'
    * @param identityNonce {bigint} identity contract nonce
    *
    * @return {StateTransitionWASM}
    */
-  createStateTransition (dataContract: DataContractWASM, type: DataContractTransitionType, identityNonce: bigint): StateTransitionWASM {
+  createStateTransition (dataContract: DataContractWASM, type: 'create' | 'update', identityNonce: bigint): StateTransitionWASM {
     return createStateTransition(dataContract, type, identityNonce)
   }
 }
