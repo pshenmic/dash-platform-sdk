@@ -1,6 +1,6 @@
 import getRandomArrayItem from './utils/getRandomArrayItem'
 import { Channel, Client, createChannel, createClient } from 'nice-grpc-web'
-import { PlatformDefinition } from '../proto/generated/platform'
+import { GetStatusRequest, GetStatusResponse, PlatformDefinition } from '../proto/generated/platform'
 import getEvonodeList from './utils/getEvonodeList'
 import { GRPC_DEFAULT_POOL_LIMIT } from './constants'
 import { GRPCOptions } from './DashPlatformSDK'
@@ -69,9 +69,12 @@ export default class GRPCConnectionPool {
       }
 
       try {
-        const response = await fetch(url)
+        const channel = createChannel(url)
+        const client = createClient(PlatformDefinition, channel)
+        const response: GetStatusResponse = await client.getStatus(GetStatusRequest.fromPartial({ v0: {} }))
+        const { v0 } = response
 
-        if (response.status === 405) {
+        if (v0?.chain != null) {
           this.channels.push(createChannel(url))
         }
       } catch (e) {
