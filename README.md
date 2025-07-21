@@ -101,7 +101,7 @@ const dataContract = await sdk.dataContracts.create(
 )
 
 // Turn it into StateTransitionWASM
-const stateTransition = await sdk.documents.createStateTransition(dataContract, DataContractTransitionType.Create, identityNonce)
+const stateTransition = await sdk.documents.createStateTransition(dataContract, 'create', identityNonce)
 
 // Broadcast in the network
 await sdk.stateTransitions.broadcast(stateTransition)
@@ -128,7 +128,7 @@ const data = {
 const document = await sdk.documents.create(dataContractId, documentType, data, ownerId, revision)
 
 // Turn it into StateTransitionWASM
-const stateTransition = await sdk.documents.createStateTransition(dataContract, DataContractTransitionType.Create, identityContractNonce)
+const stateTransition = await sdk.documents.createStateTransition(dataContract, 'create', identityContractNonce)
 
 // Broadcast transaction
 await sdk.stateTransitions.broadcast(stateTransition)
@@ -155,7 +155,7 @@ const [document] = await sdk.documents.query(
 const identityContractNonce = await sdk.documents.query(ownerId, dataContractId) // nonce
 
 // Turn it into StateTransitionWASM
-const stateTransition = await sdk.documents.createStateTransition(document, BatchType.Replace, identityContractNonce + 1n)
+const stateTransition = await sdk.documents.createStateTransition(document, 'replace', identityContractNonce + 1n)
 
 // Broadcast transaction
 await sdk.stateTransitions.broadcast(stateTransition)
@@ -180,7 +180,7 @@ const data = {
 const document = await sdk.documents.create(dataContractId, documentType, data, ownerId, revision)
 
 // Turn it into StateTransitionWASM
-const stateTransition = await sdk.documents.createStateTransition(dataContract, DataContractTransitionType.Create, identityContractNonce)
+const stateTransition = await sdk.documents.createStateTransition(dataContract, 'create', identityContractNonce)
 
 // Broadcast transaction
 await sdk.stateTransitions.broadcast(stateTransition)
@@ -267,7 +267,7 @@ const identityNonce = BigInt(1)
 
 const transition = await sdk.dataContracts.createStateTransition(
   dataContract, 
-  DataContractTransitionType.Create, 
+  'create', 
   identityNonce
 )
 ```
@@ -284,7 +284,7 @@ const identityNonce = BigInt(2)
 
 const transition = await sdk.dataContracts.createStateTransition(
   dataContract, 
-  DataContractTransitionType.Update, 
+  'update', 
   identityNonce
 )
 ```
@@ -343,39 +343,37 @@ console.log(documents)
 ### Document State Transitions
 #### Create Document State Transitions
 
-This method allows creation of various document state transitions using BatchType enum
+This method allows creation of various document state transitions
 
 ```javascript
-import { BatchType } from 'dash-platform-sdk'
-
 const document = // ... created or fetched document
 const identityContractNonce = BigInt(1)
 
 // Create transition
 const createTransition = await sdk.documents.createStateTransition(
   document, 
-  BatchType.Create, 
+  'create', 
   identityContractNonce
 )
 
 // Replace transition
 const replaceTransition = await sdk.documents.createStateTransition(
   document, 
-  BatchType.Replace, 
+  'replace', 
   identityContractNonce
 )
 
 // Delete transition
 const deleteTransition = await sdk.documents.createStateTransition(
   document, 
-  BatchType.Delete, 
+  'delete', 
   identityContractNonce
 )
 
 // Purchase transition (requires price parameter)
 const purchaseTransition = await sdk.documents.createStateTransition(
   document, 
-  BatchType.Purchase, 
+  'purchase', 
   identityContractNonce,
   { price: BigInt(100) }
 )
@@ -383,7 +381,7 @@ const purchaseTransition = await sdk.documents.createStateTransition(
 // Transfer transition (requires recipient parameter)
 const transferTransition = await sdk.documents.createStateTransition(
   document, 
-  BatchType.Transfer, 
+  'transfer', 
   identityContractNonce,
   { recipient: '8VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS' }
 )
@@ -391,7 +389,7 @@ const transferTransition = await sdk.documents.createStateTransition(
 // Update price transition (requires price parameter)
 const updatePriceTransition = await sdk.documents.createStateTransition(
   document, 
-  BatchType.UpdatePrice, 
+  'updatePrice', 
   identityContractNonce,
   { price: BigInt(200) }
 )

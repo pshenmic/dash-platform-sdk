@@ -3,7 +3,7 @@ import getDataContractByIdentifier from './getDataContractByIdentifier'
 import { DataContractWASM, PlatformVersionWASM, StateTransitionWASM, TokenConfigurationWASM } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import createDataContract from './create'
-import createStateTransition, { DataContractTransitionType } from './createStateTransition'
+import createStateTransition from './createStateTransition'
 
 /**
  * Collection of methods necessary to work with Data Contracts in the network,
@@ -54,12 +54,12 @@ export class DataContractsController {
    * to make: create or update.
    *
    * @param dataContract {DataContractWASM} An instance of DataContractWASM to create or update
-   * @param type {DataContractTransitionType} type of state transition to create
+   * @param type {string} type of identity state transition to do, must be 'create' or 'update'
    * @param identityNonce {bigint} identity contract nonce
    *
    * @return {StateTransitionWASM}
    */
-  createStateTransition (dataContract: DataContractWASM, type: DataContractTransitionType, identityNonce: bigint): StateTransitionWASM {
+  createStateTransition (dataContract: DataContractWASM, type: 'create' | 'update', identityNonce: bigint): StateTransitionWASM {
     return createStateTransition(dataContract, type, identityNonce)
   }
 }

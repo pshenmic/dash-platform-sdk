@@ -1,6 +1,6 @@
 import { CreateStateTransitionDocumentBatchParams, IdentifierLike } from '../types'
 import createDocument from './create'
-import { BatchType, DocumentWASM, IdentifierWASM, StateTransitionWASM } from 'pshenmic-dpp'
+import { DocumentWASM, IdentifierWASM, StateTransitionWASM } from 'pshenmic-dpp'
 import createStateTransition from './createStateTransition'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import query from './query'
@@ -30,7 +30,7 @@ export class DocumentsController {
    * @return {DataContractWASM}
    */
   async create (dataContractId: IdentifierLike, documentType: string, data: object, owner: IdentifierLike, revision?: bigint): Promise<DocumentWASM> {
-    return await createDocument(dataContractId, documentType, data, owner, revision)
+    return createDocument(dataContractId, documentType, data, owner, revision)
   }
 
   /**
@@ -63,12 +63,12 @@ export class DocumentsController {
    * 6) Purchase - purchase a document from identity (if price was set)
    *
    * @param document {DocumentWASM} Instance of the document to make transition with
-   * @param batchType {BatchType} Type of the document transition
+   * @param batchType {string} Type of the document transition, must be a one of ('create' | 'replace' | 'delete' |'updatePrice' |'transfer' | 'purchase')
    * @param identityContractNonce {bigint} Identity contract nonce
    * @param params {CreateStateTransitionDocumentBatchParams=} Additional params, required for Transfer, SetPrice, Purchase transitions
    */
-  createStateTransition (document: DocumentWASM, batchType: BatchType, identityContractNonce: bigint, params?: CreateStateTransitionDocumentBatchParams): StateTransitionWASM {
-    if ([BatchType.Transfer, BatchType.UpdatePrice, BatchType.Purchase].includes(batchType) && params == null) {
+  createStateTransition (document: DocumentWASM, batchType: 'create' | 'replace' | 'delete' | 'updatePrice' | 'transfer' | 'purchase', identityContractNonce: bigint, params?: CreateStateTransitionDocumentBatchParams): StateTransitionWASM {
+    if (['transfer', 'updatePrice', 'purchase'].includes(batchType) && params == null) {
       throw new Error('Params required for Transfer, UpdatePrice or Purchase document transitions')
     }
 
