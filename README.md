@@ -61,7 +61,8 @@ Or load it straight from the web page:
 ```html
 <script src="https://unpkg.com/dash-platform-sdk/bundle.min.js"></script>
 <script>
-    const sdk = new DashPlatformSDK({network: 'testnet'})
+    const {DashPlatformSDK} = window
+    const sdk = new DashPlatformSDK.DashPlatformSDK({network: 'testnet'})
 </script>
 ```
 
