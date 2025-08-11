@@ -87,7 +87,6 @@ export default class GRPCConnectionPool {
 
   getClient (): Client<PlatformDefinition> {
     const channel = getRandomArrayItem(this.channels)
-    console.log(channel)
     return createClient(PlatformDefinition, channel)
   }
 }
