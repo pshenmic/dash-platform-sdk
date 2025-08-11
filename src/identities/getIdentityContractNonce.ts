@@ -45,7 +45,7 @@ export default async function getIdentityContractNonce (grpcPool: GRPCConnection
     return BigInt(0)
   }
 
-  const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

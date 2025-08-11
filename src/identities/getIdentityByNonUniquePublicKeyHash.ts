@@ -42,7 +42,7 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
 
   const identifier = new IdentifierWASM(identityId)
 
-  const quorumPublicKey = await getQuorumPublicKey(proof.grovedbIdentityPublicKeyHashProof.quorumType, bytesToHex(proof.grovedbIdentityPublicKeyHashProof.quorumHash))
+  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.grovedbIdentityPublicKeyHashProof.quorumType, bytesToHex(proof.grovedbIdentityPublicKeyHashProof.quorumHash))
 
   const verify = verifyTenderdashProof(proof.grovedbIdentityPublicKeyHashProof, metadata, rootHash, quorumPublicKey)
 

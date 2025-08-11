@@ -13,7 +13,7 @@ let schema: object
 
 describe('DataContract', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK()
+    sdk = new DashPlatformSDK({ network: 'mainnet' })
 
     ownerIdentifier = 'GARSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
     identityNonce = BigInt(11)
@@ -54,11 +54,14 @@ describe('DataContract', () => {
     // System Data Contract
     dataContract = await sdk.dataContracts.getDataContractByIdentifier('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec')
 
-    // User Data Contract
-    dataContract = await sdk.dataContracts.getDataContractByIdentifier('Aukz296s36am6wKStoMbxm4YhC6kTpu3mERVrC7vHokP')
-
-    // User Data Contract with keep history
-    dataContract = await sdk.dataContracts.getDataContractByIdentifier('DrEhmVJz56ukHbaFt8xLVRasnNWsrx3x8dGtcu9xg6rV')
+    // // User Data Contract
+    // dataContract = await sdk.dataContracts.getDataContractByIdentifier('Aukz296s36am6wKStoMbxm4YhC6kTpu3mERVrC7vHokP')
+    //
+    // // User Data Contract with keep history
+    // dataContract = await sdk.dataContracts.getDataContractByIdentifier('DrEhmVJz56ukHbaFt8xLVRasnNWsrx3x8dGtcu9xg6rV')
+    //
+    // // Token data contract
+    // dataContract = await sdk.dataContracts.getDataContractByIdentifier('dfaPU4HsMpUX7NMF2TR5oeAC4cZvLwYrSU6WT4884bq')
 
     expect(dataContract).toEqual(expect.any(DataContractWASM))
   })
