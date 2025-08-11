@@ -13,7 +13,7 @@ let schema: object
 
 describe('DataContract', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK({ network: 'mainnet' })
+    sdk = new DashPlatformSDK()
 
     ownerIdentifier = 'GARSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
     identityNonce = BigInt(11)
