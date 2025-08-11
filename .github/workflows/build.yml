@@ -30,6 +30,10 @@ jobs:
       run: |
         yarn build:grpc
 
+    - name: Check lint
+      run: |
+        yarn lint
+
     - name: Run tests
       run: |
         yarn test
