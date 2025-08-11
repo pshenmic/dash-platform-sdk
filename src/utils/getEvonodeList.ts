@@ -5,9 +5,10 @@ export default async function getDAPINodeList (network: 'testnet' | 'mainnet'): 
 
   const resp = await fetch(url)
 
-  const {resultSet} = await resp.json()
+  const { resultSet } = await resp.json()
 
   return resultSet
-      .map(validator => validator?.proTxInfo?.state?.service? `https://${validator.proTxInfo.state.service.split(':')[0]}${network === 'mainnet' ? '' : ':1443'}` : undefined)
-      .filter(e => !!e)
+  // eslint-disable-next-line
+    .map((validator: any) => validator?.proTxInfo?.state?.service ? `https://${validator.proTxInfo.state.service.split(':')[0] as string}${network === 'mainnet' ? '' : ':1443'}` : undefined)
+    .filter(e => e != null)
 }

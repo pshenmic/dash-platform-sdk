@@ -1,11 +1,4 @@
 import { DashPlatformSDK } from '../../src/types'
-import {
-  BatchedTransitionWASM,
-  BatchTransitionWASM, PrivateKeyWASM,
-  TokenBaseTransitionWASM,
-  TokenConfigurationWASM, TokenPricingScheduleWASM,
-  TokenSetPriceForDirectPurchaseTransitionWASM, TokenTransitionWASM
-} from 'pshenmic-dpp'
 
 let sdk: DashPlatformSDK
 

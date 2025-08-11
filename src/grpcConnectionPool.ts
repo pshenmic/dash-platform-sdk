@@ -12,7 +12,7 @@ const seedNodes = {
   ],
   mainnet: [
     // seed-1.pshenmic.dev
-    'https://158.160.14.115:443',
+    'https://158.160.14.115:443'
     // mainnet dcg seeds
     // 'https://158.160.14.115',
     // 'https://3.0.60.103',
