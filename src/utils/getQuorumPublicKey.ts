@@ -9,7 +9,7 @@ export async function getQuorumPublicKey (network: string, quorumType: number, q
     return cached
   }
 
-  const url = `https://${network === 'mainnet' ? '' : 'testnet.'}platform-explorer.pshenmic.dev/quorumPublicKey?quorumType=${quorumType}&quorumHash=${quorumHash}`
+  const url = `https://${network === 'mainnet' ? '' : 'testnet.'}platform-explorer.pshenmic.dev/quorum/info?quorumType=${quorumType}&quorumHash=${quorumHash}`
 
   const resp = await fetch(url, {
     method: 'GET'
