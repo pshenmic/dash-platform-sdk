@@ -53,7 +53,7 @@ export default async function query (
     root_hash: rootHash,
     documents
   } = verifyDocumentProof(proof.grovedbProof, dataContract.bytes(PlatformVersionWASM.PLATFORM_V9), documentTypeName, where, orderBy, limit, getDocumentsRequest.v0?.startAt, startAtIncluded, BigInt(metadata?.timeMs), PlatformVersionWASM.PLATFORM_V9)
-  const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

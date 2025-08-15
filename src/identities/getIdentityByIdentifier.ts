@@ -40,7 +40,7 @@ export default async function getIdentityByIdentifier (grpcPool: GRPCConnectionP
     throw new Error(`Identity with identifier ${id.base58()} not found`)
   }
 
-  const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

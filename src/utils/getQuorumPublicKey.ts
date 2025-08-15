@@ -2,40 +2,26 @@ const cache: {
   [key: string]: string
 } = {}
 
-export async function getQuorumPublicKey (quorumType: number, quorumHash: string): Promise<string> {
+export async function getQuorumPublicKey (network: string, quorumType: number, quorumHash: string): Promise<string> {
   const cached = cache[`${quorumType}_${quorumHash}`]
 
   if (cached != null) {
     return cached
   }
 
-  // typically http://localhost:19998/
-  const baseUrl = 'https://trpc.digitalcash.dev/'
-  const basicAuth = btoa('user:pass')
-  const payload = JSON.stringify({
-    method: 'quorum', params: ['info', quorumType, quorumHash]
-  })
-  const resp = await fetch(baseUrl, {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${basicAuth}`, 'Content-Type': 'application/json'
-    },
-    body: payload
+  const url = `https://${network === 'mainnet' ? '' : 'testnet.'}platform-explorer.pshenmic.dev/quorum/info?quorumType=${quorumType}&quorumHash=${quorumHash}`
+
+  const resp = await fetch(url, {
+    method: 'GET'
   })
 
-  if (resp.status === 420) {
-    throw new Error('Rate limit on Core RPC')
+  if (resp.status !== 200) {
+    throw new Error('Failed to query Platform Explorer for quorum public keys')
   }
 
   const data = await resp.json()
 
-  if (data.error != null) {
-    const err = new Error(data.error.message)
-    Object.assign(err, data.error)
-    throw err
-  }
-
-  const { quorumPublicKey } = data.result
+  const { quorumPublicKey } = data
 
   cache[`${quorumType}_${quorumHash}`] = quorumPublicKey
 

@@ -39,7 +39,7 @@ export default async function getIdentityByPublicKeyHash (grpcPool: GRPCConnecti
     throw new Error(`Identity with public key hash ${hex} not found`)
   }
 
-  const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
