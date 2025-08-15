@@ -1,5 +1,5 @@
 module.exports = {
-  modulePathIgnorePatterns: ["<rootDir>/dist/"],
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
   transformIgnorePatterns: [
     '/node_modules/(?!pshenmic-dpp|wasm-drive-verify)'
   ],
