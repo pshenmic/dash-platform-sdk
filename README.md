@@ -409,7 +409,6 @@ const amount = BigInt(10000)
 const privateKey = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
 const publicKeyId = 5
 
-
 const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
 const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'transfer', { identityId: recipient, amount })
 
