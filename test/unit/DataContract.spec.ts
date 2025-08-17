@@ -54,11 +54,20 @@ describe('DataContract', () => {
     // System Data Contract
     dataContract = await sdk.dataContracts.getDataContractByIdentifier('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec')
 
+    expect(dataContract).toEqual(expect.any(DataContractWASM))
+
     // User Data Contract
     dataContract = await sdk.dataContracts.getDataContractByIdentifier('Aukz296s36am6wKStoMbxm4YhC6kTpu3mERVrC7vHokP')
 
+    expect(dataContract).toEqual(expect.any(DataContractWASM))
+
     // User Data Contract with keep history
     dataContract = await sdk.dataContracts.getDataContractByIdentifier('DrEhmVJz56ukHbaFt8xLVRasnNWsrx3x8dGtcu9xg6rV')
+
+    expect(dataContract).toEqual(expect.any(DataContractWASM))
+
+    // Token Data Contract
+    dataContract = await sdk.dataContracts.getDataContractByIdentifier('3XtMFe9UPf75DAcLmLsX9CLTrLPNysNPMcnWCE1C39vm')
 
     expect(dataContract).toEqual(expect.any(DataContractWASM))
   })
