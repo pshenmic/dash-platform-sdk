@@ -5,7 +5,7 @@ import getIdentityTokensBalances, { IdentityTokenBalances } from './getIdentityT
 import getTokenContractInfo, { TokenContractInfo } from './getTokenContractInfo'
 import getTokenTotalSupply, { TokenTotalSupply } from './getTokenTotalSupply'
 import createStateTransition from './createStateTransition'
-import { IdentifierWASM, StateTransitionWASM, TokenBaseTransitionWASM } from 'pshenmic-dpp'
+import { IdentifierWASM, StateTransitionWASM, TokenBaseTransitionWASM, TokenPricingScheduleWASM } from 'pshenmic-dpp'
 import getIdentityContractNonce from '../identities/getIdentityContractNonce'
 
 /**
@@ -100,6 +100,10 @@ export default class TokensController {
 
     if (params.identityId != null) {
       params.identityId = new IdentifierWASM(params.identityId)
+    }
+
+    if (params.price != null && typeof params.price === 'bigint') {
+      params.price = TokenPricingScheduleWASM.SinglePrice(params.price)
     }
 
     return createStateTransition(base, owner, type, params)

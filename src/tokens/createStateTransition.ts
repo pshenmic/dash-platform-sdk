@@ -54,7 +54,7 @@ const tokenTransitionsMap = {
   },
   directPurchase: {
     class: TokenDirectPurchaseTransitionWASM,
-    arguments: ['tokenCount', 'totalAgreedPrice'],
+    arguments: ['amount', 'totalAgreedPrice'],
     optionalArguments: []
   },
   setPriceForDirectPurchase: {
@@ -77,7 +77,7 @@ export default function createStateTransition (base: TokenBaseTransitionWASM, ow
           !(optionalArguments as string[]).includes(classArgument))
 
   if (missingArgument != null) {
-    throw new Error(`Token transition param ${missingArgument} is missing`)
+    throw new Error(`Token transition param "${missingArgument}" is missing`)
   }
 
   const transitionParams = classArguments.map((classArgument: string) => params[classArgument])

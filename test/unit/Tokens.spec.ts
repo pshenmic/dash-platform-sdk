@@ -1,5 +1,5 @@
 import { DashPlatformSDK } from '../../src/types'
-import { StateTransitionWASM, TokenBaseTransitionWASM } from 'pshenmic-dpp'
+import { StateTransitionWASM, TokenBaseTransitionWASM, TokenEmergencyActionWASM } from 'pshenmic-dpp'
 
 let sdk: DashPlatformSDK
 
@@ -45,14 +45,123 @@ describe('Tokens', () => {
     expect(tokenBaseTransition).toBeInstanceOf(TokenBaseTransitionWASM)
   })
 
-  test('should be able to create transfer transition', async () => {
-    const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
-    const recipient = '8GopLQQCViyroS2gHktesGaCMe2tueXWeQ6Y9vpMFTEC'
-    const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
-    const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+  describe('create state transitions', () => {
+    test('should be able to create burn transition', async () => {
+      const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+      const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
 
-    const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'transfer', { identityId: recipient, amount: BigInt(1000) })
+      const amount = BigInt(10)
 
-    expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+      const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+
+      const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'burn', { amount })
+
+      expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+    })
+
+    test('should be able to create mint transition', async () => {
+      const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+      const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+
+      const recipientId = '8GopLQQCViyroS2gHktesGaCMe2tueXWeQ6Y9vpMFTEC'
+      const amount = BigInt(10)
+
+      const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+
+      const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'mint', { identityId: recipientId, amount })
+
+      expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+    })
+
+    test('should be able to create transfer transition', async () => {
+      const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+      const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+
+      const recipient = '8GopLQQCViyroS2gHktesGaCMe2tueXWeQ6Y9vpMFTEC'
+      const amount = BigInt(100)
+
+      const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+
+      const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'transfer', { identityId: recipient, amount })
+
+      expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+    })
+
+    test('should be able to create freeze transition', async () => {
+      const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+      const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+
+      const identityId = '8GopLQQCViyroS2gHktesGaCMe2tueXWeQ6Y9vpMFTEC'
+
+      const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+
+      const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'freeze', { identityId })
+
+      expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+    })
+
+    test('should be able to create unfreeze transition', async () => {
+      const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+      const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+
+      const identityId = '8GopLQQCViyroS2gHktesGaCMe2tueXWeQ6Y9vpMFTEC'
+      const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+
+      const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'unfreeze', { identityId })
+
+      expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+    })
+
+    test('should be able to create destroyFrozenFunds transition', async () => {
+      const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+      const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+
+      const identityId = '8GopLQQCViyroS2gHktesGaCMe2tueXWeQ6Y9vpMFTEC'
+
+      const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+
+      const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'destroyFrozenFunds', { identityId })
+
+      expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+    })
+
+    test('should be able to create emergency action transition', async () => {
+      const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+      const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+
+      const emergencyAction = TokenEmergencyActionWASM.Pause
+
+      const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+
+      const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'emergencyAction', { emergencyAction })
+
+      expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+    })
+
+    test('should be able to create setPriceForDirectPurchase transition', async () => {
+      const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+      const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+
+      const price = BigInt(10)
+      const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+
+      const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'setPriceForDirectPurchase', { price })
+
+      expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+    })
+
+    test('should be able to create directPurchase transition', async () => {
+      const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+      const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+
+      const amount = BigInt(10)
+      const totalAgreedPrice = BigInt(100)
+
+      const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+
+      const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'directPurchase', { amount, totalAgreedPrice })
+
+      expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+    })
   })
 })

@@ -1,5 +1,5 @@
 import {
-  IdentifierWASM, TokenEmergencyActionWASM
+  IdentifierWASM, TokenEmergencyActionWASM, TokenPricingScheduleWASM
 } from 'pshenmic-dpp'
 
 import { Versions } from 'dashhd'
@@ -169,6 +169,7 @@ export type TokenTransitionType = 'burn' | 'mint' | 'transfer' | 'freeze' | 'unf
 export interface TokenTransitionParams {
   identityId?: IdentifierLike
   amount?: bigint
+  price?: bigint | TokenPricingScheduleWASM
   totalAgreedPrice?: bigint
   publicNote?: string
   sharedEncryptedNote?: string
