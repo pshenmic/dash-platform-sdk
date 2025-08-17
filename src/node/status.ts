@@ -1,6 +1,7 @@
 import { NodeStatus } from '../types'
 import { GetStatusRequest, GetStatusResponse } from '../../proto/generated/platform'
 import GRPCConnectionPool from '../grpcConnectionPool'
+import bytesToHex from '../utils/bytesToHex'
 
 export default async function status (grpcPool: GRPCConnectionPool): Promise<NodeStatus> {
   const getStatusRequest = GetStatusRequest.fromPartial({ v0: {} })
@@ -16,8 +17,8 @@ export default async function status (grpcPool: GRPCConnectionPool): Promise<Nod
   return {
     node: (v0.node != null)
       ? {
-          id: v0.node.id.reduce((acc: string, code: number) => acc + code.toString(16), ''),
-          proTxHash: v0.node.proTxHash?.reduce((acc: string, code: number) => acc + code.toString(16), '')
+          id: bytesToHex(v0.node.id),
+          proTxHash: v0.node.proTxHash != null ? bytesToHex(v0.node.proTxHash) : undefined
         }
       : undefined,
     chain: (v0.chain != null)
@@ -27,10 +28,11 @@ export default async function status (grpcPool: GRPCConnectionPool): Promise<Nod
           earliestBlockHeight: v0.chain.earliestBlockHeight,
           maxPeerBlockHeight: v0.chain.maxPeerBlockHeight,
           coreChainLockedHeight: v0.chain.coreChainLockedHeight,
-          latestBlockHash: v0.chain?.latestBlockHash.reduce((acc: string, code: number) => acc + code.toString(16), ''),
-          latestAppHash: v0.chain?.latestAppHash.reduce((acc: string, code: number) => acc + code.toString(16), ''),
-          earliestBlockHash: v0.chain?.earliestBlockHash.reduce((acc: string, code: number) => acc + code.toString(16), ''),
-          earliestAppHash: v0.chain?.earliestAppHash.reduce((acc: string, code: number) => acc + code.toString(16), '')
+          latestBlockHash: v0.chain?.latestBlockHash != null ? bytesToHex(v0.chain?.latestBlockHash) : '',
+          latestAppHash: v0.chain?.latestAppHash != null ? bytesToHex(v0.chain?.latestAppHash) : '',
+          earliestBlockHash: v0.chain?.earliestBlockHash != null ? bytesToHex(v0.chain?.earliestBlockHash) : '',
+          earliestAppHash: v0.chain?.earliestAppHash != null ? bytesToHex(v0.chain?.earliestAppHash) : ''
+
         }
       : undefined,
     version: v0.version,
