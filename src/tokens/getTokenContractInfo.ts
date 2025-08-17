@@ -11,7 +11,7 @@ import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 
 export interface TokenContractInfo {
-  contractId: IdentifierWASM
+  dataContractId: IdentifierWASM
   tokenContractPosition: number
 }
 
@@ -60,7 +60,7 @@ export default async function getTokenContractInfo (grpcPool: GRPCConnectionPool
   }
 
   return {
-    contractId: new IdentifierWASM(contractInfo.contractId),
+    dataContractId: new IdentifierWASM(contractInfo.contractId),
     tokenContractPosition: contractInfo.tokenContractPosition
   }
 }

@@ -1,4 +1,4 @@
-# dash-platform-sdk v1.1.4
+# dash-platform-sdk v1.1.5
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pshenmic/dash-platform-sdk/blob/master/LICENSE) ![npm version](https://img.shields.io/npm/v/react.svg?style=flat) ![a](https://github.com/pshenmic/platform-explorer/actions/workflows/build.yml/badge.svg)
 
 
@@ -394,6 +394,28 @@ const updatePriceTransition = await sdk.documents.createStateTransition(
   identityContractNonce,
   { price: BigInt(200) }
 )
+```
+### Token State Transitions
+#### Transfer token
+
+This method allows to transfer a token to an identity
+
+```javascript
+const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+const recipient = '8GopLQQCViyroS2gHktesGaCMe2tueXWeQ6Y9vpMFTEC'
+const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+const amount = BigInt(10000)
+
+const privateKey = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+const publicKeyId = 5
+
+const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'transfer', { identityId: recipient, amount })
+
+stateTransition.signByPrivateKey(PrivateKeyWASM.fromHex(privateKey, 'testnet'), 'ECDSA_SECP256K1')
+stateTransition.signaturePublicKeyId = publicKeyId
+
+await sdk.stateTransitions.broadcast(stateTransition)
 ```
 
 ### Identities
