@@ -4,7 +4,7 @@ import {
   GetTokenContractInfoResponse_GetTokenContractInfoResponseV0
 } from '../../proto/generated/platform'
 import { IdentifierLike } from '../types'
-import {IdentifierWASM, PlatformVersionWASM, TokenBaseTransitionWASM} from 'pshenmic-dpp'
+import { IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
 import { verifyTokenContractInfo } from 'wasm-drive-verify'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'

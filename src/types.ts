@@ -167,11 +167,11 @@ export interface DataContractConfig {
 export type TokenTransitionType = 'burn' | 'mint' | 'transfer' | 'freeze' | 'unfreeze' | 'destroyFrozenFunds' | 'emergencyAction' | 'directPurchase' | 'setPriceForDirectPurchase'
 
 export interface TokenTransitionParams {
-  identityId?: IdentifierLike,
-  amount?: bigint,
-  totalAgreedPrice?: bigint,
-  publicNote?: string,
-  sharedEncryptedNote?: string,
+  identityId?: IdentifierLike
+  amount?: bigint
+  totalAgreedPrice?: bigint
+  publicNote?: string
+  sharedEncryptedNote?: string
   privateEncryptedNote?: string
   emergencyAction?: TokenEmergencyActionWASM
 }

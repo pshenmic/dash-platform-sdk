@@ -5,18 +5,16 @@ import {
   StateTransitionWASM,
   TokenBaseTransitionWASM,
   TokenBurnTransitionWASM,
-  TokenClaimTransitionWASM,
   TokenDestroyFrozenFundsTransitionWASM,
   TokenDirectPurchaseTransitionWASM,
   TokenEmergencyActionTransitionWASM,
-  TokenEmergencyActionWASM,
   TokenFreezeTransitionWASM,
   TokenMintTransitionWASM,
   TokenSetPriceForDirectPurchaseTransitionWASM,
   TokenTransferTransitionWASM, TokenTransitionWASM,
   TokenUnFreezeTransitionWASM
 } from 'pshenmic-dpp'
-import {TokenTransitionParams, TokenTransitionType} from "../types";
+import { TokenTransitionParams, TokenTransitionType } from '../types'
 
 const tokenTransitionsMap = {
   burn: {
@@ -37,37 +35,37 @@ const tokenTransitionsMap = {
   freeze: {
     class: TokenFreezeTransitionWASM,
     arguments: ['identityId', 'publicNote'],
-    optionalArguments: ['publicNote'],
+    optionalArguments: ['publicNote']
   },
   unfreeze: {
     class: TokenUnFreezeTransitionWASM,
     arguments: ['identityId', 'publicNote'],
-    optionalArguments: ['publicNote'],
+    optionalArguments: ['publicNote']
   },
   destroyFrozenFunds: {
     class: TokenDestroyFrozenFundsTransitionWASM,
     arguments: ['identityId', 'publicNote'],
-    optionalArguments: ['publicNote'],
+    optionalArguments: ['publicNote']
   },
   emergencyAction: {
     class: TokenEmergencyActionTransitionWASM,
     arguments: ['emergencyAction', 'publicNote'],
-    optionalArguments: ['publicNote'],
+    optionalArguments: ['publicNote']
   },
   directPurchase: {
     class: TokenDirectPurchaseTransitionWASM,
     arguments: ['tokenCount', 'totalAgreedPrice'],
-    optionalArguments: [],
+    optionalArguments: []
   },
   setPriceForDirectPurchase: {
     class: TokenSetPriceForDirectPurchaseTransitionWASM,
     arguments: ['price', 'publicNote'],
-    optionalArguments: ['publicNote'],
+    optionalArguments: ['publicNote']
   }
 }
 
 export default function createStateTransition (base: TokenBaseTransitionWASM, ownerId: IdentifierWASM, type: TokenTransitionType, params: TokenTransitionParams): StateTransitionWASM {
-  const {class: TransitionClass, arguments: classArguments, optionalArguments } = tokenTransitionsMap[type]
+  const { class: TransitionClass, arguments: classArguments, optionalArguments } = tokenTransitionsMap[type]
 
   if (TransitionClass == null) {
     throw new Error(`Unimplemented transition type: ${type}`)
@@ -75,7 +73,7 @@ export default function createStateTransition (base: TokenBaseTransitionWASM, ow
 
   // check if all required params for token transition exists
   const [missingArgument] = classArguments
-      .filter((classArgument: string) => params[classArgument] == null &&
+    .filter((classArgument: string) => params[classArgument] == null &&
           !(optionalArguments as string[]).includes(classArgument))
 
   if (missingArgument != null) {

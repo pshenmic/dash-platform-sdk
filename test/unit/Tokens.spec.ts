@@ -1,5 +1,5 @@
 import { DashPlatformSDK } from '../../src/types'
-import {StateTransitionWASM, TokenBaseTransitionWASM} from "pshenmic-dpp";
+import { StateTransitionWASM, TokenBaseTransitionWASM } from 'pshenmic-dpp'
 
 let sdk: DashPlatformSDK
 
@@ -50,7 +50,7 @@ describe('Tokens', () => {
     const recipient = 'FQ4waDowFQXD4tJPKQM1114VSr5f8s3qAc5bT8FJkT49'
     const tokenBaseTransition = await sdk.tokens.createBaseTransition('A36eJF2kyYXwxCtJGsgbR3CTAscUFaNxZN19UqUfM1kw', 'FQ4waDowFQXD4tJPKQM1114VSr5f8s3qAc5bT8FJkT49')
 
-    const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'transfer', { identityId: recipient, amount: BigInt(1000)})
+    const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'transfer', { identityId: recipient, amount: BigInt(1000) })
 
     expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
   })

@@ -1,12 +1,12 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
-import {IdentifierLike, TokenTransitionParams, TokenTransitionType} from '../types'
-import getIdentitiesTokenBalances, {IdentitiesTokenBalances} from './getIdentitiesTokenBalances'
-import getIdentityTokensBalances, {IdentityTokenBalances} from './getIdentityTokensBalances'
-import getTokenContractInfo, {TokenContractInfo} from './getTokenContractInfo'
-import getTokenTotalSupply, {TokenTotalSupply} from './getTokenTotalSupply'
+import { IdentifierLike, TokenTransitionParams, TokenTransitionType } from '../types'
+import getIdentitiesTokenBalances, { IdentitiesTokenBalances } from './getIdentitiesTokenBalances'
+import getIdentityTokensBalances, { IdentityTokenBalances } from './getIdentityTokensBalances'
+import getTokenContractInfo, { TokenContractInfo } from './getTokenContractInfo'
+import getTokenTotalSupply, { TokenTotalSupply } from './getTokenTotalSupply'
 import createStateTransition from './createStateTransition'
-import {IdentifierWASM, StateTransitionWASM, TokenBaseTransitionWASM} from "pshenmic-dpp";
-import getIdentityContractNonce from "../identities/getIdentityContractNonce";
+import { IdentifierWASM, StateTransitionWASM, TokenBaseTransitionWASM } from 'pshenmic-dpp'
+import getIdentityContractNonce from '../identities/getIdentityContractNonce'
 
 /**
  * Tokens controller for requesting information about tokens and tokens holders
@@ -76,7 +76,7 @@ export default class TokensController {
    * @return {TokenBaseTransitionWASM}
    */
   async createBaseTransition (tokenId: IdentifierLike, ownerId: IdentifierLike): Promise<TokenBaseTransitionWASM> {
-    const { dataContractId, tokenContractPosition} = await getTokenContractInfo(this.grpcPool, tokenId)
+    const { dataContractId, tokenContractPosition } = await getTokenContractInfo(this.grpcPool, tokenId)
     const identityContractNonce = await getIdentityContractNonce(this.grpcPool, ownerId, dataContractId)
 
     return new TokenBaseTransitionWASM(identityContractNonce, tokenContractPosition, dataContractId, tokenId, undefined)
