@@ -1,9 +1,12 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { IdentifierLike } from '../types'
-import getIdentitiesTokenBalances, { IdentitiesTokenBalances } from './getIdentitiesTokenBalances'
-import getIdentityTokensBalances, { IdentityTokenBalances } from './getIdentityTokensBalances'
-import getTokenContractInfo, { TokenContractInfo } from './getTokenContractInfo'
-import getTokenTotalSupply, { TokenTotalSupply } from './getTokenTotalSupply'
+import {IdentifierLike, TokenTransitionParams, TokenTransitionType} from '../types'
+import getIdentitiesTokenBalances, {IdentitiesTokenBalances} from './getIdentitiesTokenBalances'
+import getIdentityTokensBalances, {IdentityTokenBalances} from './getIdentityTokensBalances'
+import getTokenContractInfo, {TokenContractInfo} from './getTokenContractInfo'
+import getTokenTotalSupply, {TokenTotalSupply} from './getTokenTotalSupply'
+import createStateTransition from './createStateTransition'
+import {IdentifierWASM, StateTransitionWASM, TokenBaseTransitionWASM} from "pshenmic-dpp";
+import getIdentityContractNonce from "../identities/getIdentityContractNonce";
 
 /**
  * Tokens controller for requesting information about tokens and tokens holders
@@ -62,5 +65,40 @@ export default class TokensController {
    */
   async getTokenTotalSupply (tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
     return await getTokenTotalSupply(this.grpcPool, tokenIdentifier)
+  }
+
+  /**
+   * Creates a token state transition
+   *
+   * @param tokenId {IdentifierLike} - token id which total supply we need
+   * @param ownerId {IdentifierLike} - token id which total supply we need
+   *
+   * @return {TokenBaseTransitionWASM}
+   */
+  async createBaseTransition (tokenId: IdentifierLike, ownerId: IdentifierLike): Promise<TokenBaseTransitionWASM> {
+    const { dataContractId, tokenContractPosition} = await getTokenContractInfo(this.grpcPool, tokenId)
+    const identityContractNonce = await getIdentityContractNonce(this.grpcPool, ownerId, dataContractId)
+
+    return new TokenBaseTransitionWASM(identityContractNonce, tokenContractPosition, dataContractId, tokenId, undefined)
+  }
+
+  /**
+   * Creates a token state transition
+   *
+   * @param base {TokenBaseTransitionWASM} - token id which total supply we need
+   * @param ownerId {IdentifierLike} - token id which total supply we need
+   * @param type {TokenTransitionType} - token id which total supply we need
+   * @param params {TokenTransitionParams} - token id which total supply we need
+   *
+   * @return {StateTransitionWASM}
+   */
+  createStateTransition (base: TokenBaseTransitionWASM, ownerId: IdentifierLike, type: TokenTransitionType, params: TokenTransitionParams): StateTransitionWASM {
+    const owner = new IdentifierWASM(ownerId)
+
+    if (params.identityId != null) {
+      params.identityId = new IdentifierWASM(params.identityId)
+    }
+
+    return createStateTransition(base, owner, type, params)
   }
 }

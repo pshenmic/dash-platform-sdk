@@ -4,14 +4,14 @@ import {
   GetTokenContractInfoResponse_GetTokenContractInfoResponseV0
 } from '../../proto/generated/platform'
 import { IdentifierLike } from '../types'
-import { IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import {IdentifierWASM, PlatformVersionWASM, TokenBaseTransitionWASM} from 'pshenmic-dpp'
 import { verifyTokenContractInfo } from 'wasm-drive-verify'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 
 export interface TokenContractInfo {
-  contractId: IdentifierWASM
+  dataContractId: IdentifierWASM
   tokenContractPosition: number
 }
 
@@ -60,7 +60,7 @@ export default async function getTokenContractInfo (grpcPool: GRPCConnectionPool
   }
 
   return {
-    contractId: new IdentifierWASM(contractInfo.contractId),
+    dataContractId: new IdentifierWASM(contractInfo.contractId),
     tokenContractPosition: contractInfo.tokenContractPosition
   }
 }
