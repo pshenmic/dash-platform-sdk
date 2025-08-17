@@ -53,12 +53,7 @@ describe('Tokens', () => {
 
     const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'transfer', { identityId: recipient, amount: BigInt(1000) })
 
-    stateTransition.signByPrivateKey(PrivateKeyWASM.fromHex('c20acd0a04f838b267016243bed301286bc918de2a93d114a552285293c7ba66', 'testnet'), 'ECDSA_SECP256K1')
-    stateTransition.signaturePublicKeyId = 5
-
     expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
-
-    console.log(stateTransition.base64())
   })
 
   // test('should be able to create transfer transition', async () => {
