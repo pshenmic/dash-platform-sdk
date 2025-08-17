@@ -1,5 +1,5 @@
 import { DashPlatformSDK } from '../../src/types'
-import { StateTransitionWASM, TokenBaseTransitionWASM } from 'pshenmic-dpp'
+import { PrivateKeyWASM, StateTransitionWASM, TokenBaseTransitionWASM } from 'pshenmic-dpp'
 
 let sdk: DashPlatformSDK
 
@@ -46,12 +46,34 @@ describe('Tokens', () => {
   })
 
   test('should be able to create transfer transition', async () => {
-    const owner = '34vkjdeUTP2z798SiXqoB6EAuobh51kXYURqVa9xkujf'
-    const recipient = 'FQ4waDowFQXD4tJPKQM1114VSr5f8s3qAc5bT8FJkT49'
-    const tokenBaseTransition = await sdk.tokens.createBaseTransition('A36eJF2kyYXwxCtJGsgbR3CTAscUFaNxZN19UqUfM1kw', 'FQ4waDowFQXD4tJPKQM1114VSr5f8s3qAc5bT8FJkT49')
+    const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+    const recipient = '8GopLQQCViyroS2gHktesGaCMe2tueXWeQ6Y9vpMFTEC'
+    const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+    const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
 
     const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'transfer', { identityId: recipient, amount: BigInt(1000) })
 
+    stateTransition.signByPrivateKey(PrivateKeyWASM.fromHex('c20acd0a04f838b267016243bed301286bc918de2a93d114a552285293c7ba66', 'testnet'), 'ECDSA_SECP256K1')
+    stateTransition.signaturePublicKeyId = 5
+
     expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+
+    console.log(stateTransition.base64())
   })
+
+  // test('should be able to create transfer transition', async () => {
+  //   const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+  //   const recipient = '8GopLQQCViyroS2gHktesGaCMe2tueXWeQ6Y9vpMFTEC'
+  //   const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+  //   const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+  //
+  //   const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'transfer', { identityId: recipient, amount: BigInt(1000) })
+  //
+  //   stateTransition.signByPrivateKey(PrivateKeyWASM.fromHex('c20acd0a04f838b267016243bed301286bc918de2a93d114a552285293c7ba66', 'testnet'), 'ECDSA_SECP256K1')
+  //   stateTransition.signaturePublicKeyId = 5
+  //
+  //   expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+  //
+  //   console.log(stateTransition.base64())
+  // })
 })

@@ -395,6 +395,29 @@ const updatePriceTransition = await sdk.documents.createStateTransition(
   { price: BigInt(200) }
 )
 ```
+### Token State Transitions
+#### Transfer token
+
+This method allows to transfer a token to an identity
+
+```javascript
+const owner = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+const recipient = '8GopLQQCViyroS2gHktesGaCMe2tueXWeQ6Y9vpMFTEC'
+const tokenId = '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+const amount = BigInt(10000)
+
+const privateKey = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+const publicKeyId = 5
+
+
+const tokenBaseTransition = await sdk.tokens.createBaseTransition(tokenId, owner)
+const stateTransition = sdk.tokens.createStateTransition(tokenBaseTransition, owner, 'transfer', { identityId: recipient, amount })
+
+stateTransition.signByPrivateKey(PrivateKeyWASM.fromHex(privateKey, 'testnet'), 'ECDSA_SECP256K1')
+stateTransition.signaturePublicKeyId = publicKeyId
+
+await sdk.stateTransitions.broadcast(stateTransition)
+```
 
 ### Identities
 #### Get identity by identifier

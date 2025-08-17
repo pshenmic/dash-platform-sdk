@@ -68,10 +68,10 @@ export default class TokensController {
   }
 
   /**
-   * Creates a token state transition
+   * Creates a Token Base Transition that contains base information about token transition
    *
-   * @param tokenId {IdentifierLike} - token id which total supply we need
-   * @param ownerId {IdentifierLike} - token id which total supply we need
+   * @param tokenId {IdentifierLike} - token identifier
+   * @param ownerId {IdentifierLike} - identity identifier of sender of the transaction
    *
    * @return {TokenBaseTransitionWASM}
    */
@@ -79,16 +79,19 @@ export default class TokensController {
     const { dataContractId, tokenContractPosition } = await getTokenContractInfo(this.grpcPool, tokenId)
     const identityContractNonce = await getIdentityContractNonce(this.grpcPool, ownerId, dataContractId)
 
-    return new TokenBaseTransitionWASM(identityContractNonce, tokenContractPosition, dataContractId, tokenId, undefined)
+    return new TokenBaseTransitionWASM(identityContractNonce + BigInt(1), tokenContractPosition, dataContractId, tokenId, undefined)
   }
 
   /**
-   * Creates a token state transition
+   * Helper function for creation of a token state transition to be broadcasted in the network
    *
-   * @param base {TokenBaseTransitionWASM} - token id which total supply we need
-   * @param ownerId {IdentifierLike} - token id which total supply we need
-   * @param type {TokenTransitionType} - token id which total supply we need
-   * @param params {TokenTransitionParams} - token id which total supply we need
+   * You have to pass token base transition acquired from .createBaseTransition() method
+   * together with token transition type and its params
+   *
+   * @param base {TokenBaseTransitionWASM} - token Base transition
+   * @param ownerId {IdentifierLike} - `identity identifier of the owner of the transaction`
+   * @param type {TokenTransitionType} - token transition type as string (f.e. 'transfer')
+   * @param params {TokenTransitionParams} - params required for a token transition
    *
    * @return {StateTransitionWASM}
    */
