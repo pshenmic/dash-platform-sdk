@@ -10,7 +10,7 @@ import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 
-export default async function getByIdentifier (grpcPool: GRPCConnectionPool, identifier: IdentifierLike, keepHistory?: boolean): Promise<DataContractWASM> {
+export default async function getByIdentifier (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<DataContractWASM> {
   const id = new IdentifierWASM(identifier)
   const getDataContractRequest = GetDataContractRequest.fromPartial({
     v0: {
