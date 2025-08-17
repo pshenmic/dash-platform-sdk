@@ -49,17 +49,11 @@ const tokenTransitionsMap = {
     arguments: ['identityId', 'publicNote'],
     optionalArguments: ['publicNote'],
   },
-  claim: {
-    class: TokenClaimTransitionWASM,
-    arguments: ['distributionType', 'publicNote'],
-    optionalArguments: ['publicNote'],
-  },
   emergencyAction: {
     class: TokenEmergencyActionTransitionWASM,
     arguments: ['emergencyAction', 'publicNote'],
     optionalArguments: ['publicNote'],
   },
-  // configUpdate: TokenConfigUpdateTransitionWASM,
   directPurchase: {
     class: TokenDirectPurchaseTransitionWASM,
     arguments: ['tokenCount', 'totalAgreedPrice'],

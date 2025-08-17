@@ -164,7 +164,7 @@ export interface DataContractConfig {
   requiresIdentityDecryptionBoundedKey?: number | null
 }
 
-export type TokenTransitionType = 'burn' | 'mint' | 'transfer' | 'freeze' | 'unfreeze' | 'destroyFrozenFunds' | 'claim' | 'emergencyAction' | 'directPurchase' | 'setPriceForDirectPurchase'
+export type TokenTransitionType = 'burn' | 'mint' | 'transfer' | 'freeze' | 'unfreeze' | 'destroyFrozenFunds' | 'emergencyAction' | 'directPurchase' | 'setPriceForDirectPurchase'
 
 export interface TokenTransitionParams {
   identityId?: IdentifierLike,
