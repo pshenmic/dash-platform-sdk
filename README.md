@@ -1,4 +1,4 @@
-# dash-platform-sdk v1.1.8
+# dash-platform-sdk v1.1.9
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pshenmic/dash-platform-sdk/blob/master/LICENSE) ![npm version](https://img.shields.io/npm/v/react.svg?style=flat) ![a](https://github.com/pshenmic/platform-explorer/actions/workflows/build.yml/badge.svg)
 
 
