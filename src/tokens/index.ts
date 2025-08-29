@@ -13,7 +13,7 @@ import getIdentityContractNonce from '../identities/getIdentityContractNonce'
  *
  * @hideconstructor
  */
-export default class TokensController {
+export class TokensController {
   /** @ignore **/
   grpcPool: GRPCConnectionPool
 
