@@ -1,6 +1,6 @@
 {
   "name": "dash-platform-sdk",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "main": "index.js",
   "description": "Lightweight SDK for accessing Dash Platform blockchain",
   "ts-standard": {
@@ -58,7 +58,7 @@
     "grpc-web": "^1.5.0",
     "hash.js": "^1.1.7",
     "nice-grpc-web": "^3.3.6",
-    "pshenmic-dpp": "1.0.21",
+    "pshenmic-dpp": "1.0.22",
     "rfc4648": "^1.5.4",
     "wasm-drive-verify": "github:owl352/wasm-drive-verify#9c572d86992d205d994cd7e0630a4bd14d284f8a"
   }
