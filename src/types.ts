@@ -1,4 +1,5 @@
 import {
+  GasFeesPaidByWASM,
   IdentifierWASM, TokenEmergencyActionWASM, TokenPricingScheduleWASM
 } from 'pshenmic-dpp'
 
@@ -30,6 +31,13 @@ export interface DocumentTransitionParams {
   prefundedVotingBalance?: {
     indexName: string
     amount: bigint
+  }
+  tokenPaymentInfo?: {
+    tokenContractId: IdentifierLike
+    tokenContractPosition: number
+    minimumTokenCost?: bigint
+    maximumTokenCost?: bigint
+    gasFeesPaidBy: GasFeesPaidByWASM
   }
 }
 

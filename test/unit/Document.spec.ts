@@ -1,4 +1,4 @@
-import { DocumentWASM, StateTransitionWASM } from 'pshenmic-dpp'
+import { DocumentWASM, GasFeesPaidByWASM, StateTransitionWASM } from 'pshenmic-dpp'
 import { DashPlatformSDK } from '../../src/DashPlatformSDK'
 
 let sdk: DashPlatformSDK
@@ -76,6 +76,23 @@ describe('Document', () => {
       const prefundedVotingBalance = { indexName, amount: contestedFee }
 
       const stateTransition = sdk.documents.createStateTransition(document, 'create', { identityContractNonce, prefundedVotingBalance })
+
+      expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
+    })
+
+    test('should be able to create a document with token payment info', async () => {
+      const document = sdk.documents.create(dataContract, documentType, data, identity)
+      const identityContractNonce = BigInt(1)
+
+      const tokenPaymentInfo = {
+        tokenContractId: '6hVQW16jyvZyGSQk2YVty4ND6bgFXozizYWnPt753uW5',
+        tokenContractPosition: 0,
+        minimumTokenCost: BigInt(1000),
+        maximumTokenCost: BigInt(100000),
+        gasFeesPaidBy: GasFeesPaidByWASM.ContractOwner
+      }
+
+      const stateTransition = sdk.documents.createStateTransition(document, 'create', { identityContractNonce, tokenPaymentInfo })
 
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
     })
