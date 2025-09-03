@@ -39,18 +39,18 @@ export default async function getIdentityContractNonce (grpcPool: GRPCConnection
   const {
     root_hash: rootHash,
     nonce: identityContractNonce
-  } = verifyIdentityContractNonce(proof.grovedbProof, identityIdentifier.bytes(), dataContractIdentifier.bytes(), true, PlatformVersionWASM.PLATFORM_V8)
+  } = verifyIdentityContractNonce(proof.grovedbProof, identityIdentifier.bytes(), dataContractIdentifier.bytes(), true, PlatformVersionWASM.PLATFORM_V9)
 
-  const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+  if (identityContractNonce == null) {
+    return BigInt(0)
+  }
+
+  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')
-  }
-
-  if (identityContractNonce == null) {
-    throw new Error(`Could not get identityContractNonce for Identity with identifier ${identityIdentifier.base58()}`)
   }
 
   return BigInt(identityContractNonce) & IDENTITY_CONTRACT_NONCE_VALUE_FILTER

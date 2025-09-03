@@ -34,9 +34,13 @@ export default async function getByIdentifier (grpcPool: GRPCConnectionPool, ide
   const {
     root_hash: rootHash,
     contract
-  } = verifyContract(proof.grovedbProof, undefined, true, false, id.bytes(), 9)
+  } = verifyContract(proof.grovedbProof, undefined, false, false, id.bytes(), 9)
 
-  const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+  if (contract == null) {
+    throw new Error(`Data Contract with identifier ${id.base58()} not found`)
+  }
+
+  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
@@ -44,9 +48,5 @@ export default async function getByIdentifier (grpcPool: GRPCConnectionPool, ide
     throw new Error('Failed to verify query')
   }
 
-  if (contract == null) {
-    throw new Error(`Data Contract with identifier ${id.base58()} not found`)
-  }
-
-  return DataContractWASM.fromBytes(contract, true, PlatformVersionWASM.PLATFORM_V8)
+  return DataContractWASM.fromBytes(contract, true, PlatformVersionWASM.PLATFORM_V9)
 }

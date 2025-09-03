@@ -1,6 +1,6 @@
 {
   "name": "dash-platform-sdk",
-  "version": "1.2.0-rc.1",
+  "version": "1.1.9",
   "main": "index.js",
   "description": "Lightweight SDK for accessing Dash Platform blockchain",
   "ts-standard": {
@@ -9,8 +9,9 @@
     ]
   },
   "devDependencies": {
-    "@babel/core": "^7.26.10",
-    "@babel/preset-env": "^7.26.9",
+    "@babel/cli": "^7.28.0",
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
     "@babel/preset-typescript": "^7.27.1",
     "@types/dashhd": "git+https://github.com/owl352/types-DashHD.js",
     "@types/dashphrase": "git+https://github.com/owl352/types-DashPhrase.js",
@@ -57,8 +58,8 @@
     "grpc-web": "^1.5.0",
     "hash.js": "^1.1.7",
     "nice-grpc-web": "^3.3.6",
-    "pshenmic-dpp": "1.0.12",
+    "pshenmic-dpp": "1.0.22",
     "rfc4648": "^1.5.4",
-    "wasm-drive-verify": "github:owl352/wasm-drive-verify#9aa187b273672d19a677067bed2909364e6934c8"
+    "wasm-drive-verify": "github:owl352/wasm-drive-verify#9c572d86992d205d994cd7e0630a4bd14d284f8a"
   }
 }

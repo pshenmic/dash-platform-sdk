@@ -7,14 +7,21 @@ import { KeyPairController } from './keyPair'
 import { NodeController } from './node'
 import { NamesController } from './names'
 import { DataContractsController } from './dataContracts'
-import ContestedResourcesController from './contestedResources'
-import TokensController from './tokens'
+import { ContestedResourcesController } from './contestedResources'
+import { TokensController } from './tokens'
 import { initSync, wasmBase64 } from 'wasm-drive-verify'
 import { base64 } from '@scure/base'
 import { AbstractSigner } from './signer/AbstractSigner'
 
+export interface GRPCOptions {
+  poolLimit: 5
+  dapiUrl?: string | string[]
+}
+
 export interface SDKOptions {
   network: 'testnet' | 'mainnet'
+  grpc?: GRPCOptions
+  /** @deprecated Use {GRPCOptions} instead, will be removed in next major version **/
   dapiUrl?: string | string[]
   signer?: AbstractSigner
 }
@@ -26,6 +33,8 @@ export class DashPlatformSDK {
   network: 'testnet' | 'mainnet'
   /** @ignore **/
   grpcPool: GRPCConnectionPool
+  /** @ignore **/
+  options?: SDKOptions
 
   contestedResources: ContestedResourcesController
   stateTransitions: StateTransitionsController
@@ -52,10 +61,17 @@ export class DashPlatformSDK {
 
     this.network = options?.network ?? 'testnet'
     this.signer = options?.signer
+    this.options = options
 
     this.utils = new UtilsController()
 
-    this.grpcPool = new GRPCConnectionPool(this.network, options?.dapiUrl)
+    // Compatibility
+    if (options?.dapiUrl != null && ((options?.grpc) == null)) {
+      // @ts-expect-error
+      this.options.grpc = { dapiUrl: options.dapiUrl }
+    }
+
+    this.grpcPool = new GRPCConnectionPool(this.network, this.options?.grpc)
 
     this._initialize(this.grpcPool, this.network)
 
@@ -73,6 +89,8 @@ export class DashPlatformSDK {
    * @param network
    */
   _initialize (grpcPool: GRPCConnectionPool, network: 'testnet' | 'mainnet'): void {
+    this.grpcPool = grpcPool
+
     this.stateTransitions = new StateTransitionsController(grpcPool)
     this.contestedResources = new ContestedResourcesController(grpcPool)
     this.dataContracts = new DataContractsController(grpcPool)
@@ -109,7 +127,7 @@ export class DashPlatformSDK {
 
     this.network = network
 
-    const grpcPool = new GRPCConnectionPool(this.network)
+    const grpcPool = new GRPCConnectionPool(this.network, this.options?.grpc)
 
     this._initialize(grpcPool, this.network)
   }

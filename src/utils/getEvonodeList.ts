@@ -1,35 +1,18 @@
 import { MasternodeList } from '../types'
 
-export default async function getEvonodeList (network: 'testnet' | 'mainnet'): Promise<MasternodeList> {
-  const baseUrl: string = {
-    testnet: 'https://trpc.digitalcash.dev',
-    mainnet: 'https://rpc.digitalcash.dev'
-  }[network]
+export default async function getDAPINodeList (network: 'testnet' | 'mainnet'): Promise<MasternodeList> {
+  const url = `https://${network === 'mainnet' ? '' : 'testnet.'}platform-explorer.pshenmic.dev/validators?isActive=true`
 
-  // let basicAuth = btoa(`user:pass`);
-  const payload = JSON.stringify({
-    method: 'masternodelist',
-    params: [
-      'evo'
-    ]
-  })
+  const resp = await fetch(url)
 
-  const resp = await fetch(baseUrl, {
-    method: 'POST',
-    headers: {
-      // "Authorization": `Basic ${basicAuth}`,
-      'Content-Type': 'application/json'
-    },
-    body: payload
-  })
-
-  const data = await resp.json()
-
-  if (data.error != null) {
-    const err = new Error(data.error.message)
-    Object.assign(err, data.error)
-    throw err
+  if (resp.status !== 200) {
+    throw new Error('Failed to query Platform Explorer for active validators')
   }
 
-  return data.result
+  const { resultSet } = await resp.json()
+
+  return resultSet
+  // eslint-disable-next-line
+    .map((validator: any) => validator?.proTxInfo?.state?.service ? `https://${validator.proTxInfo.state.service.split(':')[0] as string}${network === 'mainnet' ? '' : ':1443'}` : undefined)
+    .filter(e => e != null)
 }

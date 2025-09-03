@@ -1,5 +1,5 @@
 import {
-  IdentifierWASM
+  IdentifierWASM, TokenEmergencyActionWASM, TokenPricingScheduleWASM
 } from 'pshenmic-dpp'
 
 import { Versions } from 'dashhd'
@@ -162,4 +162,17 @@ export interface DataContractConfig {
   documentsCanBeDeletedContractDefault: boolean
   requiresIdentityEncryptionBoundedKey?: number | null
   requiresIdentityDecryptionBoundedKey?: number | null
+}
+
+export type TokenTransitionType = 'burn' | 'mint' | 'transfer' | 'freeze' | 'unfreeze' | 'destroyFrozenFunds' | 'emergencyAction' | 'directPurchase' | 'setPriceForDirectPurchase'
+
+export interface TokenTransitionParams {
+  identityId?: IdentifierLike
+  amount?: bigint
+  price?: bigint | TokenPricingScheduleWASM
+  totalAgreedPrice?: bigint
+  publicNote?: string
+  sharedEncryptedNote?: string
+  privateEncryptedNote?: string
+  emergencyAction?: TokenEmergencyActionWASM
 }

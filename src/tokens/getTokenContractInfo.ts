@@ -11,7 +11,7 @@ import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 
 export interface TokenContractInfo {
-  contractId: IdentifierWASM
+  dataContractId: IdentifierWASM
   tokenContractPosition: number
 }
 
@@ -47,7 +47,11 @@ export default async function getTokenContractInfo (grpcPool: GRPCConnectionPool
     PlatformVersionWASM.PLATFORM_V9
   )
 
-  const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+  if (contractInfo == null) {
+    throw new Error('ContractInfo not found')
+  }
+
+  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
@@ -55,12 +59,8 @@ export default async function getTokenContractInfo (grpcPool: GRPCConnectionPool
     throw new Error('Failed to verify query')
   }
 
-  if (contractInfo == null) {
-    throw new Error('ContractInfo not found')
-  }
-
   return {
-    contractId: new IdentifierWASM(contractInfo.contractId),
+    dataContractId: new IdentifierWASM(contractInfo.contractId),
     tokenContractPosition: contractInfo.tokenContractPosition
   }
 }

@@ -8,7 +8,7 @@ import { DataContractWASM } from 'pshenmic-dpp'
  *
  * @hideconstructor
  */
-export default class ContestedResourcesController {
+export class ContestedResourcesController {
   /** @ignore **/
   grpcPool: GRPCConnectionPool
 

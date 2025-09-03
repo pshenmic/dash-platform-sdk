@@ -52,8 +52,8 @@ export default async function query (
   const {
     root_hash: rootHash,
     documents
-  } = verifyDocumentProof(proof.grovedbProof, dataContract.bytes(PlatformVersionWASM.PLATFORM_V9), documentTypeName, where, orderBy, limit, getDocumentsRequest.v0?.startAt, startAtIncluded, BigInt(metadata?.timeMs), PlatformVersionWASM.PLATFORM_V8)
-  const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+  } = verifyDocumentProof(proof.grovedbProof, dataContract.bytes(PlatformVersionWASM.PLATFORM_V9), documentTypeName, where, orderBy, limit, getDocumentsRequest.v0?.startAt, startAtIncluded, BigInt(metadata?.timeMs), PlatformVersionWASM.PLATFORM_V9)
+  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
@@ -61,5 +61,5 @@ export default async function query (
     throw new Error('Failed to verify query')
   }
 
-  return documents?.map(document => DocumentWASM.fromBytes(document, dataContract, documentTypeName, PlatformVersionWASM.PLATFORM_V8)) ?? []
+  return documents?.map(document => DocumentWASM.fromBytes(document, dataContract, documentTypeName, PlatformVersionWASM.PLATFORM_V9)) ?? []
 }

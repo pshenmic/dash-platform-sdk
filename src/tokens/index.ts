@@ -1,16 +1,19 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { IdentifierLike } from '../types'
+import { IdentifierLike, TokenTransitionParams, TokenTransitionType } from '../types'
 import getIdentitiesTokenBalances, { IdentitiesTokenBalances } from './getIdentitiesTokenBalances'
 import getIdentityTokensBalances, { IdentityTokenBalances } from './getIdentityTokensBalances'
 import getTokenContractInfo, { TokenContractInfo } from './getTokenContractInfo'
 import getTokenTotalSupply, { TokenTotalSupply } from './getTokenTotalSupply'
+import createStateTransition from './createStateTransition'
+import { IdentifierWASM, StateTransitionWASM, TokenBaseTransitionWASM, TokenPricingScheduleWASM } from 'pshenmic-dpp'
+import getIdentityContractNonce from '../identities/getIdentityContractNonce'
 
 /**
  * Tokens controller for requesting information about tokens and tokens holders
  *
  * @hideconstructor
  */
-export default class TokensController {
+export class TokensController {
   /** @ignore **/
   grpcPool: GRPCConnectionPool
 
@@ -62,5 +65,47 @@ export default class TokensController {
    */
   async getTokenTotalSupply (tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
     return await getTokenTotalSupply(this.grpcPool, tokenIdentifier)
+  }
+
+  /**
+   * Creates a Token Base Transition that contains base information about token transition
+   *
+   * @param tokenId {IdentifierLike} - token identifier
+   * @param ownerId {IdentifierLike} - identity identifier of sender of the transaction
+   *
+   * @return {TokenBaseTransitionWASM}
+   */
+  async createBaseTransition (tokenId: IdentifierLike, ownerId: IdentifierLike): Promise<TokenBaseTransitionWASM> {
+    const { dataContractId, tokenContractPosition } = await getTokenContractInfo(this.grpcPool, tokenId)
+    const identityContractNonce = await getIdentityContractNonce(this.grpcPool, ownerId, dataContractId)
+
+    return new TokenBaseTransitionWASM(identityContractNonce + BigInt(1), tokenContractPosition, dataContractId, tokenId, undefined)
+  }
+
+  /**
+   * Helper function for creation of a token state transition to be broadcasted in the network
+   *
+   * You have to pass token base transition acquired from .createBaseTransition() method
+   * together with token transition type and its params
+   *
+   * @param base {TokenBaseTransitionWASM} - token Base transition
+   * @param ownerId {IdentifierLike} - `identity identifier of the owner of the transaction`
+   * @param type {TokenTransitionType} - token transition type as string (f.e. 'transfer')
+   * @param params {TokenTransitionParams} - params required for a token transition
+   *
+   * @return {StateTransitionWASM}
+   */
+  createStateTransition (base: TokenBaseTransitionWASM, ownerId: IdentifierLike, type: TokenTransitionType, params: TokenTransitionParams): StateTransitionWASM {
+    const owner = new IdentifierWASM(ownerId)
+
+    if (params.identityId != null) {
+      params.identityId = new IdentifierWASM(params.identityId)
+    }
+
+    if (params.price != null && typeof params.price === 'bigint') {
+      params.price = TokenPricingScheduleWASM.SinglePrice(params.price)
+    }
+
+    return createStateTransition(base, owner, type, params)
   }
 }

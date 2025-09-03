@@ -50,7 +50,7 @@ export default async function getIdentityTokensBalances (grpcPool: GRPCConnectio
     PlatformVersionWASM.PLATFORM_V9
   )
 
-  const quorumPublicKey = await getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
