@@ -22,18 +22,11 @@ export interface NetworkVersion {
   version: Versions
 }
 
-export type CreateStateTransitionDocumentBatchParams = DocumentBatchTransitionPurchaseParams | DocumentBatchTransitionTransferParams | DocumentBatchTransitionUpdatePriceParams
-
-export interface DocumentBatchTransitionPurchaseParams {
-  price: bigint | null
-}
-
-export interface DocumentBatchTransitionTransferParams {
-  recipient: string | null
-}
-
-export interface DocumentBatchTransitionUpdatePriceParams {
-  price: bigint | null
+export interface DocumentTransitionParams {
+  identityContractNonce: bigint
+  amount?: bigint
+  price?: bigint
+  recipientId?: IdentifierLike
 }
 
 export interface MasternodeInfo {
