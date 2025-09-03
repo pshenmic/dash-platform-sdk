@@ -3,10 +3,11 @@ import getIdentityPublicKeys from './getIdentityPublicKeys'
 import getIdentityNonce from './getIdentityNonce'
 import getIdentityBalance from './getIdentityBalance'
 import getIdentityByPublicKeyHash from './getIdentityByPublicKeyHash'
-import { IdentifierLike } from '../types'
+import { IdentifierLike, IdentityTransitionParams } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import getIdentityByIdentifier from './getIdentityByIdentifier'
-import { IdentityPublicKeyWASM, IdentityWASM } from 'pshenmic-dpp'
+import { IdentifierWASM, IdentityPublicKeyWASM, IdentityWASM, StateTransitionWASM } from 'pshenmic-dpp'
+import createStateTransition from './createStateTransition'
 import getIdentityByNonUniquePublicKeyHash from './getIdentityByNonUniquePublicKeyHash'
 
 /**
@@ -100,5 +101,23 @@ export class IdentitiesController {
    */
   async getIdentityPublicKeys (identifier: IdentifierLike): Promise<IdentityPublicKeyWASM[]> {
     return await getIdentityPublicKeys(this.grpcPool, identifier)
+  }
+
+  /**
+   * Helper function for creating {StateTransitionWASM} for Identity transitions
+   *
+   * @param type {string} type of transition, must be a one of ('register' | 'update' | 'topUp')
+   * @param params {IdentityTransitionParams} params
+   */
+  createStateTransition (type: 'register' | 'update' | 'topUp', params: IdentityTransitionParams): StateTransitionWASM {
+    if (params.identityId != null) {
+      params.identityId = new IdentifierWASM(params.identityId)
+    }
+
+    if (params.disablePublicKeyIds == null) {
+      params.disablePublicKeyIds = []
+    }
+
+    return createStateTransition(type, params)
   }
 }

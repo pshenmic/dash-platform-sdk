@@ -1,5 +1,9 @@
 import {
-  IdentifierWASM, TokenEmergencyActionWASM, TokenPricingScheduleWASM
+  AssetLockProofWASM,
+  IdentifierWASM,
+  IdentityPublicKeyInCreationWASM,
+  TokenEmergencyActionWASM,
+  TokenPricingScheduleWASM
 } from 'pshenmic-dpp'
 
 import { Versions } from 'dashhd'
@@ -175,4 +179,16 @@ export interface TokenTransitionParams {
   sharedEncryptedNote?: string
   privateEncryptedNote?: string
   emergencyAction?: TokenEmergencyActionWASM
+}
+
+export interface IdentityTransitionParams {
+  publicKeys?: IdentityPublicKeyInCreationWASM[]
+  assetLockProof?: AssetLockProofWASM
+  signature?: Uint8Array
+  addPublicKeys?: IdentityPublicKeyInCreationWASM[]
+  disablePublicKeyIds?: number[]
+  revision?: bigint
+  identityNonce?: bigint
+  identityId?: IdentifierLike
+  userFeeIncrease?: number
 }
