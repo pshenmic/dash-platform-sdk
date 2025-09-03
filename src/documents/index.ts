@@ -1,6 +1,6 @@
 import { DocumentTransitionParams, IdentifierLike } from '../types'
 import createDocument from './create'
-import { DocumentWASM, IdentifierWASM, StateTransitionWASM } from 'pshenmic-dpp'
+import { DocumentWASM, IdentifierWASM, PrefundedVotingBalanceWASM, StateTransitionWASM } from 'pshenmic-dpp'
 import createStateTransition from './createStateTransition'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import query from './query'
@@ -63,7 +63,7 @@ export class DocumentsController {
    * 6) Purchase - purchase a document from identity (if price was set)
    *
    * @param document {DocumentWASM} Instance of the document to make transition with
-   * @param type {string} Type of the document transition, must be a one of ('create' | 'replace' | 'delete' |'updatePrice' |'transfer' | 'purchase')
+   * @param type {string} Type of the document transition, must be a one of ('create' | 'replace' | 'delete' | 'updatePrice' |'transfer' | 'purchase')
    * @param params {DocumentTransitionParams} params
    */
   createStateTransition (document: DocumentWASM, type: 'create' | 'replace' | 'delete' | 'updatePrice' | 'transfer' | 'purchase', params: DocumentTransitionParams): StateTransitionWASM {
@@ -79,8 +79,11 @@ export class DocumentsController {
       throw new Error('Amount is required for updatePrice transition')
     }
 
-    if (params.recipientId != null) {
-      params.recipientId = new IdentifierWASM(params.recipientId)
+    if (params.prefundedVotingBalance != null) {
+      const { indexName, amount } = params.prefundedVotingBalance
+
+      // @ts-expect-error
+      params.prefundedVotingBalance = new PrefundedVotingBalanceWASM(indexName, amount)
     }
 
     return createStateTransition(document, type, params)

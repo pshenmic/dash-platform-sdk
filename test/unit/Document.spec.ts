@@ -65,6 +65,21 @@ describe('Document', () => {
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
     })
 
+    test('should be able to create a contested document transition', async () => {
+      const document = sdk.documents.create(dataContract, documentType, data, identity)
+      const identityContractNonce = BigInt(1)
+
+      // 0.2 Dash typically
+      const contestedFee = BigInt(20000000000)
+      const indexName = 'parentNameAndLabel'
+
+      const prefundedVotingBalance = { indexName, amount: contestedFee }
+
+      const stateTransition = sdk.documents.createStateTransition(document, 'create', { identityContractNonce, prefundedVotingBalance })
+
+      expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
+    })
+
     test('should be able to create a replace transition', async () => {
       const document = sdk.documents.create(dataContract, documentType, data, identity, revision + BigInt(1))
       const identityContractNonce = BigInt(1)
@@ -93,7 +108,7 @@ describe('Document', () => {
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
     })
 
-    test('should be able to create a updatePrice transition', async () => {
+    test('should be able to create an updatePrice transition', async () => {
       const document = sdk.documents.create(dataContract, documentType, data, identity, revision + BigInt(1))
       const identityContractNonce = BigInt(1)
       const price = BigInt(10000000)

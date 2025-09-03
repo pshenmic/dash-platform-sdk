@@ -27,6 +27,10 @@ export interface DocumentTransitionParams {
   amount?: bigint
   price?: bigint
   recipientId?: IdentifierLike
+  prefundedVotingBalance?: {
+    indexName: string
+    amount: bigint
+  }
 }
 
 export interface MasternodeInfo {
