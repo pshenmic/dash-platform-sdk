@@ -36,7 +36,7 @@ export class DocumentsController {
    * @return {DataContractWASM}
    */
   create (dataContractId: IdentifierLike, documentType: string, data: object, owner: IdentifierLike, revision?: bigint): DocumentWASM {
-    return createDocument(dataContractId, documentType, data, owner, revision)
+    return createDocument(new IdentifierWASM(dataContractId), documentType, data, new IdentifierWASM(owner), revision)
   }
 
   /**
@@ -55,7 +55,7 @@ export class DocumentsController {
       throw new Error('You may only set either startAfter or startAt at once')
     }
 
-    return await query(this.grpcPool, dataContractId, documentType, where, orderBy, limit ?? 100, startAt, startAfter)
+    return await query(this.grpcPool, new IdentifierWASM(dataContractId), documentType, where, orderBy, limit ?? 100, startAt, startAfter)
   }
 
   /**
