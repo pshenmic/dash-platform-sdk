@@ -114,6 +114,10 @@ export class IdentitiesController {
   /**
    * Helper function for creating {StateTransitionWASM} for Identity transitions
    *
+   * To create an IdentityCreateTransition, you should pass a params.assetLockProof object containing
+   * all necessary AssetLockProof data to make the transaction.
+   * Both InstantSend and ChainLock AssetLock proofs supported
+   *
    * @param type {string} type of transition, must be a one of ('create' | 'update' | 'topUp')
    * @param params {IdentityTransitionParams} params
    */

@@ -181,21 +181,21 @@ export interface TokenTransitionParams {
 }
 
 export interface ChainAssetLockProof {
-  // Best core chain locked height
+  /** Best Core chain locked height **/
   coreChainLockedHeight: number
-  // Txid of AssetLock transaction in hex
+  /** Txid of AssetLock transaction in hex **/
   txid: string
-  // OP_RETURN output index
+  /** OP_RETURN output index **/
   outputIndex: number
   type: 'chainLock'
 }
 
 export interface InstantLockAssetLockProof {
-  // Full transaction with assetlock in hex
+  /** Full Core AssetLock transaction in hex **/
   transaction: string
-  // OP_RETURN output index
+  /** OP_RETURN output index **/
   outputIndex: number
-  // Signature of InstantSend Lock in hex
+  /** Signature of InstantSend Lock in hex **/
   instantLock: string
   type: 'instantLock'
 }
