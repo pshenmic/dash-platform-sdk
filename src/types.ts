@@ -1,7 +1,6 @@
 import {
-  AssetLockProofWASM,
   IdentifierWASM,
-  IdentityPublicKeyInCreationWASM,
+  KeyType, Purpose, SecurityLevel,
   TokenEmergencyActionWASM,
   TokenPricingScheduleWASM
 } from 'pshenmic-dpp'
@@ -181,11 +180,41 @@ export interface TokenTransitionParams {
   emergencyAction?: TokenEmergencyActionWASM
 }
 
-export interface IdentityTransitionParams {
-  publicKeys?: IdentityPublicKeyInCreationWASM[]
-  assetLockProof?: AssetLockProofWASM
+export interface ChainAssetLockProof {
+  // Best core chain locked height
+  coreChainLockedHeight: number
+  // Txid of AssetLock transaction in hex
+  txid: string
+  // OP_RETURN output index
+  outputIndex: number
+  type: 'chainLock'
+}
+
+export interface InstantLockAssetLockProof {
+  // Full transaction with assetlock in hex
+  transaction: string
+  // OP_RETURN output index
+  outputIndex: number
+  // Signature of InstantSend Lock in hex
+  instantLock: string
+  type: 'instantLock'
+}
+
+export interface IdentityPublicKeyInCreation {
+  id: number
+  purpose: Purpose
+  securityLevel: SecurityLevel
+  keyType: KeyType
+  readOnly: boolean
+  data: Uint8Array
   signature?: Uint8Array
-  addPublicKeys?: IdentityPublicKeyInCreationWASM[]
+}
+
+export interface IdentityTransitionParams {
+  publicKeys?: IdentityPublicKeyInCreation[]
+  assetLockProof?: ChainAssetLockProof | InstantLockAssetLockProof
+  signature?: Uint8Array
+  addPublicKeys?: IdentityPublicKeyInCreation[]
   disablePublicKeyIds?: number[]
   revision?: bigint
   identityNonce?: bigint

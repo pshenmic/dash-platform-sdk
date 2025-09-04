@@ -7,7 +7,7 @@ import {
 import { IdentityTransitionParams } from '../types'
 
 const identityTransitionsMap = {
-  register: {
+  create: {
     class: IdentityCreateTransitionWASM,
     arguments: ['publicKeys', 'assetLockProof'],
     optionalArguments: ['signature', 'userFeeIncrease']
@@ -24,7 +24,7 @@ const identityTransitionsMap = {
   }
 }
 
-export default function createStateTransition (type: 'register' | 'update' | 'topUp', params: IdentityTransitionParams): StateTransitionWASM {
+export default function createStateTransition (type: 'create' | 'update' | 'topUp', params: IdentityTransitionParams): StateTransitionWASM {
   const { class: TransitionClass, arguments: classArguments, optionalArguments } = identityTransitionsMap[type]
 
   if (TransitionClass == null) {
