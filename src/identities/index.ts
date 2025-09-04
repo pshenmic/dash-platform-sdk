@@ -3,11 +3,20 @@ import getIdentityPublicKeys from './getIdentityPublicKeys'
 import getIdentityNonce from './getIdentityNonce'
 import getIdentityBalance from './getIdentityBalance'
 import getIdentityByPublicKeyHash from './getIdentityByPublicKeyHash'
-import { IdentifierLike } from '../types'
+import { IdentifierLike, IdentityTransitionParams } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import getIdentityByIdentifier from './getIdentityByIdentifier'
-import { IdentityPublicKeyWASM, IdentityWASM } from 'pshenmic-dpp'
+import {
+  AssetLockProofWASM,
+  IdentifierWASM, IdentityPublicKeyInCreationWASM,
+  IdentityPublicKeyWASM,
+  IdentityWASM,
+  OutPointWASM,
+  StateTransitionWASM
+} from 'pshenmic-dpp'
+import createStateTransition from './createStateTransition'
 import getIdentityByNonUniquePublicKeyHash from './getIdentityByNonUniquePublicKeyHash'
+import hexToBytes from '../utils/hexToBytes'
 
 /**
  * Collection of methods to query identities and its related data
@@ -100,5 +109,57 @@ export class IdentitiesController {
    */
   async getIdentityPublicKeys (identifier: IdentifierLike): Promise<IdentityPublicKeyWASM[]> {
     return await getIdentityPublicKeys(this.grpcPool, identifier)
+  }
+
+  /**
+   * Helper function for creating {StateTransitionWASM} for Identity transitions
+   *
+   * To create an IdentityCreateTransition, you should pass a params.assetLockProof object containing
+   * all necessary AssetLockProof data to make the transaction.
+   * Both InstantSend and ChainLock AssetLock proofs supported
+   *
+   * @param type {string} type of transition, must be a one of ('create' | 'update' | 'topUp')
+   * @param params {IdentityTransitionParams} params
+   */
+  createStateTransition (type: 'create' | 'update' | 'topUp', params: IdentityTransitionParams): StateTransitionWASM {
+    if (params.identityId != null) {
+      params.identityId = new IdentifierWASM(params.identityId)
+    }
+
+    if (params.disablePublicKeyIds == null) {
+      params.disablePublicKeyIds = []
+    }
+
+    if (params.assetLockProof != null) {
+      const { type } = params.assetLockProof
+
+      if (type === 'chainLock') {
+        const { txid, outputIndex, coreChainLockedHeight } = params.assetLockProof
+
+        // @ts-expect-error
+        params.assetLockProof = AssetLockProofWASM.createChainAssetLockProof(coreChainLockedHeight, new OutPointWASM(txid, outputIndex))
+      } else if (type === 'instantLock') {
+        const { transaction, outputIndex, instantLock } = params.assetLockProof
+
+        // @ts-expect-error
+        params.assetLockProof = AssetLockProofWASM.createInstantAssetLockProof(hexToBytes(instantLock), hexToBytes(transaction), outputIndex)
+      } else if (type == null) {
+        throw new Error('Missing Asset Lock type in the params')
+      } else {
+        throw new Error(`Unknown Asset Lock type: ${type as string}`)
+      }
+    }
+
+    if (params.addPublicKeys != null) {
+      // @ts-expect-error
+      params.addPublicKeys = params.addPublicKeys.map(({ id, purpose, securityLevel, keyType, readOnly, data, signature }) => new IdentityPublicKeyInCreationWASM(id, purpose, securityLevel, keyType, readOnly, data, signature))
+    }
+
+    if (params.publicKeys != null) {
+      // @ts-expect-error
+      params.publicKeys = params.publicKeys.map(({ id, purpose, securityLevel, keyType, readOnly, data, signature }) => new IdentityPublicKeyInCreationWASM(id, purpose, securityLevel, keyType, readOnly, data, signature))
+    }
+
+    return createStateTransition(type, params)
   }
 }
