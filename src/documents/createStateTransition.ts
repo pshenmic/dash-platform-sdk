@@ -16,32 +16,32 @@ const documentTransitionsMap = {
   create: {
     class: DocumentCreateTransitionWASM,
     arguments: ['identityContractNonce'],
-    optionalArguments: ['prefundedVotingBalance']
+    optionalArguments: ['prefundedVotingBalance', 'tokenPaymentInfo']
   },
   replace: {
     class: DocumentReplaceTransitionWASM,
     arguments: ['identityContractNonce'],
-    optionalArguments: []
+    optionalArguments: ['tokenPaymentInfo']
   },
   delete: {
     class: DocumentDeleteTransitionWASM,
     arguments: ['identityContractNonce'],
-    optionalArguments: []
+    optionalArguments: ['tokenPaymentInfo']
   },
   updatePrice: {
     class: DocumentUpdatePriceTransitionWASM,
     arguments: ['identityContractNonce', 'price'],
-    optionalArguments: []
+    optionalArguments: ['tokenPaymentInfo']
   },
   transfer: {
     class: DocumentTransferTransitionWASM,
     arguments: ['identityContractNonce', 'recipientId'],
-    optionalArguments: []
+    optionalArguments: ['tokenPaymentInfo']
   },
   purchase: {
     class: DocumentPurchaseTransitionWASM,
     arguments: ['identityContractNonce', 'amount'],
-    optionalArguments: []
+    optionalArguments: ['tokenPaymentInfo']
   }
 }
 
@@ -55,7 +55,7 @@ export default function createStateTransition (document: DocumentWASM, type: 'cr
   // check if all required params for document transition exists
   const [missingArgument] = classArguments
     .filter((classArgument: string) => params[classArgument] == null &&
-          !(optionalArguments as string[]).includes(classArgument))
+          !(optionalArguments).includes(classArgument))
 
   if (missingArgument != null) {
     throw new Error(`Document transition param "${missingArgument}" is missing`)

@@ -1,6 +1,12 @@
 import { DocumentTransitionParams, IdentifierLike } from '../types'
 import createDocument from './create'
-import { DocumentWASM, IdentifierWASM, PrefundedVotingBalanceWASM, StateTransitionWASM } from 'pshenmic-dpp'
+import {
+  DocumentWASM,
+  IdentifierWASM,
+  PrefundedVotingBalanceWASM,
+  StateTransitionWASM,
+  TokenPaymentInfoWASM
+} from 'pshenmic-dpp'
 import createStateTransition from './createStateTransition'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import query from './query'
@@ -84,6 +90,13 @@ export class DocumentsController {
 
       // @ts-expect-error
       params.prefundedVotingBalance = new PrefundedVotingBalanceWASM(indexName, amount)
+    }
+
+    if (params.tokenPaymentInfo != null) {
+      const { tokenContractId, tokenContractPosition, minimumTokenCost, maximumTokenCost, gasFeesPaidBy } = params.tokenPaymentInfo
+
+      // @ts-expect-error
+      params.tokenPaymentInfo = new TokenPaymentInfoWASM(new IdentifierWASM(tokenContractId), tokenContractPosition, minimumTokenCost, maximumTokenCost, gasFeesPaidBy)
     }
 
     return createStateTransition(document, type, params)

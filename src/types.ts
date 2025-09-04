@@ -1,4 +1,5 @@
 import {
+  GasFeesPaidByWASM,
   IdentifierWASM,
   KeyType, Purpose, SecurityLevel,
   TokenEmergencyActionWASM,
@@ -33,6 +34,13 @@ export interface DocumentTransitionParams {
   prefundedVotingBalance?: {
     indexName: string
     amount: bigint
+  }
+  tokenPaymentInfo?: {
+    tokenContractId: IdentifierLike
+    tokenContractPosition: number
+    minimumTokenCost?: bigint
+    maximumTokenCost?: bigint
+    gasFeesPaidBy: GasFeesPaidByWASM
   }
 }
 

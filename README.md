@@ -331,6 +331,27 @@ const prefundedVotingBalance = { indexName, amount: contestedFee }
 const stateTransition = sdk.documents.createStateTransition(document, 'create', { identityContractNonce, prefundedVotingBalance })
 ```
 
+#### Pay with Token for a Document Transition
+Some data contracts may define a cost for a document transition to be performed in the data contract.
+
+The token cost fee can be charged from either ContractOwner or Document Owner and it is specified in the data contract schema
+
+```javascript
+// ...
+const document = sdk.documents.create(dataContract, documentType, data, identity)
+const identityContractNonce = BigInt(1)
+
+const tokenPaymentInfo = {
+  tokenContractId: '6hVQW16jyvZyGSQk2YVty4ND6bgFXozizYWnPt753uW5',
+  tokenContractPosition: 0,
+  minimumTokenCost: BigInt(1000),
+  maximumTokenCost: BigInt(100000),
+  gasFeesPaidBy: GasFeesPaidByWASM.ContractOwner
+}
+
+const stateTransition = sdk.documents.createStateTransition(document, 'create', { identityContractNonce, tokenPaymentInfo })
+```
+
 #### Query Documents
 
 Performs a query for documents and returns an array of DocumentWASM instances
