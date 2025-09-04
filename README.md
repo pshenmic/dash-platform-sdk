@@ -724,6 +724,50 @@ const identityCreateStateTransition = sdk.identities.createStateTransition('crea
 
 More detailed process can be seen in the Identity.spec.ts
 
+#### Update the Identity
+
+This method allows you to manage public keys of your identity, such as creating and attaching new public keys to the Identity, or deleting one.
+
+```javascript
+const identityId = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+const masterPrivateKey = PrivateKeyWASM.fromHex('16f614c6242580628d849e3616491dda1eccce99642a85667eb9a364dc85324a', 'testnet')
+const masterKeyId = 0
+
+const identity = await sdk.identities.getIdentityByIdentifier(identityId)
+
+const revision = identity.revision + BigInt(1)
+const identityNonce = await sdk.identities.getIdentityNonce(identityId) + BigInt(1)
+const keyId = identity.getPublicKeys()[identity.getPublicKeys().length - 1].keyId + 1
+const identityPrivateKey = PrivateKeyWASM.fromHex('16f614c6242580628d849e3616491dda1eccce99642a85667eb9a364dc85324a', 'testnet')
+
+const identityPublicKeyInCreation: IdentityPublicKeyInCreation = {
+  id: keyId,
+  purpose: Purpose.AUTHENTICATION,
+  securityLevel: SecurityLevel.HIGH,
+  keyType: KeyType.ECDSA_SECP256K1,
+  readOnly: false,
+  data: identityPrivateKey.getPublicKey().bytes()
+}
+
+let identityUpdateTransition = sdk.identities.createStateTransition('update', {
+  identityId,
+  revision,
+  identityNonce,
+  addPublicKeys: [identityPublicKeyInCreation]
+})
+identityUpdateTransition.signByPrivateKey(masterPrivateKey, masterKeyId, KeyType.ECDSA_SECP256K1)
+identityPublicKeyInCreation.signature = identityUpdateTransition.signature
+
+identityUpdateTransition = sdk.identities.createStateTransition('update', {
+  identityId,
+  revision,
+  identityNonce,
+  addPublicKeys: [identityPublicKeyInCreation]
+})
+
+identityUpdateTransition.signByPrivateKey(masterPrivateKey, masterKeyId, KeyType.ECDSA_SECP256K1)
+```
+
 ### State Transition
 #### Broadcast state transition
 
