@@ -1,6 +1,6 @@
-import { CreateStateTransitionDocumentBatchParams, IdentifierLike } from '../types'
+import { DocumentTransitionParams, IdentifierLike } from '../types'
 import createDocument from './create'
-import { DocumentWASM, IdentifierWASM, StateTransitionWASM } from 'pshenmic-dpp'
+import { DocumentWASM, IdentifierWASM, PrefundedVotingBalanceWASM, StateTransitionWASM } from 'pshenmic-dpp'
 import createStateTransition from './createStateTransition'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import query from './query'
@@ -63,15 +63,29 @@ export class DocumentsController {
    * 6) Purchase - purchase a document from identity (if price was set)
    *
    * @param document {DocumentWASM} Instance of the document to make transition with
-   * @param batchType {string} Type of the document transition, must be a one of ('create' | 'replace' | 'delete' |'updatePrice' |'transfer' | 'purchase')
-   * @param identityContractNonce {bigint} Identity contract nonce
-   * @param params {CreateStateTransitionDocumentBatchParams=} Additional params, required for Transfer, SetPrice, Purchase transitions
+   * @param type {string} Type of the document transition, must be a one of ('create' | 'replace' | 'delete' | 'updatePrice' |'transfer' | 'purchase')
+   * @param params {DocumentTransitionParams} params
    */
-  createStateTransition (document: DocumentWASM, batchType: 'create' | 'replace' | 'delete' | 'updatePrice' | 'transfer' | 'purchase', identityContractNonce: bigint, params?: CreateStateTransitionDocumentBatchParams): StateTransitionWASM {
-    if (['transfer', 'updatePrice', 'purchase'].includes(batchType) && params == null) {
-      throw new Error('Params required for Transfer, UpdatePrice or Purchase document transitions')
+  createStateTransition (document: DocumentWASM, type: 'create' | 'replace' | 'delete' | 'updatePrice' | 'transfer' | 'purchase', params: DocumentTransitionParams): StateTransitionWASM {
+    if (type === 'transfer' && params.recipientId == null) {
+      throw new Error('Recipient is required for transfer transition')
     }
 
-    return createStateTransition(document, batchType, identityContractNonce, params)
+    if (type === 'updatePrice' && params.price == null) {
+      throw new Error('Price is required for updatePrice transition')
+    }
+
+    if (type === 'purchase' && params.amount == null) {
+      throw new Error('Amount is required for updatePrice transition')
+    }
+
+    if (params.prefundedVotingBalance != null) {
+      const { indexName, amount } = params.prefundedVotingBalance
+
+      // @ts-expect-error
+      params.prefundedVotingBalance = new PrefundedVotingBalanceWASM(indexName, amount)
+    }
+
+    return createStateTransition(document, type, params)
   }
 }

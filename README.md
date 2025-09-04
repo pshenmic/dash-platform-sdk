@@ -314,6 +314,23 @@ const document = await sdk.documents.create(dataContractId, documentType, data, 
 console.log(document)
 ```
 
+#### Create a Conested Resource Document
+Creates a DocumentWASM instance that can be used for a state transition creation
+
+```javascript
+// ...
+const document = sdk.documents.create(dataContract, documentType, data, identity)
+const identityContractNonce = await sdk.identities.getIdentityContractNonce(identity, dataContract)
+
+// 0.2 Dash typically
+const contestedFee = BigInt(20000000000)
+const indexName = 'parentNameAndLabel'
+
+const prefundedVotingBalance = { indexName, amount: contestedFee }
+
+const stateTransition = sdk.documents.createStateTransition(document, 'create', { identityContractNonce, prefundedVotingBalance })
+```
+
 #### Query Documents
 
 Performs a query for documents and returns an array of DocumentWASM instances
