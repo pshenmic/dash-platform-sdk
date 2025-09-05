@@ -61,7 +61,7 @@ export default function createStateTransition (document: DocumentWASM, type: 'cr
     throw new Error(`Document transition param "${missingArgument}" is missing`)
   }
 
-  const transitionParams = classArguments.map((classArgument: string) => params[classArgument])
+  const transitionParams = classArguments.concat(optionalArguments).map((classArgument: string) => params[classArgument])
 
   // @ts-expect-error
   const documentTransition = new TransitionClass(document, ...transitionParams).toDocumentTransition()
