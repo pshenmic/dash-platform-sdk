@@ -7,12 +7,8 @@ import { IdentifierLike, IdentityTransitionParams } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import getIdentityByIdentifier from './getIdentityByIdentifier'
 import {
-  AssetLockProofWASM,
-  IdentifierWASM, IdentityPublicKeyInCreationWASM,
-  IdentityPublicKeyWASM,
-  IdentityWASM,
-  OutPointWASM,
-  StateTransitionWASM
+  AssetLockProofWASM, ContractBoundsWASM, IdentifierWASM, IdentityPublicKeyInCreationWASM,
+  IdentityPublicKeyWASM, IdentityWASM, OutPointWASM, StateTransitionWASM
 } from 'pshenmic-dpp'
 import createStateTransition from './createStateTransition'
 import getIdentityByNonUniquePublicKeyHash from './getIdentityByNonUniquePublicKeyHash'
@@ -152,12 +148,16 @@ export class IdentitiesController {
 
     if (params.addPublicKeys != null) {
       // @ts-expect-error
-      params.addPublicKeys = params.addPublicKeys.map(({ id, purpose, securityLevel, keyType, readOnly, data, signature }) => new IdentityPublicKeyInCreationWASM(id, purpose, securityLevel, keyType, readOnly, data, signature))
+      params.addPublicKeys = params.addPublicKeys
+        .map(({ id, purpose, securityLevel, keyType, readOnly, data, signature, contractBounds }) =>
+          new IdentityPublicKeyInCreationWASM(id, purpose, securityLevel, keyType, readOnly, data, signature, (contractBounds != null) ? new ContractBoundsWASM(contractBounds.dataContractId, contractBounds.documentType) : undefined))
     }
 
     if (params.publicKeys != null) {
       // @ts-expect-error
-      params.publicKeys = params.publicKeys.map(({ id, purpose, securityLevel, keyType, readOnly, data, signature }) => new IdentityPublicKeyInCreationWASM(id, purpose, securityLevel, keyType, readOnly, data, signature))
+      params.publicKeys = params.publicKeys
+        .map(({ id, purpose, securityLevel, keyType, readOnly, data, signature, contractBounds }) =>
+          new IdentityPublicKeyInCreationWASM(id, purpose, securityLevel, keyType, readOnly, data, signature, (contractBounds != null) ? new ContractBoundsWASM(contractBounds.dataContractId, contractBounds.documentType) : undefined))
     }
 
     return createStateTransition(type, params)
