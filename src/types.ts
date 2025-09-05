@@ -213,6 +213,10 @@ export interface IdentityPublicKeyInCreation {
   readOnly: boolean
   data: Uint8Array
   signature?: Uint8Array
+  contractBounds?: {
+    dataContractId: IdentifierLike
+    documentType?: string
+  }
 }
 
 export interface IdentityTransitionParams {
