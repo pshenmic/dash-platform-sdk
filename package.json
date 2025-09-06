@@ -58,7 +58,6 @@
     "grpc-web": "^1.5.0",
     "hash.js": "^1.1.7",
     "nice-grpc-web": "^3.3.6",
-    "pshenmic-dpp": "1.0.24",
-    "rfc4648": "^1.5.4"
+    "pshenmic-dpp": "1.0.24"
   }
 }
