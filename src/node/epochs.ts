@@ -64,6 +64,6 @@ export default async function epochs (grpcPool: GRPCConnectionPool, count: numbe
     firstCoreBlockHeight: info.firstCoreBlockHeight,
     startTime: info.firstBlockTime,
     feeMultiplier: info.feeMultiplierPermille,
-    protocolVersion: info.protocolVersion,
+    protocolVersion: info.protocolVersion
   })) as unknown as EpochInfo[]
 }

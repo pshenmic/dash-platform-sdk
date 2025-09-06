@@ -33,7 +33,7 @@ export default async function getByIdentifier (grpcPool: GRPCConnectionPool, ide
   const {
     rootHash,
     dataContract
-  } = verifyContractProof(proof.grovedbProof, undefined, false, false, id.bytes(), 9)
+  } = verifyContractProof(proof.grovedbProof, undefined, false, false, id.bytes(), PlatformVersionWASM.PLATFORM_V9)
 
   if (dataContract == null) {
     throw new Error(`Data Contract with identifier ${id.base58()} not found`)

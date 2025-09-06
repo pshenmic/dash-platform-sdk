@@ -9,7 +9,6 @@ import { NamesController } from './names'
 import { DataContractsController } from './dataContracts'
 import { ContestedResourcesController } from './contestedResources'
 import { TokensController } from './tokens'
-import { base64 } from '@scure/base'
 import { AbstractSigner } from './signer/AbstractSigner'
 
 export interface GRPCOptions {

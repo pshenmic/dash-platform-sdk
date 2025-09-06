@@ -3,26 +3,26 @@ import {
   GetIdentityKeysRequest,
   KeyRequestType
 } from '../../proto/generated/platform'
-import {IdentifierWASM, IdentityPublicKeyWASM, PlatformVersionWASM, verifyIdentityKeysByIdentifierProof} from 'pshenmic-dpp'
-import {IdentifierLike} from '../types'
+import { IdentifierWASM, IdentityPublicKeyWASM, PlatformVersionWASM, verifyIdentityKeysByIdentifierProof } from 'pshenmic-dpp'
+import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import {getQuorumPublicKey} from '../utils/getQuorumPublicKey'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 
-export default async function getIdentityPublicKeys(grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<IdentityPublicKeyWASM[]> {
+export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<IdentityPublicKeyWASM[]> {
   const id = new IdentifierWASM(identifier)
   const getIdentityKeysRequest = GetIdentityKeysRequest.fromPartial({
     v0: {
       identityId: id.bytes(),
-      requestType: KeyRequestType.fromPartial({allKeys: {}}),
+      requestType: KeyRequestType.fromPartial({ allKeys: {} }),
       prove: true
     }
   })
 
-  const {v0} = await grpcPool.getClient().getIdentityKeys(getIdentityKeysRequest)
+  const { v0 } = await grpcPool.getClient().getIdentityKeys(getIdentityKeysRequest)
 
-  const {proof, metadata} = v0 as GetIdentityKeysResponse_GetIdentityKeysResponseV0
+  const { proof, metadata } = v0 as GetIdentityKeysResponse_GetIdentityKeysResponseV0
 
   if (proof == null) {
     throw new Error('Proof not found')

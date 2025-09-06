@@ -2,7 +2,7 @@ import {
   GetIdentityByNonUniquePublicKeyHashRequest,
   GetIdentityByNonUniquePublicKeyHashResponse_GetIdentityByNonUniquePublicKeyHashResponseV0
 } from '../../proto/generated/platform'
-import { IdentifierWASM, IdentityWASM, PlatformVersionWASM, verifyIdentifierByNonUniquePublicKeyHashProof } from 'pshenmic-dpp'
+import { IdentityWASM, PlatformVersionWASM, verifyIdentifierByNonUniquePublicKeyHashProof } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import hexToBytes from '../utils/hexToBytes'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
