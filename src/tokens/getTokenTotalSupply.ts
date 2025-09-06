@@ -4,16 +4,15 @@ import {
   GetTokenTotalSupplyResponse_GetTokenTotalSupplyResponseV0
 } from '../../proto/generated/platform'
 import { IdentifierLike } from '../types'
-import { IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
-import { verifyTokenTotalSupplyAndAggregatedIdentityBalance } from 'wasm-drive-verify'
+import { IdentifierWASM, PlatformVersionWASM, verifyTokenTotalSupplyProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 
 export interface TokenTotalSupply {
   tokenId: IdentifierWASM
-  totalSystemAmount: string
-  totalAggregatedAmountInUserAccounts: string
+  totalSystemAmount: BigInt
+  totalAggregatedAmountInUserAccounts: BigInt
 }
 
 export default async function getTokenTotalSupply (grpcPool: GRPCConnectionPool, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
@@ -39,11 +38,11 @@ export default async function getTokenTotalSupply (grpcPool: GRPCConnectionPool,
   }
 
   const {
-    root_hash: rootHash,
-    total_supply_and_balance: totalSupplyAndBalance
-  } = verifyTokenTotalSupplyAndAggregatedIdentityBalance(
+    rootHash,
+    totalBalance
+  } = verifyTokenTotalSupplyProof(
     proof.grovedbProof,
-    tokenId.bytes(),
+    tokenId,
     true,
     PlatformVersionWASM.PLATFORM_V9
   )
@@ -57,8 +56,8 @@ export default async function getTokenTotalSupply (grpcPool: GRPCConnectionPool,
   }
 
   return {
-    tokenId: new IdentifierWASM(totalSupplyAndBalance.tokenId),
-    totalSystemAmount: totalSupplyAndBalance.totalSystemAmount,
-    totalAggregatedAmountInUserAccounts: totalSupplyAndBalance.totalAggregatedAmountInUserAccounts
+    tokenId,
+    totalSystemAmount: totalBalance.tokenSupply,
+    totalAggregatedAmountInUserAccounts: totalBalance.aggregatedTokenAccountBalances
   }
 }

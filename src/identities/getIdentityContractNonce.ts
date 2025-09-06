@@ -3,9 +3,8 @@ import {
   GetIdentityContractNonceResponse_GetIdentityContractNonceResponseV0
 } from '../../proto/generated/platform'
 import { IdentifierLike } from '../types'
-import { IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import { IdentifierWASM, PlatformVersionWASM, verifyIdentityContractNonceProof } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { verifyIdentityContractNonce } from 'wasm-drive-verify'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
@@ -37,11 +36,11 @@ export default async function getIdentityContractNonce (grpcPool: GRPCConnection
   }
 
   const {
-    root_hash: rootHash,
-    nonce: identityContractNonce
-  } = verifyIdentityContractNonce(proof.grovedbProof, identityIdentifier.bytes(), dataContractIdentifier.bytes(), true, PlatformVersionWASM.PLATFORM_V9)
+    rootHash,
+    contractNonce
+  } = verifyIdentityContractNonceProof(proof.grovedbProof, identityIdentifier.bytes(), dataContractIdentifier.bytes(), true, PlatformVersionWASM.PLATFORM_V9)
 
-  if (identityContractNonce == null) {
+  if (contractNonce == null) {
     return BigInt(0)
   }
 
@@ -53,5 +52,5 @@ export default async function getIdentityContractNonce (grpcPool: GRPCConnection
     throw new Error('Failed to verify query')
   }
 
-  return BigInt(identityContractNonce) & IDENTITY_CONTRACT_NONCE_VALUE_FILTER
+  return BigInt(contractNonce) & IDENTITY_CONTRACT_NONCE_VALUE_FILTER
 }

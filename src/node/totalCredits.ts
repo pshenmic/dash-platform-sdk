@@ -3,9 +3,8 @@ import {
   GetTotalCreditsInPlatformRequest
 } from '../../proto/generated/platform'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { verifyTotalCreditsInSystem } from 'wasm-drive-verify'
 import { HALVING_INTERVAL, MAINNET_ACTIVATION_HEIGHT, TESTNET_ACTIVATION_HEIGHT } from '../constants'
-import { PlatformVersionWASM } from 'pshenmic-dpp'
+import { PlatformVersionWASM, verifyTotalCreditsProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
@@ -27,7 +26,7 @@ export default async function totalCredits (grpcPool: GRPCConnectionPool, networ
 
   const activationHeight = network === 'testnet' ? TESTNET_ACTIVATION_HEIGHT : MAINNET_ACTIVATION_HEIGHT
 
-  const { root_hash: rootHash, total_credits: totalCredits } = verifyTotalCreditsInSystem(
+  const { rootHash, totalCredits } = verifyTotalCreditsProof(
     proof.grovedbProof,
     HALVING_INTERVAL,
     activationHeight,

@@ -9,7 +9,6 @@ import { NamesController } from './names'
 import { DataContractsController } from './dataContracts'
 import { ContestedResourcesController } from './contestedResources'
 import { TokensController } from './tokens'
-import { initSync, wasmBase64 } from 'wasm-drive-verify'
 import { base64 } from '@scure/base'
 import { AbstractSigner } from './signer/AbstractSigner'
 
@@ -74,10 +73,6 @@ export class DashPlatformSDK {
     this.grpcPool = new GRPCConnectionPool(this.network, this.options?.grpc)
 
     this._initialize(this.grpcPool, this.network)
-
-    const driveVerifyWASMBytes = base64.decode(wasmBase64)
-
-    initSync({ module: driveVerifyWASMBytes })
   }
 
   /**

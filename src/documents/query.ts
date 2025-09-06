@@ -1,9 +1,8 @@
 import { GetDocumentsRequest, GetDocumentsResponse_GetDocumentsResponseV0 } from '../../proto/generated/platform'
-import { DocumentWASM, IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import { DocumentWASM, IdentifierWASM, PlatformVersionWASM, verifyDocumentsProof } from 'pshenmic-dpp'
 import { DAPI_DEFAULT_LIMIT } from '../constants'
 import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { verifyDocumentProof } from 'wasm-drive-verify'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
@@ -50,9 +49,9 @@ export default async function query (
   const startAtIncluded = (getDocumentsRequest.v0?.startAfter) == null
 
   const {
-    root_hash: rootHash,
+    rootHash,
     documents
-  } = verifyDocumentProof(proof.grovedbProof, dataContract.bytes(PlatformVersionWASM.PLATFORM_V9), documentTypeName, where, orderBy, limit, getDocumentsRequest.v0?.startAt, startAtIncluded, BigInt(metadata?.timeMs), PlatformVersionWASM.PLATFORM_V9)
+  } = verifyDocumentsProof(proof.grovedbProof, dataContract, documentTypeName, where, orderBy, limit, getDocumentsRequest.v0?.startAt, startAtIncluded, BigInt(metadata?.timeMs), PlatformVersionWASM.PLATFORM_V9)
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
@@ -61,5 +60,5 @@ export default async function query (
     throw new Error('Failed to verify query')
   }
 
-  return documents?.map(document => DocumentWASM.fromBytes(document, dataContract, documentTypeName, PlatformVersionWASM.PLATFORM_V9)) ?? []
+  return documents ?? []
 }

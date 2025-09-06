@@ -1,10 +1,11 @@
-import { CanonicalVote, Proof, ResponseMetadata, SignedMsgType, StateId } from '../../proto/generated/platform'
-import { calculateSignHash } from './calculateSignHash'
-import { calculateStateIdHash } from './calculateStateIdHash'
-import verifyBls from './verifyBls'
+import {CanonicalVote, Proof, ResponseMetadata, SignedMsgType, StateId} from '../../proto/generated/platform'
+import {calculateSignHash} from './calculateSignHash'
+import {calculateStateIdHash} from './calculateStateIdHash'
+// import verifyBls from './verifyBls'
+import {verifySignatureDigest} from 'pshenmic-dpp'
 import hexToBytes from './hexToBytes'
 
-export default function verifyTenderdashProof (proof: Proof, metadata: ResponseMetadata, rootHash: Uint8Array, quorumPublicKey: string): boolean {
+export default function verifyTenderdashProof(proof: Proof, metadata: ResponseMetadata, rootHash: Uint8Array, quorumPublicKey: string): boolean {
   const stateId = StateId.fromPartial({
     appVersion: String(metadata.protocolVersion),
     coreChainLockedHeight: metadata.coreChainLockedHeight,
@@ -33,7 +34,7 @@ export default function verifyTenderdashProof (proof: Proof, metadata: ResponseM
     proof.round
   )
 
-  const { signature } = proof
+  const {signature} = proof
 
-  return verifyBls(hexToBytes(quorumPublicKey), Uint8Array.from(signDigest), signature)
+  return verifySignatureDigest(Uint8Array.from(signDigest), signature, hexToBytes(quorumPublicKey))
 }

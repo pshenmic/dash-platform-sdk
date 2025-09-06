@@ -2,10 +2,9 @@ import {
   GetIdentityBalanceRequest,
   GetIdentityBalanceResponse_GetIdentityBalanceResponseV0
 } from '../../proto/generated/platform'
-import { IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import { IdentifierWASM, PlatformVersionWASM, verifyIdentityBalanceProof } from 'pshenmic-dpp'
 import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { verifyIdentityBalanceForIdentityId } from 'wasm-drive-verify'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
@@ -33,9 +32,9 @@ export default async function getIdentityBalance (grpcPool: GRPCConnectionPool, 
   }
 
   const {
-    root_hash: rootHash,
+    rootHash,
     balance
-  } = verifyIdentityBalanceForIdentityId(proof.grovedbProof, id.bytes(), true, PlatformVersionWASM.PLATFORM_V9)
+  } = verifyIdentityBalanceProof(proof.grovedbProof, id.bytes(), true, PlatformVersionWASM.PLATFORM_V9)
 
   if (balance == null) {
     throw new Error(`Failed to fetch balance for identifier ${id.base58()}`)

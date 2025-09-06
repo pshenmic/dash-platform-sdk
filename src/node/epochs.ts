@@ -3,8 +3,7 @@ import {
   GetEpochsInfoRequest,
   GetEpochsInfoResponse_GetEpochsInfoResponseV0
 } from '../../proto/generated/platform'
-import { verifyEpochInfos } from 'wasm-drive-verify'
-import { PlatformVersionWASM } from 'pshenmic-dpp'
+import { PlatformVersionWASM, verifyEpochsInfoProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
@@ -41,9 +40,9 @@ export default async function epochs (grpcPool: GRPCConnectionPool, count: numbe
   }
 
   const {
-    root_hash: rootHash,
-    epoch_infos: epochInfos
-  } = verifyEpochInfos(
+    rootHash,
+    epochsInfo
+  } = verifyEpochsInfoProof(
     proof.grovedbProof,
     metadata.epoch,
     start,
@@ -59,5 +58,12 @@ export default async function epochs (grpcPool: GRPCConnectionPool, count: numbe
     throw new Error('Failed to verify query')
   }
 
-  return epochInfos as EpochInfo[]
+  return epochsInfo.map(info => ({
+    number: info.index,
+    firstBlockHeight: info.firstBlockHeight,
+    firstCoreBlockHeight: info.firstCoreBlockHeight,
+    startTime: info.firstBlockTime,
+    feeMultiplier: info.feeMultiplierPermille,
+    protocolVersion: info.protocolVersion,
+  })) as unknown as EpochInfo[]
 }

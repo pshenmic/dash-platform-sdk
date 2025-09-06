@@ -1,4 +1,5 @@
 import {
+  DocumentWASM,
   GasFeesPaidByWASM,
   IdentifierWASM,
   KeyType, Purpose, SecurityLevel,
@@ -141,7 +142,7 @@ export enum FinishedVoteOutcome {
 export interface Contender {
   identifier: IdentifierWASM
   voteCount?: number | undefined
-  document?: Uint8Array
+  document?: Uint8Array | DocumentWASM
 }
 
 export interface FinishedVoteInfo {

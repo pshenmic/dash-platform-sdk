@@ -1,11 +1,10 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
 import { IdentifierLike } from '../types'
-import { IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import { IdentifierWASM, PlatformVersionWASM, verifyTokensBalancesForIdentityProof } from 'pshenmic-dpp'
 import {
   GetIdentityTokenBalancesRequest,
   GetIdentityTokenBalancesResponse_GetIdentityTokenBalancesResponseV0
 } from '../../proto/generated/platform'
-import { verifyTokenBalancesForIdentityIdVec } from 'wasm-drive-verify'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
@@ -40,12 +39,12 @@ export default async function getIdentityTokensBalances (grpcPool: GRPCConnectio
   }
 
   const {
-    root_hash: rootHash,
+    rootHash,
     balances
-  } = verifyTokenBalancesForIdentityIdVec(
+  } = verifyTokensBalancesForIdentityProof(
     proof.grovedbProof,
-    tokenIds.map((identifier) => identifier.bytes()),
-    id.bytes(),
+    tokenIds,
+    id,
     true,
     PlatformVersionWASM.PLATFORM_V9
   )

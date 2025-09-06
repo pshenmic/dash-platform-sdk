@@ -1,10 +1,9 @@
 import {
   GetIdentityNonceRequest, GetIdentityNonceResponse_GetIdentityNonceResponseV0
 } from '../../proto/generated/platform'
-import { IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import { IdentifierWASM, PlatformVersionWASM, verifyIdentityNonceProof } from 'pshenmic-dpp'
 import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { verifyIdentityNonce } from 'wasm-drive-verify'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
@@ -33,9 +32,9 @@ export default async function getIdentityNonce (grpcPool: GRPCConnectionPool, id
   }
 
   const {
-    root_hash: rootHash,
+    rootHash,
     nonce
-  } = verifyIdentityNonce(proof.grovedbProof, id.bytes(), true, PlatformVersionWASM.PLATFORM_V9)
+  } = verifyIdentityNonceProof(proof.grovedbProof, id.bytes(), true, PlatformVersionWASM.PLATFORM_V9)
 
   if (nonce == null) {
     return BigInt(0)
