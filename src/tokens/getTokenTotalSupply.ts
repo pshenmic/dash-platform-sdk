@@ -3,7 +3,7 @@ import {
   GetTokenTotalSupplyRequest,
   GetTokenTotalSupplyResponse_GetTokenTotalSupplyResponseV0
 } from '../../proto/generated/platform'
-import {IdentifierLike, TokenTotalSupply} from '../types'
+import { IdentifierLike, TokenTotalSupply } from '../types'
 import { IdentifierWASM, PlatformVersionWASM, verifyTokenTotalSupplyProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'

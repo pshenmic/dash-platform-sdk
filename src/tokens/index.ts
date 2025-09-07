@@ -1,5 +1,5 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
-import {IdentifierLike, TokenTotalSupply, TokenTransitionParams, TokenTransitionType} from '../types'
+import { IdentifierLike, TokenTotalSupply, TokenTransitionParams, TokenTransitionType } from '../types'
 import getIdentitiesTokenBalances, { IdentitiesTokenBalances } from './getIdentitiesTokenBalances'
 import getIdentityTokensBalances, { IdentityTokenBalances } from './getIdentityTokensBalances'
 import getTokenContractInfo, { TokenContractInfo } from './getTokenContractInfo'
