@@ -1,6 +1,6 @@
 {
   "name": "dash-platform-sdk",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "main": "index.js",
   "description": "Lightweight SDK for accessing Dash Platform blockchain",
   "ts-standard": {
@@ -13,8 +13,8 @@
     "@babel/core": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
     "@babel/preset-typescript": "^7.27.1",
-    "@types/dashhd": "git+https://github.com/owl352/types-DashHD.js",
-    "@types/dashphrase": "git+https://github.com/owl352/types-DashPhrase.js",
+    "@types/dashhd": "owl352/types-DashHD.js",
+    "@types/dashphrase": "owl352/types-DashPhrase.js",
     "@types/jest": "^29.5.14",
     "babel-jest": "^29.7.0",
     "dets": "^0.16.8",

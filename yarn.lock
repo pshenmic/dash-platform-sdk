@@ -1488,13 +1488,13 @@
   dependencies:
     "@babel/types" "^7.28.2"
 
-"@types/dashhd@git+https://github.com/owl352/types-DashHD.js":
+"@types/dashhd@owl352/types-DashHD.js":
   version "3.3.3"
-  resolved "git+ssh://git@github.com/owl352/types-DashHD.js.git#5f12e05386975119e234c1f9a31fc777e0769a2b"
+  resolved "https://codeload.github.com/owl352/types-DashHD.js/tar.gz/5f12e05386975119e234c1f9a31fc777e0769a2b"
 
-"@types/dashphrase@git+https://github.com/owl352/types-DashPhrase.js":
+"@types/dashphrase@owl352/types-DashPhrase.js":
   version "1.4.0"
-  resolved "git+ssh://git@github.com/owl352/types-DashPhrase.js.git#860f1444b890e6d55645e27138235d20911d38c9"
+  resolved "https://codeload.github.com/owl352/types-DashPhrase.js/tar.gz/860f1444b890e6d55645e27138235d20911d38c9"
 
 "@types/eslint-scope@^3.7.7":
   version "3.7.7"
