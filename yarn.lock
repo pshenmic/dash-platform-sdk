@@ -1338,18 +1338,6 @@
   resolved "https://registry.npmjs.org/@nicolo-ribaudo/chokidar-2/-/chokidar-2-2.1.8-no-fsevents.3.tgz"
   integrity sha512-s88O1aVtXftvp5bCPB7WnmXc5IwOZZ7YPuwNPt+GtOOXpPvad1LfbmjYv+qII7zP6RU2QGnqve27dnLycEnyEQ==
 
-"@noble/curves@^1.9.2":
-  version "1.9.6"
-  resolved "https://registry.npmjs.org/@noble/curves/-/curves-1.9.6.tgz"
-  integrity sha512-GIKz/j99FRthB8icyJQA51E8Uk5hXmdyThjgQXRKiv9h0zeRlzSCLIzFw6K1LotZ3XuB7yzlf76qk7uBmTdFqA==
-  dependencies:
-    "@noble/hashes" "1.8.0"
-
-"@noble/hashes@1.8.0":
-  version "1.8.0"
-  resolved "https://registry.npmjs.org/@noble/hashes/-/hashes-1.8.0.tgz"
-  integrity sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==
-
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.npmjs.org/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz"
