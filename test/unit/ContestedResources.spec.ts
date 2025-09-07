@@ -1,6 +1,7 @@
 import { DashPlatformSDK, ContestedStateResultType } from '../../src/types'
-import { DataContractWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import { DataContractWASM, PlatformVersionWASM, StateTransitionWASM } from 'pshenmic-dpp'
 import stringToIndexValueBytes from '../../src/utils/stringToIndexValueBytes'
+import { base64 } from '@scure/base'
 
 let sdk: DashPlatformSDK
 let contract: DataContractWASM
@@ -226,4 +227,22 @@ describe('Contested State', () => {
     }
     expect(false).toBeTruthy()
   })
+
+  test('should be able to create TowardsIdentity vote', async () => {
+    // cTzA7r9oGWJ9Yv64Qzgc3wsCMtv21R8Jk6QH99mpcKXuj4pRDY1i
+    const dataContactId = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+    const documentTypeName = 'domain'
+    const choice = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+    const indexValues = ['EgRkYXNo', 'EgxmdTF2MTBmYXIxbmE=']
+    const indexName = 'parentNameAndLabel'
+
+    const vote = sdk.contestedResources.createMasternodeVote(dataContactId, documentTypeName, indexName, indexValues, choice)
+
+    const identityNonce = BigInt(1)
+    const proTxHash = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+    const stateTransition = sdk.contestedResources.createStateTransition(vote, proTxHash, identityNonce)
+
+    expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+  })
+
 })

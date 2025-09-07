@@ -237,3 +237,5 @@ export interface TokenTotalSupply {
   totalSystemAmount: bigint
   totalAggregatedAmountInUserAccounts: bigint
 }
+
+export type ResourceVoteChoice = IdentifierLike | 'lock' | 'abstain'
