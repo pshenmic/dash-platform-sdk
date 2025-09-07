@@ -231,3 +231,9 @@ export interface IdentityTransitionParams {
   identityId?: IdentifierLike
   userFeeIncrease?: number
 }
+
+export interface TokenTotalSupply {
+  tokenId: IdentifierWASM
+  totalSystemAmount: bigint
+  totalAggregatedAmountInUserAccounts: bigint
+}

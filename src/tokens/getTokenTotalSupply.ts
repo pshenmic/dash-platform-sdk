@@ -3,17 +3,11 @@ import {
   GetTokenTotalSupplyRequest,
   GetTokenTotalSupplyResponse_GetTokenTotalSupplyResponseV0
 } from '../../proto/generated/platform'
-import { IdentifierLike } from '../types'
+import {IdentifierLike, TokenTotalSupply} from '../types'
 import { IdentifierWASM, PlatformVersionWASM, verifyTokenTotalSupplyProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
-
-export interface TokenTotalSupply {
-  tokenId: IdentifierWASM
-  totalSystemAmount: BigInt
-  totalAggregatedAmountInUserAccounts: BigInt
-}
 
 export default async function getTokenTotalSupply (grpcPool: GRPCConnectionPool, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
   const tokenId = new IdentifierWASM(tokenIdentifier)
