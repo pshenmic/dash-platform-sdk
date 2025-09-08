@@ -1,7 +1,6 @@
 import { DashPlatformSDK, ContestedStateResultType } from '../../src/types'
 import { DataContractWASM, PlatformVersionWASM, StateTransitionWASM } from 'pshenmic-dpp'
 import stringToIndexValueBytes from '../../src/utils/stringToIndexValueBytes'
-import { base64 } from '@scure/base'
 
 let sdk: DashPlatformSDK
 let contract: DataContractWASM
@@ -244,5 +243,4 @@ describe('Contested State', () => {
 
     expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
   })
-
 })

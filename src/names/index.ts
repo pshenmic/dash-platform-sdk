@@ -1,6 +1,11 @@
-import search from './search'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { DocumentWASM } from 'pshenmic-dpp'
+import { DocumentWASM, IdentifierWASM, PrivateKeyWASM } from 'pshenmic-dpp'
+import { IdentifierLike } from '../types'
+import searchByName from './searchByName'
+import searchByIdentity from './searchByIdentity'
+import registerName from './registerName'
+import validateName from './validateName'
+import getIdentityByIdentifier from '../identities/getIdentityByIdentifier'
 
 /**
  * Functions related to DPNS names (usernames)
@@ -29,23 +34,33 @@ export class NamesController {
    *
    * @return Promise<DocumentWASM | null>
    */
-  async search (name: string): Promise<DocumentWASM | null> {
-    if (typeof name !== 'string' || name.split('.').length !== 2) {
-      throw new Error('Name to search must be in username.dash format')
+  async searchByName (name: string): Promise<DocumentWASM[]> {
+    const validation = validateName(name)
+
+    if (validation != null) {
+      throw new Error(validation)
     }
 
-    const [label, parentDomainName] = name.split('.')
+    return await searchByName(this.grpcPool, name)
+  }
 
-    if (parentDomainName !== 'dash') {
-      throw new Error('Root domain must be .dash')
+  async searchByIdentity (identifier: IdentifierLike): Promise<DocumentWASM[]> {
+    return await searchByIdentity(this.grpcPool, new IdentifierWASM(identifier))
+  }
+
+  async registerName (name: string, identityId: IdentifierLike, privateKey: PrivateKeyWASM, preorderSalt?: Uint8Array): Promise<void> {
+    const validation = validateName(name)
+
+    if (validation != null) {
+      throw new Error(validation)
     }
 
-    const [document] = await search(this.grpcPool, label, parentDomainName)
-
-    if (document == null) {
-      return null
+    if (preorderSalt != null && preorderSalt.length !== 32) {
+      throw new Error('Preorder salt must be a 32 length')
     }
 
-    return document
+    const identity = await getIdentityByIdentifier(this.grpcPool, identityId)
+
+    await registerName(this.grpcPool, name, identity, privateKey, preorderSalt)
   }
 }
