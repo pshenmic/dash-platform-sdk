@@ -1,13 +1,13 @@
-import convertToHomographSafeChars from '../utils/convertToHomographSafeChars'
+import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js'
 import { IdentityWASM, PrivateKeyWASM } from 'pshenmic-dpp'
-import GRPCConnectionPool from '../grpcConnectionPool'
-import getRandomBytes from '../utils/getRandomBytes'
-import sha256 from '../utils/sha256'
-import createDocument from '../documents/create'
-import createStateTransition from '../documents/createStateTransition'
-import getIdentityContractNonce from '../identities/getIdentityContractNonce'
-import broadcast from '../stateTransitions/broadcast'
-import sleep from '../utils/sleep'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import getRandomBytes from '../utils/getRandomBytes.js'
+import sha256 from '../utils/sha256.js'
+import createDocument from '../documents/create.js'
+import createStateTransition from '../documents/createStateTransition.js'
+import getIdentityContractNonce from '../identities/getIdentityContractNonce.js'
+import broadcast from '../stateTransitions/broadcast.js'
+import sleep from '../utils/sleep.js'
 
 const DPNS_DATA_CONTRACT_ID = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
@@ -35,9 +35,7 @@ export default async function registerName (grpcPool: GRPCConnectionPool, name: 
 
   const saltedDomainHash = sha256(sha256(
     new Uint8Array([
-      // @ts-expect-error
       ...salt,
-      // @ts-expect-error
       ...new TextEncoder().encode(normalizedFullDomainName)
     ])
   )) as Uint8Array
