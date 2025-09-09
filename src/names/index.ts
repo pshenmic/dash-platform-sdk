@@ -6,6 +6,8 @@ import searchByIdentity from './searchByIdentity'
 import registerName from './registerName'
 import validateName from './validateName'
 import getIdentityByIdentifier from '../identities/getIdentityByIdentifier'
+import convertToHomographSafeChars from '../utils/convertToHomographSafeChars'
+import testNameContested from './testNameContested'
 
 /**
  * Functions related to DPNS names (usernames)
@@ -42,6 +44,29 @@ export class NamesController {
     }
 
     return await searchByName(this.grpcPool, name)
+  }
+
+  /**
+   * Tests a given username against contested names rules.
+   * Contested names includes an additional fee of 0.2 Dash
+   * as a voting resolution fee
+   *
+   * This function return boolean whether given username (f.e pshenmic.dash)
+   * falls under contested names rules.
+   * @param name
+   */
+  testNameContested (name: string): boolean {
+    const validation = validateName(name)
+
+    if (validation != null) {
+      throw new Error(validation)
+    }
+
+    const [label] = name.split('.')
+
+    const normalizedLabel = convertToHomographSafeChars(label)
+
+    return testNameContested(normalizedLabel)
   }
 
   async searchByIdentity (identifier: IdentifierLike): Promise<DocumentWASM[]> {
