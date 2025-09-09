@@ -2,10 +2,9 @@ import {
   GetIdentityByPublicKeyHashRequest,
   GetIdentityByPublicKeyHashResponse_GetIdentityByPublicKeyHashResponseV0
 } from '../../proto/generated/platform'
-import { IdentityWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import { IdentityWASM, PlatformVersionWASM, verifyIdentityByUniqueKeyHashProof } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import hexToBytes from '../utils/hexToBytes'
-import { verifyFullIdentityByUniquePublicKeyHash } from 'wasm-drive-verify'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
@@ -31,9 +30,9 @@ export default async function getIdentityByPublicKeyHash (grpcPool: GRPCConnecti
   }
 
   const {
-    root_hash: rootHash,
+    rootHash,
     identity
-  } = verifyFullIdentityByUniquePublicKeyHash(proof.grovedbProof, hexToBytes(hex), PlatformVersionWASM.PLATFORM_V9)
+  } = verifyIdentityByUniqueKeyHashProof(proof.grovedbProof, hexToBytes(hex), PlatformVersionWASM.PLATFORM_V9)
 
   if (identity == null) {
     throw new Error(`Identity with public key hash ${hex} not found`)
@@ -47,5 +46,5 @@ export default async function getIdentityByPublicKeyHash (grpcPool: GRPCConnecti
     throw new Error('Failed to verify query')
   }
 
-  return IdentityWASM.fromBytes(identity)
+  return identity
 }

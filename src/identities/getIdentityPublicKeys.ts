@@ -3,10 +3,9 @@ import {
   GetIdentityKeysRequest,
   KeyRequestType
 } from '../../proto/generated/platform'
-import { IdentifierWASM, IdentityPublicKeyWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import { IdentifierWASM, IdentityPublicKeyWASM, PlatformVersionWASM, verifyIdentityKeysByIdentifierProof } from 'pshenmic-dpp'
 import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { verifyIdentityKeysByIdentityId } from 'wasm-drive-verify'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
@@ -34,11 +33,11 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPoo
   }
 
   const {
-    root_hash: rootHash,
-    loaded_identity_keys: loadedIdentityKeys
-  } = verifyIdentityKeysByIdentityId(proof.grovedbProof, id.bytes(), null, false, false, true, null, null, PlatformVersionWASM.PLATFORM_V9)
+    rootHash,
+    identity
+  } = verifyIdentityKeysByIdentifierProof(proof.grovedbProof, id.bytes(), null, false, false, true, null, null, PlatformVersionWASM.PLATFORM_V9)
 
-  if (loadedIdentityKeys == null) {
+  if (identity == null) {
     throw new Error(`Identity with identifier ${id.base58()} not found`)
   }
 
@@ -50,5 +49,7 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPoo
     throw new Error('Failed to verify query')
   }
 
-  return loadedIdentityKeys.map((loadedIdentityKey) => IdentityPublicKeyWASM.fromBytes(loadedIdentityKey))
+  const loadedKeysIds = Object.keys(identity.loadedPublicKeys)
+
+  return loadedKeysIds.map((id) => identity.loadedPublicKeys[id])
 }

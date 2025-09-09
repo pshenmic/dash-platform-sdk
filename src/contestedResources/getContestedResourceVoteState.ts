@@ -9,8 +9,7 @@ import {
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo,
   GetContestedResourceVoteStateResponse_GetContestedResourceVoteStateResponseV0
 } from '../../proto/generated/platform'
-import { DataContractWASM, DocumentWASM, IdentifierWASM, PlatformVersionWASM } from 'pshenmic-dpp'
-import { verifyVotePollVoteStateProof } from 'wasm-drive-verify'
+import { DataContractWASM, DocumentWASM, IdentifierWASM, PlatformVersionWASM, verifyVotePollVoteStateProof } from 'pshenmic-dpp'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
@@ -62,11 +61,11 @@ export default async function getContestedResourceVoteState (
   }
 
   const {
-    root_hash: rootHash,
+    rootHash,
     result
   } = verifyVotePollVoteStateProof(
     proof.grovedbProof,
-    contract.bytes(PlatformVersionWASM.PLATFORM_V9),
+    contract,
     documentTypeName,
     indexName,
     indexValues,
@@ -95,11 +94,11 @@ export default async function getContestedResourceVoteState (
   return {
     contenders: contenders.map(contender => ({
       ...contender,
-      identifier: new IdentifierWASM(contender.identifier),
-      document: contender.document != null ? DocumentWASM.fromBytes(contender.document, contract, documentTypeName, PlatformVersionWASM.PLATFORM_V9) : undefined
+      identifier: contender.identityId,
+      document: contender.serializedDocument != null ? DocumentWASM.fromBytes(contender.serializedDocument, contract, documentTypeName, PlatformVersionWASM.PLATFORM_V9) : undefined
     })),
-    abstainVoteTally: result?.abstainVoteTally ?? 0,
-    lockVoteTally: result?.lockVoteTally ?? 0,
+    abstainVoteTally: result?.abstainingVoteTally ?? 0,
+    lockVoteTally: result?.lockedVoteTally ?? 0,
     finishedVoteInfo: (winner != null)
       ? {
           type: winner.type,

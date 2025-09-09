@@ -2,10 +2,9 @@ import {
   GetIdentityRequest,
   GetIdentityResponse_GetIdentityResponseV0
 } from '../../proto/generated/platform'
-import { IdentifierWASM, IdentityWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import { IdentifierWASM, IdentityWASM, PlatformVersionWASM, verifyIdentityByIdentifierProof } from 'pshenmic-dpp'
 import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { verifyFullIdentityByIdentityId } from 'wasm-drive-verify'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
@@ -32,9 +31,9 @@ export default async function getIdentityByIdentifier (grpcPool: GRPCConnectionP
   }
 
   const {
-    root_hash: rootHash,
+    rootHash,
     identity
-  } = verifyFullIdentityByIdentityId(proof.grovedbProof, true, id.bytes(), PlatformVersionWASM.PLATFORM_V9)
+  } = verifyIdentityByIdentifierProof(proof.grovedbProof, id, true, PlatformVersionWASM.PLATFORM_V9)
 
   if (identity == null) {
     throw new Error(`Identity with identifier ${id.base58()} not found`)
@@ -48,5 +47,5 @@ export default async function getIdentityByIdentifier (grpcPool: GRPCConnectionP
     throw new Error('Failed to verify query')
   }
 
-  return IdentityWASM.fromBytes(identity)
+  return identity
 }

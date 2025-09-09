@@ -2,10 +2,9 @@ import {
   GetIdentityByNonUniquePublicKeyHashRequest,
   GetIdentityByNonUniquePublicKeyHashResponse_GetIdentityByNonUniquePublicKeyHashResponseV0
 } from '../../proto/generated/platform'
-import { IdentifierWASM, IdentityWASM, PlatformVersionWASM } from 'pshenmic-dpp'
+import { IdentityWASM, PlatformVersionWASM, verifyIdentifierByNonUniquePublicKeyHashProof } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import hexToBytes from '../utils/hexToBytes'
-import { verifyIdentityIdByNonUniquePublicKeyHash } from 'wasm-drive-verify'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
@@ -32,15 +31,13 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
   }
 
   const {
-    root_hash: rootHash,
-    identity_id: identityId
-  } = verifyIdentityIdByNonUniquePublicKeyHash(proof.grovedbIdentityPublicKeyHashProof.grovedbProof, false, hexToBytes(hex), undefined, PlatformVersionWASM.PLATFORM_V9)
+    rootHash,
+    identifier
+  } = verifyIdentifierByNonUniquePublicKeyHashProof(proof.grovedbIdentityPublicKeyHashProof.grovedbProof, false, hexToBytes(hex), undefined, PlatformVersionWASM.PLATFORM_V9)
 
-  if (identityId == null) {
+  if (identifier == null) {
     throw new Error(`Identity with non unique public key hash ${hex} not found`)
   }
-
-  const identifier = new IdentifierWASM(identityId)
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.grovedbIdentityPublicKeyHashProof.quorumType, bytesToHex(proof.grovedbIdentityPublicKeyHashProof.quorumHash))
 
