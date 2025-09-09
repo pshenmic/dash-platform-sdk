@@ -9,10 +9,9 @@ import getIdentityContractNonce from '../identities/getIdentityContractNonce'
 import broadcast from '../stateTransitions/broadcast'
 import waitForStateTransitionResult from '../stateTransitions/waitForStateTransitionResult'
 import testNameContested from './testNameContested'
+import {DPNS_DATA_CONTRACT_ID} from "../constants";
 
-const DPNS_DATA_CONTRACT_ID = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
-
-export default async function registerName (grpcPool: GRPCConnectionPool, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM, preorderSalt?: Uint8Array): Promise<void> {
+export default async function registerName (grpcPool: GRPCConnectionPool, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM): Promise<void> {
   const [identityPublicKey] = identity.getPublicKeys().filter(identityPublicKey => identityPublicKey.getPublicKeyHash() === privateKey.getPublicKeyHash())
 
   if (identityPublicKey == null) {
@@ -25,7 +24,7 @@ export default async function registerName (grpcPool: GRPCConnectionPool, name: 
 
   const [label, parentDomainName] = name.split('.')
 
-  const salt = preorderSalt ?? getRandomBytes(32)
+  const salt = getRandomBytes(32)
 
   const normalizedParentDomainName = convertToHomographSafeChars(parentDomainName)
   const normalizedLabel = convertToHomographSafeChars(label)

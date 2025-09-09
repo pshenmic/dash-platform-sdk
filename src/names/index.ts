@@ -73,19 +73,24 @@ export class NamesController {
     return await searchByIdentity(this.grpcPool, new IdentifierWASM(identifier))
   }
 
-  async registerName (name: string, identityId: IdentifierLike, privateKey: PrivateKeyWASM, preorderSalt?: Uint8Array): Promise<void> {
+  /**
+   * Performs a DPNS name registration sequence
+   * Contested names are include additional fee of 0.2 Dash
+   * Check your name is contested with .testNameContested(name) method to check if additional fee will be charged
+   *
+   * @param name {string} username (ex. pshenmic.dash)
+   * @param identityId {IdentifierLike} identity identifier
+   * @param privateKey {PrivateKeyWASM} Authentication / High private key from your identity
+   */
+  async registerName (name: string, identityId: IdentifierLike, privateKey: PrivateKeyWASM): Promise<void> {
     const validation = validateName(name)
 
     if (validation != null) {
       throw new Error(validation)
     }
 
-    if (preorderSalt != null && preorderSalt.length !== 32) {
-      throw new Error('Preorder salt must be a 32 length')
-    }
-
     const identity = await getIdentityByIdentifier(this.grpcPool, identityId)
 
-    await registerName(this.grpcPool, name, identity, privateKey, preorderSalt)
+    await registerName(this.grpcPool, name, identity, privateKey)
   }
 }
