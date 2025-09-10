@@ -1,6 +1,13 @@
-import search from './search'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { DocumentWASM } from 'pshenmic-dpp'
+import { DocumentWASM, IdentifierWASM, PrivateKeyWASM } from 'pshenmic-dpp'
+import { IdentifierLike } from '../types'
+import searchByName from './searchByName'
+import searchByIdentity from './searchByIdentity'
+import registerName from './registerName'
+import validateName from './validateName'
+import getIdentityByIdentifier from '../identities/getIdentityByIdentifier'
+import convertToHomographSafeChars from '../utils/convertToHomographSafeChars'
+import testNameContested from './testNameContested'
 
 /**
  * Functions related to DPNS names (usernames)
@@ -29,23 +36,61 @@ export class NamesController {
    *
    * @return Promise<DocumentWASM | null>
    */
-  async search (name: string): Promise<DocumentWASM | null> {
-    if (typeof name !== 'string' || name.split('.').length !== 2) {
-      throw new Error('Name to search must be in username.dash format')
+  async searchByName (name: string): Promise<DocumentWASM[]> {
+    const validation = validateName(name)
+
+    if (validation != null) {
+      throw new Error(validation)
     }
 
-    const [label, parentDomainName] = name.split('.')
+    return await searchByName(this.grpcPool, name)
+  }
 
-    if (parentDomainName !== 'dash') {
-      throw new Error('Root domain must be .dash')
+  /**
+   * Tests a given username against contested names rules.
+   * Contested names includes an additional fee of 0.2 Dash
+   * as a voting resolution fee
+   *
+   * This function return boolean whether given username (f.e pshenmic.dash)
+   * falls under contested names rules.
+   * @param name
+   */
+  testNameContested (name: string): boolean {
+    const validation = validateName(name)
+
+    if (validation != null) {
+      throw new Error(validation)
     }
 
-    const [document] = await search(this.grpcPool, label, parentDomainName)
+    const [label] = name.split('.')
 
-    if (document == null) {
-      return null
+    const normalizedLabel = convertToHomographSafeChars(label)
+
+    return testNameContested(normalizedLabel)
+  }
+
+  async searchByIdentity (identifier: IdentifierLike): Promise<DocumentWASM[]> {
+    return await searchByIdentity(this.grpcPool, new IdentifierWASM(identifier))
+  }
+
+  /**
+   * Performs a DPNS name registration sequence
+   * Contested names are include additional fee of 0.2 Dash
+   * Check your name is contested with .testNameContested(name) method to check if additional fee will be charged
+   *
+   * @param name {string} username (ex. pshenmic.dash)
+   * @param identityId {IdentifierLike} identity identifier
+   * @param privateKey {PrivateKeyWASM} Authentication / High private key from your identity
+   */
+  async registerName (name: string, identityId: IdentifierLike, privateKey: PrivateKeyWASM): Promise<void> {
+    const validation = validateName(name)
+
+    if (validation != null) {
+      throw new Error(validation)
     }
 
-    return document
+    const identity = await getIdentityByIdentifier(this.grpcPool, identityId)
+
+    await registerName(this.grpcPool, name, identity, privateKey)
   }
 }
