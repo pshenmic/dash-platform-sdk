@@ -5,7 +5,9 @@ import query from '../documents/query'
 
 const DPNS_DATA_CONTRACT_ID = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
-export default async function search (grpcPool: GRPCConnectionPool, label: string, parentDomainName: string): Promise<DocumentWASM[]> {
+export default async function search (grpcPool: GRPCConnectionPool, name: string): Promise<DocumentWASM[]> {
+  const [label, parentDomainName] = name.split('.')
+
   const normalizedParentDomainName = convertToHomographSafeChars(parentDomainName)
   const normalizedLabelPrefix = convertToHomographSafeChars(label)
 

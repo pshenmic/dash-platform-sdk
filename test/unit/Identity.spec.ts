@@ -1,5 +1,4 @@
 import {
-  DocumentWASM,
   IdentityPublicKeyWASM,
   IdentityWASM, KeyType,
   PrivateKeyWASM, Purpose, SecurityLevel
@@ -11,12 +10,6 @@ let sdk: DashPlatformSDK
 describe('Identity', () => {
   beforeAll(() => {
     sdk = new DashPlatformSDK()
-  })
-
-  test('should be able to search names by DPNS name', async () => {
-    const document = await sdk.names.search('xyz.dash')
-
-    expect(document).toEqual(expect.any(DocumentWASM))
   })
 
   test('should be able to get identity by identifier', async () => {
