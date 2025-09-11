@@ -1,7 +1,6 @@
 import { IdentifierLike, ResourceVoteChoice } from '../types'
 import createVote from './createVote'
-import { IdentifierWASM, MasternodeVoteTransitionWASM, ResourceVoteChoiceWASM, StateTransitionWASM } from 'pshenmic-dpp'
-import { VoteWASM } from 'pshenmic-dpp/dist/wasm/pshenmic_dpp'
+import { IdentifierWASM, MasternodeVoteTransitionWASM, ResourceVoteChoiceWASM, StateTransitionWASM, VoteWASM } from 'pshenmic-dpp'
 import { createVoterIdentityId } from '../utils/createVoterIdentityId'
 
 /**
