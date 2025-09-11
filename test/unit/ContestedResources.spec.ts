@@ -1,13 +1,13 @@
-import { DashPlatformSDK, ContestedStateResultType } from '../../src/types'
-import { DataContractWASM, PlatformVersionWASM, StateTransitionWASM } from 'pshenmic-dpp'
+import { DataContractWASM, PlatformVersionWASM, PrivateKeyWASM } from 'pshenmic-dpp'
+import { DashPlatformSDK, ContestedStateResultType, ResourceVoteChoice } from '../../src/types'
 import stringToIndexValueBytes from '../../src/utils/stringToIndexValueBytes'
 
 let sdk: DashPlatformSDK
 let contract: DataContractWASM
 
-describe('Contested State', () => {
+describe('Contested Resources', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK()
+    sdk = new DashPlatformSDK({ network: 'testnet' })
 
     contract = new DataContractWASM(
       '11111111111111111111111111111111',
@@ -228,19 +228,65 @@ describe('Contested State', () => {
   })
 
   test('should be able to create TowardsIdentity vote', async () => {
-    // cTzA7r9oGWJ9Yv64Qzgc3wsCMtv21R8Jk6QH99mpcKXuj4pRDY1i
     const dataContactId = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
     const documentTypeName = 'domain'
-    const choice = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
-    const indexValues = ['EgRkYXNo', 'EgxmdTF2MTBmYXIxbmE=']
     const indexName = 'parentNameAndLabel'
+    const indexValues = ['dash', sdk.names.normalizeLabel('testidentity')]
+    const proTxHash = '559db949f305ae7ca1f2c3fafbde707a5adcb9ef7d53f99df4600d72b6bab965'
+    const choice: ResourceVoteChoice = 'CKKYnVeKoxCbvuEhiT6MDoQaRyXgDECwtxoKL5cqucZE'
+    const privateKey = PrivateKeyWASM.fromHex('bf175afa03d3b3647e3480bb1feffb9d4a76c1e40eb2c2b0f8b5884b42dbe955', 'testnet')
 
-    const vote = sdk.contestedResources.createMasternodeVote(dataContactId, documentTypeName, indexName, indexValues, choice)
+    const voterIdentifier = sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    const voterIdentity = await sdk.identities.getIdentityByIdentifier(voterIdentifier)
 
-    const identityNonce = BigInt(1)
-    const proTxHash = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
-    const stateTransition = sdk.contestedResources.createStateTransition(vote, proTxHash, identityNonce)
+    const [identityPublicKey] = voterIdentity.getPublicKeys().filter(identityPublicKey => privateKey.getPublicKeyHash() === identityPublicKey.getPublicKeyHash())
+    const identityNonce = await sdk.identities.getIdentityNonce(voterIdentity.id)
 
-    expect(stateTransition).toBeInstanceOf(StateTransitionWASM)
+    const vote = sdk.voting.createVote(dataContactId, documentTypeName, indexName, indexValues, choice)
+    const stateTransition = sdk.voting.createStateTransition(vote, proTxHash, voterIdentity.id, identityNonce + BigInt(1))
+
+    stateTransition.sign(privateKey, identityPublicKey)
+  })
+
+  test('should be able to create Abstain vote', async () => {
+    const dataContactId = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+    const documentTypeName = 'domain'
+    const indexName = 'parentNameAndLabel'
+    const indexValues = ['dash', sdk.names.normalizeLabel('testidentity')]
+    const proTxHash = '559db949f305ae7ca1f2c3fafbde707a5adcb9ef7d53f99df4600d72b6bab965'
+    const choice: ResourceVoteChoice = 'abstain'
+    const privateKey = PrivateKeyWASM.fromHex('bf175afa03d3b3647e3480bb1feffb9d4a76c1e40eb2c2b0f8b5884b42dbe955', 'testnet')
+
+    const voterIdentifier = sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    const voterIdentity = await sdk.identities.getIdentityByIdentifier(voterIdentifier)
+
+    const [identityPublicKey] = voterIdentity.getPublicKeys().filter(identityPublicKey => privateKey.getPublicKeyHash() === identityPublicKey.getPublicKeyHash())
+    const identityNonce = await sdk.identities.getIdentityNonce(voterIdentity.id)
+
+    const vote = sdk.voting.createVote(dataContactId, documentTypeName, indexName, indexValues, choice)
+    const stateTransition = sdk.voting.createStateTransition(vote, proTxHash, voterIdentity.id, identityNonce + BigInt(1))
+
+    stateTransition.sign(privateKey, identityPublicKey)
+  })
+
+  test('should be able to create Lock vote', async () => {
+    const dataContactId = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+    const documentTypeName = 'domain'
+    const indexName = 'parentNameAndLabel'
+    const indexValues = ['dash', sdk.names.normalizeLabel('testidentity')]
+    const proTxHash = '559db949f305ae7ca1f2c3fafbde707a5adcb9ef7d53f99df4600d72b6bab965'
+    const choice: ResourceVoteChoice = 'lock'
+    const privateKey = PrivateKeyWASM.fromHex('bf175afa03d3b3647e3480bb1feffb9d4a76c1e40eb2c2b0f8b5884b42dbe955', 'testnet')
+
+    const voterIdentifier = sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    const voterIdentity = await sdk.identities.getIdentityByIdentifier(voterIdentifier)
+
+    const [identityPublicKey] = voterIdentity.getPublicKeys().filter(identityPublicKey => privateKey.getPublicKeyHash() === identityPublicKey.getPublicKeyHash())
+    const identityNonce = await sdk.identities.getIdentityNonce(voterIdentity.id)
+
+    const vote = sdk.voting.createVote(dataContactId, documentTypeName, indexName, indexValues, choice)
+    const stateTransition = sdk.voting.createStateTransition(vote, proTxHash, voterIdentity.id, identityNonce + BigInt(1))
+
+    stateTransition.sign(privateKey, identityPublicKey)
   })
 })

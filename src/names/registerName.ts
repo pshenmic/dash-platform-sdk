@@ -1,17 +1,17 @@
-import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js'
-import { IdentityWASM, PrivateKeyWASM } from 'pshenmic-dpp'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
-import getRandomBytes from '../utils/getRandomBytes.js'
-import sha256 from '../utils/sha256.js'
-import createDocument from '../documents/create.js'
-import createStateTransition from '../documents/createStateTransition.js'
-import getIdentityContractNonce from '../identities/getIdentityContractNonce.js'
-import broadcast from '../stateTransitions/broadcast.js'
-import sleep from '../utils/sleep.js'
+import convertToHomographSafeChars from '../utils/convertToHomographSafeChars'
+import { IdentityWASM, PrefundedVotingBalanceWASM, PrivateKeyWASM } from 'pshenmic-dpp'
+import GRPCConnectionPool from '../grpcConnectionPool'
+import getRandomBytes from '../utils/getRandomBytes'
+import sha256 from '../utils/sha256'
+import createDocument from '../documents/create'
+import createStateTransition from '../documents/createStateTransition'
+import getIdentityContractNonce from '../identities/getIdentityContractNonce'
+import broadcast from '../stateTransitions/broadcast'
+import waitForStateTransitionResult from '../stateTransitions/waitForStateTransitionResult'
+import testNameContested from './testNameContested'
+import { DPNS_DATA_CONTRACT_ID } from '../constants'
 
-const DPNS_DATA_CONTRACT_ID = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
-
-export default async function registerName (grpcPool: GRPCConnectionPool, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM, preorderSalt?: Uint8Array): Promise<void> {
+export default async function registerName (grpcPool: GRPCConnectionPool, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM): Promise<void> {
   const [identityPublicKey] = identity.getPublicKeys().filter(identityPublicKey => identityPublicKey.getPublicKeyHash() === privateKey.getPublicKeyHash())
 
   if (identityPublicKey == null) {
@@ -24,18 +24,18 @@ export default async function registerName (grpcPool: GRPCConnectionPool, name: 
 
   const [label, parentDomainName] = name.split('.')
 
+  const salt = getRandomBytes(32)
+
   const normalizedParentDomainName = convertToHomographSafeChars(parentDomainName)
-
-  const salt = preorderSalt ?? getRandomBytes(32)
-
-  const normalizedParentName = convertToHomographSafeChars(parentDomainName)
   const normalizedLabel = convertToHomographSafeChars(label)
 
-  const normalizedFullDomainName = `${normalizedLabel}.${normalizedParentName}`
+  const normalizedFullDomainName = `${normalizedLabel}.${normalizedParentDomainName}`
 
   const saltedDomainHash = sha256(sha256(
     new Uint8Array([
+      // @ts-expect-error
       ...salt,
+      // @ts-expect-error
       ...new TextEncoder().encode(normalizedFullDomainName)
     ])
   )) as Uint8Array
@@ -56,8 +56,8 @@ export default async function registerName (grpcPool: GRPCConnectionPool, name: 
 
   await broadcast(grpcPool, stateTransition)
 
-  // Emulate waitForStateTransitionResult todo replace with call
-  await sleep(5000)
+  // wait for state transition confirmation before next broadcast
+  await waitForStateTransitionResult(grpcPool, stateTransition)
 
   // 2. Create domain document
   const domainData = {
@@ -75,7 +75,11 @@ export default async function registerName (grpcPool: GRPCConnectionPool, name: 
   }
 
   document = createDocument(DPNS_DATA_CONTRACT_ID, 'domain', domainData, identity.id.base58())
-  stateTransition = createStateTransition(document, 'create', { identityContractNonce: identityContractNonce + BigInt(2) })
+  stateTransition = createStateTransition(document, 'create', {
+    identityContractNonce: identityContractNonce + BigInt(2),
+    // @ts-expect-error
+    prefundedVotingBalance: testNameContested(normalizedLabel) ? new PrefundedVotingBalanceWASM('parentNameAndLabel', BigInt(20000000000)) : undefined
+  })
   await stateTransition.sign(privateKey, identityPublicKey)
 
   await broadcast(grpcPool, stateTransition)
