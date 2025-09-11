@@ -806,6 +806,38 @@ identityUpdateTransition = sdk.identities.createStateTransition('update', {
 identityUpdateTransition.signByPrivateKey(masterPrivateKey, masterKeyId, KeyType.ECDSA_SECP256K1)
 ```
 
+
+### Masternode Vote
+
+Perform a masternode vote for a contested resource (f.e. DPNS name)
+
+```javascript
+const dataContactId = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
+const documentTypeName = 'domain'
+const indexName = 'parentNameAndLabel'
+const indexValues = ['dash', sdk.names.normalizeLabel('testidentity')]
+const proTxHash = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+const choice: ResourceVoteChoice = 'CKKYnVeKoxCbvuEhiT6MDoQaRyXgDECwtxoKL5cqucZE' // towards identity
+const choice: ResourceVoteChoice = 'lock' // Lock
+const choice: ResourceVoteChoice = 'abstain' // Abstain
+const privateKey = PrivateKeyWASM.fromHex('deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', 'testnet')
+
+// fetch voter identity
+const voterIdentifier = sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+const voterIdentity = await sdk.identities.getIdentityByIdentifier(voterIdentifier)
+
+// get voter identity public key
+const [identityPublicKey] = voterIdentity.getPublicKeys().filter(identityPublicKey => privateKey.getPublicKeyHash() === identityPublicKey.getPublicKeyHash())
+const identityNonce = await sdk.identities.getIdentityNonce(voterIdentity.id)
+
+// create vote
+const vote = sdk.voting.createVote(dataContactId, documentTypeName, indexName, indexValues, choice)
+const stateTransition = sdk.voting.createStateTransition(vote, proTxHash, voterIdentity.id, identityNonce + BigInt(1))
+
+// sign
+stateTransition.sign(privateKey, identityPublicKey)
+```
+
 ### State Transition
 #### Broadcast state transition
 

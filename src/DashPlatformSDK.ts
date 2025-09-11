@@ -10,6 +10,7 @@ import { DataContractsController } from './dataContracts'
 import { ContestedResourcesController } from './contestedResources'
 import { TokensController } from './tokens'
 import { AbstractSigner } from './signer/AbstractSigner'
+import { VotingController } from './voting'
 
 export interface GRPCOptions {
   poolLimit: 5
@@ -40,6 +41,7 @@ export class DashPlatformSDK {
   identities: IdentitiesController
   documents: DocumentsController
   keyPair: KeyPairController
+  voting: VotingController
   tokens: TokensController
   utils: UtilsController
   names: NamesController
@@ -90,6 +92,7 @@ export class DashPlatformSDK {
     this.dataContracts = new DataContractsController(grpcPool)
     this.identities = new IdentitiesController(grpcPool)
     this.documents = new DocumentsController(grpcPool)
+    this.voting = new VotingController()
     this.node = new NodeController(grpcPool, network)
     this.tokens = new TokensController(grpcPool)
     this.names = new NamesController(grpcPool)
