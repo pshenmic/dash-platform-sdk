@@ -8,13 +8,13 @@ import GRPCConnectionPool from '../grpcConnectionPool'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
-import {DPNS_DATA_CONTRACT_BYTES, DPNS_DATA_CONTRACT_ID} from "../constants";
+import { DPNS_DATA_CONTRACT_BYTES, DPNS_DATA_CONTRACT_ID } from '../constants'
 
 export default async function getByIdentifier (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<DataContractWASM> {
   const id = new IdentifierWASM(identifier)
 
   if (id.base58() === DPNS_DATA_CONTRACT_ID) {
-    return DataContractWASM.fromBase64(DPNS_DATA_CONTRACT_BYTES, true , 9)
+    return DataContractWASM.fromBase64(DPNS_DATA_CONTRACT_BYTES, true, 9)
   }
 
   const getDataContractRequest = GetDataContractRequest.fromPartial({

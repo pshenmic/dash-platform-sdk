@@ -9,7 +9,7 @@ import getIdentityContractNonce from '../identities/getIdentityContractNonce'
 import broadcast from '../stateTransitions/broadcast'
 import waitForStateTransitionResult from '../stateTransitions/waitForStateTransitionResult'
 import testNameContested from './testNameContested'
-import {DPNS_DATA_CONTRACT_ID} from "../constants";
+import { DPNS_DATA_CONTRACT_ID } from '../constants'
 
 export default async function registerName (grpcPool: GRPCConnectionPool, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM): Promise<void> {
   const [identityPublicKey] = identity.getPublicKeys().filter(identityPublicKey => identityPublicKey.getPublicKeyHash() === privateKey.getPublicKeyHash())

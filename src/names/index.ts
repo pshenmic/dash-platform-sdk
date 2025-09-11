@@ -93,4 +93,18 @@ export class NamesController {
 
     await registerName(this.grpcPool, name, identity, privateKey)
   }
+
+  /**
+   * Converts DPNS name to normalized format (ex. alice.dash -> al1ce.dash)
+   *
+   * source: https://github.com/dashpay/platform/blob/master/packages/js-dash-sdk/src/utils/convertToHomographSafeChars.ts
+   *
+   *
+   * @param label {string}
+   *
+   * @return {string}
+   */
+  normalizeLabel (label: string): string {
+    return convertToHomographSafeChars(label)
+  }
 }

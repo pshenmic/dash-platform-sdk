@@ -54,9 +54,7 @@ export class UtilsController {
   }
 
   /**
-   * Converts DPNS name to normalized format (ex. alice.dash -> al1ce.dash)
-   *
-   * source: https://github.com/dashpay/platform/blob/master/packages/js-dash-sdk/src/utils/convertToHomographSafeChars.ts
+   * @deprecated use sdk.names.normalizeLabel()
    *
    * @param str {string}
    *
