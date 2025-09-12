@@ -46,6 +46,9 @@
     "docs": "typedoc",
     "proto:generate": "grpc_tools_node_protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./proto/generated --ts_proto_opt=useAsyncIterable=false --ts_proto_opt=forceLong=string,env=browser,outputServices=grpc-web,outputServices=generic-definitions,outputJsonMethods=false,useExactTypes=false --proto_path=./proto ./proto/platform.proto"
   },
+  "peerDependencies": {
+    "pshenmic-dpp": "1.0.25"
+  },
   "dependencies": {
     "@bufbuild/protobuf": "^2.6.0",
     "@dashincubator/secp256k1": "^1.7.1-5",
