@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [ "master", "v1.1-dev", "v1.2-dev", "v1.3-dev" ]
+    branches: [ "master", "v1.*-dev" ]
   pull_request:
-    branches: [ "master", "v1.1-dev", "v1.2-dev", "v1.3-dev" ]
+    branches: [ "master", "v1.*-dev" ]
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [22.12.0, 20.x, 22.x, 24.x]
 
     steps:
     - uses: actions/checkout@v4
@@ -26,18 +26,60 @@ jobs:
       run: |
         yarn
 
-    - name: Generate GRPC client
-      run: |
-        yarn build:grpc
-
     - name: Check lint
       run: |
         yarn lint
 
-    - name: Run tests
+    - name: Generate GRPC client
       run: |
-        yarn test
+        yarn build:grpc
 
     - name: Build with Webpack
       run: |
         yarn build
+
+  test_npm:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.12.0, 20.x, 22.x, 24.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: |
+        npm install
+
+    - name: Run tests with npm
+      run: |
+        npm test
+
+  test_pnpm:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.12.0, 20.x, 22.x, 24.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: |
+        pnpm install
+
+    - name: Run tests with npm
+      run: |
+        pnpm test
