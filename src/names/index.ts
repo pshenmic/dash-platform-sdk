@@ -107,4 +107,15 @@ export class NamesController {
   normalizeLabel (label: string): string {
     return convertToHomographSafeChars(label)
   }
+
+  /**
+   * Validates a DPNS name that you would like to register
+   *
+   * @param fullName {string} full DPNS name (ex. pshenmic.dash)
+   *
+   * @return {string} null if valid or string with a reason
+   */
+  validateName (fullName: string): null | string {
+    return validateName(fullName)
+  }
 }
