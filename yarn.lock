@@ -5039,10 +5039,10 @@ prop-types@^15.8.1:
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
-pshenmic-dpp@1.0.25:
-  version "1.0.25"
-  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.0.25.tgz#0ccfe3c8ee79940ee9e4678580d4df97cdd21120"
-  integrity sha512-wxxqnDF2x2adUrp11bQ7J/BRhqQJRnH6AnE+ATddU6J5mnR2mQ1xkvQvHYxgSH93ErQhlih5MuSKQJMaBohAlA==
+pshenmic-dpp@1.1.0-dev.3:
+  version "1.1.0-dev.3"
+  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.1.0-dev.3.tgz#15f779b8ce4d3589b2ac19676b6dafb418eaa75d"
+  integrity sha512-924lxgTmuh5f6SKG9gaQ+iuXOtXei/eTeO4Zl+n04nJetHltJKsL7/Kq4gU6SO/jTJZ24+WvQHJy075SiJUGSg==
 
 punycode.js@^2.3.1:
   version "2.3.1"

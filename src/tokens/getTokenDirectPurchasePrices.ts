@@ -1,5 +1,5 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
-import {IdentifierLike} from '../types'
+import {IdentifierLike, TokenDirectPurchasePrices} from '../types'
 import {IdentifierWASM, PlatformVersionWASM, verifyTokenDirectPurchasePrices} from "pshenmic-dpp";
 import {
   GetTokenDirectPurchasePricesRequest,
@@ -9,7 +9,7 @@ import {getQuorumPublicKey} from "../utils/getQuorumPublicKey";
 import verifyTenderdashProof from "../utils/verifyTenderdashProof";
 import bytesToHex from "../utils/bytesToHex";
 
-export default async function getTokenDirectPurchasePrices(grpcPool: GRPCConnectionPool, tokenIdentifiers: IdentifierLike[]) {
+export default async function getTokenDirectPurchasePrices(grpcPool: GRPCConnectionPool, tokenIdentifiers: IdentifierLike[]): Promise<TokenDirectPurchasePrices[]> {
   const tokenIds = tokenIdentifiers.map(tokenId => new IdentifierWASM(tokenId).bytes())
 
   const request = GetTokenDirectPurchasePricesRequest.fromPartial({
@@ -49,7 +49,5 @@ export default async function getTokenDirectPurchasePrices(grpcPool: GRPCConnect
     throw new Error('Failed to verify query')
   }
 
-  return {
-    prices
-  }
+  return prices
 }
