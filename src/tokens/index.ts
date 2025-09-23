@@ -13,7 +13,7 @@ import getTokenTotalSupply from './getTokenTotalSupply'
 import createStateTransition from './createStateTransition'
 import { IdentifierWASM, StateTransitionWASM, TokenBaseTransitionWASM, TokenPricingScheduleWASM } from 'pshenmic-dpp'
 import getIdentityContractNonce from '../identities/getIdentityContractNonce'
-import getTokenDirectPurchasePrices from "./getTokenDirectPurchasePrices";
+import getTokenDirectPurchasePrices from './getTokenDirectPurchasePrices'
 
 /**
  * Tokens controller for requesting information about tokens and tokens holders

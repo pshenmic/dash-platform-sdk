@@ -1,15 +1,15 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
-import {IdentifierLike, TokenDirectPurchasePrices} from '../types'
-import {IdentifierWASM, PlatformVersionWASM, verifyTokenDirectPurchasePrices} from "pshenmic-dpp";
+import { IdentifierLike, TokenDirectPurchasePrices } from '../types'
+import { IdentifierWASM, PlatformVersionWASM, verifyTokenDirectPurchasePrices } from 'pshenmic-dpp'
 import {
   GetTokenDirectPurchasePricesRequest,
   GetTokenDirectPurchasePricesResponse_GetTokenDirectPurchasePricesResponseV0
-} from "../../proto/generated/platform";
-import {getQuorumPublicKey} from "../utils/getQuorumPublicKey";
-import verifyTenderdashProof from "../utils/verifyTenderdashProof";
-import bytesToHex from "../utils/bytesToHex";
+} from '../../proto/generated/platform'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof'
+import bytesToHex from '../utils/bytesToHex'
 
-export default async function getTokenDirectPurchasePrices(grpcPool: GRPCConnectionPool, tokenIdentifiers: IdentifierLike[]): Promise<TokenDirectPurchasePrices[]> {
+export default async function getTokenDirectPurchasePrices (grpcPool: GRPCConnectionPool, tokenIdentifiers: IdentifierLike[]): Promise<TokenDirectPurchasePrices[]> {
   const tokenIds = tokenIdentifiers.map(tokenId => new IdentifierWASM(tokenId).bytes())
 
   const request = GetTokenDirectPurchasePricesRequest.fromPartial({
@@ -19,9 +19,9 @@ export default async function getTokenDirectPurchasePrices(grpcPool: GRPCConnect
     }
   })
 
-  const {v0} = await grpcPool.getClient().getTokenDirectPurchasePrices(request)
+  const { v0 } = await grpcPool.getClient().getTokenDirectPurchasePrices(request)
 
-  const {proof, metadata} = v0 as GetTokenDirectPurchasePricesResponse_GetTokenDirectPurchasePricesResponseV0;
+  const { proof, metadata } = v0 as GetTokenDirectPurchasePricesResponse_GetTokenDirectPurchasePricesResponseV0
   if (proof == null) {
     throw new Error('Proof not found')
   }
@@ -30,7 +30,7 @@ export default async function getTokenDirectPurchasePrices(grpcPool: GRPCConnect
     throw new Error('Metadata not found')
   }
 
-  const {rootHash, prices} = verifyTokenDirectPurchasePrices(
+  const { rootHash, prices } = verifyTokenDirectPurchasePrices(
     proof.grovedbProof,
     tokenIds,
     true,

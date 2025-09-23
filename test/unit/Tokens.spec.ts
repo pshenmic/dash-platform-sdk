@@ -37,7 +37,6 @@ describe('Tokens', () => {
       '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
     ])
 
-
     expect(tokensPrices.length).toEqual(2)
     expect(tokensPrices[0].tokenId).toBeTruthy()
     expect(tokensPrices[0].price).toBeTruthy()
@@ -50,7 +49,6 @@ describe('Tokens', () => {
     expect(tokensIdentityBalance[0].identityId).toBeTruthy()
     expect(tokensIdentityBalance[0].balance).toBeTruthy()
   })
-
 
   test('should be able to create base token transition', async () => {
     const tokenBaseTransition = await sdk.tokens.createBaseTransition('A36eJF2kyYXwxCtJGsgbR3CTAscUFaNxZN19UqUfM1kw', '34vkjdeUTP2z798SiXqoB6EAuobh51kXYURqVa9xkujf')
