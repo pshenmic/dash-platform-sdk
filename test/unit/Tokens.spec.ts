@@ -32,12 +32,25 @@ describe('Tokens', () => {
   })
 
   test('should be able to get token identities token balances', async () => {
+    const tokensPrices = await sdk.tokens.getTokensDirectPurchasePrice([
+      '3oTHkj8nqn82QkZRHkmUmNBX696nzE1rg1fwPRpemEdz',
+      '6niNoQpsT9zyVDJtXcbpV3tR3qEGi6BC6xoDdJyx1u7C'
+    ])
+
+
+    expect(tokensPrices.length).toEqual(2)
+    expect(tokensPrices[0].tokenId).toBeTruthy()
+    expect(tokensPrices[0].price).toBeTruthy()
+  })
+
+  test('should be able to get tokens direct purchase prices', async () => {
     const tokensIdentityBalance = await sdk.tokens.getIdentitiesTokenBalances(['8eTDkBhpQjHeqgbVeriwLeZr1tCa6yBGw76SckvD1cwc'], '9YxdbQUjJmQsmVPen95HjAU3Esj7tVkWSY2EQWT84ZQP')
 
     expect(tokensIdentityBalance.length).toEqual(1)
     expect(tokensIdentityBalance[0].identityId).toBeTruthy()
     expect(tokensIdentityBalance[0].balance).toBeTruthy()
   })
+
 
   test('should be able to create base token transition', async () => {
     const tokenBaseTransition = await sdk.tokens.createBaseTransition('A36eJF2kyYXwxCtJGsgbR3CTAscUFaNxZN19UqUfM1kw', '34vkjdeUTP2z798SiXqoB6EAuobh51kXYURqVa9xkujf')
