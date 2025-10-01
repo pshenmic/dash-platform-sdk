@@ -18,14 +18,14 @@ describe('DPNS names', () => {
     sdk.stateTransitions.broadcast = jest.fn()
   })
 
-  test('should be able to search names by identity identifier', async () => {
-    const documents = await sdk.names.searchByName('xyz.dash')
+  test('should be able to search names by DPNS name', async () => {
+    const documents = await sdk.names.searchByName('cryptofan.dash')
 
     expect(documents?.length).toEqual(1)
     expect(documents[0]).toEqual(expect.any(DocumentWASM))
   })
 
-  test('should be able to search names by DPNS name', async () => {
+  test('should be able to search names by identity', async () => {
     const documents = await sdk.names.searchByIdentity('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm')
 
     expect(documents?.length).toEqual(3)

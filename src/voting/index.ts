@@ -15,10 +15,10 @@ export class VotingController {
    * @param proTxHash {string} voter's masternode pro tx hash
    * @param publicKeyHash {string} voter address's public key hash
    *
-   * @return {IdentifierWASM}
+   * @return {Promise<IdentifierWASM>}
    */
-  createVoterIdentityId (proTxHash: string, publicKeyHash: string): IdentifierWASM {
-    return createVoterIdentityId(proTxHash, publicKeyHash)
+  async createVoterIdentityId (proTxHash: string, publicKeyHash: string): Promise<IdentifierWASM> {
+    return await createVoterIdentityId(proTxHash, publicKeyHash)
   }
 
   /**

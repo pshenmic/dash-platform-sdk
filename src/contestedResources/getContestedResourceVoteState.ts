@@ -6,8 +6,7 @@ import GRPCConnectionPool from '../grpcConnectionPool'
 import {
   GetContestedResourceVoteStateRequest,
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_ResultType,
-  GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo,
-  GetContestedResourceVoteStateResponse_GetContestedResourceVoteStateResponseV0
+  GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 } from '../../proto/generated/platform'
 import { DataContractWASM, DocumentWASM, IdentifierWASM, PlatformVersionWASM, verifyVotePollVoteStateProof } from 'pshenmic-dpp'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
@@ -34,27 +33,38 @@ export default async function getContestedResourceVoteState (
     }
   }
 
-  const getContestedResourceVoteStateRequest = GetContestedResourceVoteStateRequest.fromPartial({
-    v0: {
-      contractId: contract.id.bytes(),
-      documentTypeName,
-      indexName,
-      indexValues,
-      resultType: resultType as number as GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_ResultType,
-      allowIncludeLockedAndAbstainingVoteTally,
-      startAtIdentifierInfo,
-      count,
-      prove: true
+  const getContestedResourceVoteStateRequest = GetContestedResourceVoteStateRequest.create({
+    version: {
+      oneofKind: 'v0',
+      v0: {
+        contractId: contract.id.bytes(),
+        documentTypeName,
+        indexName,
+        indexValues,
+        resultType: resultType as number as GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_ResultType,
+        allowIncludeLockedAndAbstainingVoteTally,
+        startAtIdentifierInfo,
+        count,
+        prove: true
+      }
     }
   })
 
-  const { v0 } = await grpcPool.getClient().getContestedResourceVoteState(getContestedResourceVoteStateRequest)
+  const { response } = await grpcPool.getClient().getContestedResourceVoteState(getContestedResourceVoteStateRequest)
 
-  const { proof, metadata } = v0 as GetContestedResourceVoteStateResponse_GetContestedResourceVoteStateResponseV0
+  const { version } = response
 
-  if (proof == null) {
-    throw new Error('Proof not found')
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
   }
+
+  const { v0 } = version
+
+  if (v0.result.oneofKind !== 'proof') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+  }
+
+  const { result: { proof }, metadata } = v0
 
   if (metadata == null) {
     throw new Error('Metadata not found')
@@ -78,7 +88,7 @@ export default async function getContestedResourceVoteState (
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')

@@ -31,11 +31,9 @@ export default async function registerName (grpcPool: GRPCConnectionPool, name: 
 
   const normalizedFullDomainName = `${normalizedLabel}.${normalizedParentDomainName}`
 
-  const saltedDomainHash = sha256(sha256(
+  const saltedDomainHash = await sha256(await sha256(
     new Uint8Array([
-      // @ts-expect-error
       ...salt,
-      // @ts-expect-error
       ...new TextEncoder().encode(normalizedFullDomainName)
     ])
   )) as Uint8Array

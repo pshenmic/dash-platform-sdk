@@ -1,7 +1,4 @@
-import {
-  GetIdentityByNonUniquePublicKeyHashRequest,
-  GetIdentityByNonUniquePublicKeyHashResponse_GetIdentityByNonUniquePublicKeyHashResponseV0
-} from '../../proto/generated/platform'
+import { GetIdentityByNonUniquePublicKeyHashRequest } from '../../proto/generated/platform'
 import { IdentityWASM, PlatformVersionWASM, verifyIdentifierByNonUniquePublicKeyHashProof } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import hexToBytes from '../utils/hexToBytes'
@@ -11,23 +8,38 @@ import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 import getIdentityByIdentifier from './getIdentityByIdentifier'
 
 export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRPCConnectionPool, hex: string): Promise<IdentityWASM> {
-  const getIdentityByNonUniquePublicKeyHashRequest = GetIdentityByNonUniquePublicKeyHashRequest.fromPartial({
-    v0: {
-      publicKeyHash: hexToBytes(hex),
-      prove: true
+  const getIdentityByNonUniquePublicKeyHashRequest = GetIdentityByNonUniquePublicKeyHashRequest.create({
+    version: {
+      oneofKind: 'v0',
+      v0: {
+        publicKeyHash: hexToBytes(hex),
+        prove: true
+      }
     }
   })
 
-  const { v0 } = await grpcPool.getClient().getIdentityByNonUniquePublicKeyHash(getIdentityByNonUniquePublicKeyHashRequest)
+  const { response } = await grpcPool.getClient().getIdentityByNonUniquePublicKeyHash(getIdentityByNonUniquePublicKeyHashRequest)
 
-  const { proof, metadata } = v0 as GetIdentityByNonUniquePublicKeyHashResponse_GetIdentityByNonUniquePublicKeyHashResponseV0
+  const { version } = response
 
-  if (proof?.grovedbIdentityPublicKeyHashProof == null) {
-    throw new Error('Proof not found')
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
   }
+
+  const { v0 } = version
+
+  if (v0.result.oneofKind !== 'proof') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+  }
+
+  const { result: { proof }, metadata } = v0
 
   if (metadata == null) {
     throw new Error('Metadata not found')
+  }
+
+  if (proof.grovedbIdentityPublicKeyHashProof == null) {
+    throw new Error('GroveDB proof not found for identity by non unique public key request')
   }
 
   const {

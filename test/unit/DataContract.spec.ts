@@ -1,7 +1,4 @@
-import {
-  DataContractWASM,
-  StateTransitionWASM
-} from 'pshenmic-dpp'
+import { DataContractWASM, StateTransitionWASM } from 'pshenmic-dpp'
 import { DashPlatformSDK, DataContractConfig } from '../../src/types'
 
 let sdk: DashPlatformSDK

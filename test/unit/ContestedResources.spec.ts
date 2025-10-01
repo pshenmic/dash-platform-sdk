@@ -236,7 +236,8 @@ describe('Contested Resources', () => {
     const choice: ResourceVoteChoice = 'CKKYnVeKoxCbvuEhiT6MDoQaRyXgDECwtxoKL5cqucZE'
     const privateKey = PrivateKeyWASM.fromHex('bf175afa03d3b3647e3480bb1feffb9d4a76c1e40eb2c2b0f8b5884b42dbe955', 'testnet')
 
-    const voterIdentifier = sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    const voterIdentifier = await sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    expect(voterIdentifier.base58()).toEqual('BmwY6TNCtF8rcuZeFo2xQzPm5YCHVkNBZ8e1CaF7bCHj')
     const voterIdentity = await sdk.identities.getIdentityByIdentifier(voterIdentifier)
 
     const [identityPublicKey] = voterIdentity.getPublicKeys().filter(identityPublicKey => privateKey.getPublicKeyHash() === identityPublicKey.getPublicKeyHash())
@@ -257,7 +258,8 @@ describe('Contested Resources', () => {
     const choice: ResourceVoteChoice = 'abstain'
     const privateKey = PrivateKeyWASM.fromHex('bf175afa03d3b3647e3480bb1feffb9d4a76c1e40eb2c2b0f8b5884b42dbe955', 'testnet')
 
-    const voterIdentifier = sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    const voterIdentifier = await sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    expect(voterIdentifier.base58()).toEqual('BmwY6TNCtF8rcuZeFo2xQzPm5YCHVkNBZ8e1CaF7bCHj')
     const voterIdentity = await sdk.identities.getIdentityByIdentifier(voterIdentifier)
 
     const [identityPublicKey] = voterIdentity.getPublicKeys().filter(identityPublicKey => privateKey.getPublicKeyHash() === identityPublicKey.getPublicKeyHash())
@@ -278,7 +280,8 @@ describe('Contested Resources', () => {
     const choice: ResourceVoteChoice = 'lock'
     const privateKey = PrivateKeyWASM.fromHex('bf175afa03d3b3647e3480bb1feffb9d4a76c1e40eb2c2b0f8b5884b42dbe955', 'testnet')
 
-    const voterIdentifier = sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    const voterIdentifier = await sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    expect(voterIdentifier.base58()).toEqual('BmwY6TNCtF8rcuZeFo2xQzPm5YCHVkNBZ8e1CaF7bCHj')
     const voterIdentity = await sdk.identities.getIdentityByIdentifier(voterIdentifier)
 
     const [identityPublicKey] = voterIdentity.getPublicKeys().filter(identityPublicKey => privateKey.getPublicKeyHash() === identityPublicKey.getPublicKeyHash())

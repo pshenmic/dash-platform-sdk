@@ -1,10 +1,7 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
 import { IdentifierLike } from '../types'
 import { IdentifierWASM, PlatformVersionWASM, verifyTokensBalancesForIdentityProof } from 'pshenmic-dpp'
-import {
-  GetIdentityTokenBalancesRequest,
-  GetIdentityTokenBalancesResponse_GetIdentityTokenBalancesResponseV0
-} from '../../proto/generated/platform'
+import { GetIdentityTokenBalancesRequest } from '../../proto/generated/platform'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
@@ -18,21 +15,32 @@ export default async function getIdentityTokensBalances (grpcPool: GRPCConnectio
   const id = new IdentifierWASM(identifier)
   const tokenIds = tokenIdentifiers.map(tokenIdentifier => new IdentifierWASM(tokenIdentifier))
 
-  const request = GetIdentityTokenBalancesRequest.fromPartial({
-    v0: {
-      tokenIds: tokenIds.map((identifier) => identifier.bytes()),
-      identityId: id.bytes(),
-      prove: true
+  const getIdentityTokenBalancesRequest = GetIdentityTokenBalancesRequest.create({
+    version: {
+      oneofKind: 'v0',
+      v0: {
+        tokenIds: tokenIds.map((identifier) => identifier.bytes()),
+        identityId: id.bytes(),
+        prove: true
+      }
     }
   })
 
-  const { v0 } = await grpcPool.getClient().getIdentityTokenBalances(request)
+  const { response } = await grpcPool.getClient().getIdentityTokenBalances(getIdentityTokenBalancesRequest)
 
-  const { proof, metadata } = v0 as GetIdentityTokenBalancesResponse_GetIdentityTokenBalancesResponseV0
+  const { version } = response
 
-  if (proof == null) {
-    throw new Error('Proof not found')
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
   }
+
+  const { v0 } = version
+
+  if (v0.result.oneofKind !== 'proof') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+  }
+
+  const { result: { proof }, metadata } = v0
 
   if (metadata == null) {
     throw new Error('Metadata not found')
@@ -51,7 +59,7 @@ export default async function getIdentityTokensBalances (grpcPool: GRPCConnectio
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')

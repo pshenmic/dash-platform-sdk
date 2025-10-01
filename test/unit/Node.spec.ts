@@ -14,7 +14,7 @@ describe('Node', () => {
     expect(status.version?.software?.drive).toEqual(expect.any(String))
 
     expect(status.version?.software?.tenderdash).toEqual(expect.any(String))
-    expect(status.version?.protocol?.tenderdash?.p2p).toEqual(expect.any(Number))
+    expect(status.version?.protocol?.tenderdash?.p2P).toEqual(expect.any(Number))
     expect(status.version?.protocol?.tenderdash?.block).toEqual(expect.any(Number))
 
     expect(status.version?.protocol?.drive?.latest).toEqual(expect.any(Number))

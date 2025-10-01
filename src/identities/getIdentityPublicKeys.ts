@@ -1,8 +1,4 @@
-import {
-  GetIdentityKeysResponse_GetIdentityKeysResponseV0,
-  GetIdentityKeysRequest,
-  KeyRequestType
-} from '../../proto/generated/platform'
+import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/platform'
 import { IdentifierWASM, IdentityPublicKeyWASM, PlatformVersionWASM, verifyIdentityKeysByIdentifierProof } from 'pshenmic-dpp'
 import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
@@ -12,21 +8,38 @@ import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 
 export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<IdentityPublicKeyWASM[]> {
   const id = new IdentifierWASM(identifier)
-  const getIdentityKeysRequest = GetIdentityKeysRequest.fromPartial({
-    v0: {
-      identityId: id.bytes(),
-      requestType: KeyRequestType.fromPartial({ allKeys: {} }),
-      prove: true
+
+  const getIdentityKeysRequest = GetIdentityKeysRequest.create({
+    version: {
+      oneofKind: 'v0',
+      v0: {
+        identityId: id.bytes(),
+        requestType: KeyRequestType.create({
+          request: {
+            oneofKind: 'allKeys',
+            allKeys: {}
+          }
+        }),
+        prove: true
+      }
     }
   })
 
-  const { v0 } = await grpcPool.getClient().getIdentityKeys(getIdentityKeysRequest)
+  const { response } = await grpcPool.getClient().getIdentityKeys(getIdentityKeysRequest)
 
-  const { proof, metadata } = v0 as GetIdentityKeysResponse_GetIdentityKeysResponseV0
+  const { version } = response
 
-  if (proof == null) {
-    throw new Error('Proof not found')
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
   }
+
+  const { v0 } = version
+
+  if (v0.result.oneofKind !== 'proof') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+  }
+
+  const { result: { proof }, metadata } = v0
 
   if (metadata == null) {
     throw new Error('Metadata not found')
@@ -43,7 +56,7 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPoo
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')
