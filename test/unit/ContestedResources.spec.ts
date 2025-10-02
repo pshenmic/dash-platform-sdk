@@ -245,6 +245,9 @@ describe('Contested Resources', () => {
     const vote = sdk.voting.createVote(dataContactId, documentTypeName, indexName, indexValues, choice)
     const stateTransition = sdk.voting.createStateTransition(vote, proTxHash, voterIdentity.id, identityNonce + BigInt(1))
 
+    // test key disabled
+    identityPublicKey.removeDisabledAt()
+
     stateTransition.sign(privateKey, identityPublicKey)
   })
 
@@ -266,6 +269,9 @@ describe('Contested Resources', () => {
     const vote = sdk.voting.createVote(dataContactId, documentTypeName, indexName, indexValues, choice)
     const stateTransition = sdk.voting.createStateTransition(vote, proTxHash, voterIdentity.id, identityNonce + BigInt(1))
 
+    // test key disabled
+    identityPublicKey.removeDisabledAt()
+
     stateTransition.sign(privateKey, identityPublicKey)
   })
 
@@ -286,6 +292,9 @@ describe('Contested Resources', () => {
 
     const vote = sdk.voting.createVote(dataContactId, documentTypeName, indexName, indexValues, choice)
     const stateTransition = sdk.voting.createStateTransition(vote, proTxHash, voterIdentity.id, identityNonce + BigInt(1))
+
+    // test key disabled
+    identityPublicKey.removeDisabledAt()
 
     stateTransition.sign(privateKey, identityPublicKey)
   })

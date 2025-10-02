@@ -5044,10 +5044,10 @@ prop-types@^15.8.1:
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
-pshenmic-dpp@1.1.0-dev.5:
-  version "1.1.0-dev.5"
-  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.1.0-dev.5.tgz#a7a72bf715a6638fa59b3e3c10e6e88c4c52670d"
-  integrity sha512-ARrtXKVbSQIPFzIxbrLBANpoUIjmF/DKrD0uc0Rie0xeg4MgTTnoBZOocrKjcguj2Gxh46fJjgweccIA2af33g==
+pshenmic-dpp@1.1.0-dev.6:
+  version "1.1.0-dev.6"
+  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.1.0-dev.6.tgz#a8a04ffb49610a060b700cb88f5490dfd1c51f74"
+  integrity sha512-ULaAwjT4GaacO46lYLSDhNAt7OxQSdCr4/XSJZ08AAE4FKClA/UBk3LGKMc2leHLsiFVLCXG/k479JGasOHS8w==
   dependencies:
     fflate "^0.8.2"
 
