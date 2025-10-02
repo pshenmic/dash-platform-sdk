@@ -238,4 +238,9 @@ export interface TokenTotalSupply {
   totalAggregatedAmountInUserAccounts: bigint
 }
 
+export interface TokenDirectPurchasePrices {
+  tokenId: IdentifierWASM
+  price: TokenPricingScheduleWASM
+}
+
 export type ResourceVoteChoice = IdentifierLike | 'lock' | 'abstain'
