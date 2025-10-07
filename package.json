@@ -8,6 +8,9 @@
       "proto"
     ]
   },
+  "browserslist": [
+    "defaults"
+  ],
   "engines": {
     "node": ">=20.19.0 <=24"
   },
@@ -51,6 +54,7 @@
     "@scure/base": "^1.2.4",
     "@scure/bip32": "^2.0.0",
     "@scure/bip39": "^2.0.0",
+    "@scure/btc-signer": "^2.0.1",
     "cbor-x": "^1.6.0",
     "pshenmic-dpp": "1.1.0-dev.6"
   }

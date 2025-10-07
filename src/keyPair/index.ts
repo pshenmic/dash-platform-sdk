@@ -3,6 +3,12 @@ import mnemonicToSeed from './mnemonicToSeed'
 import deriveChild from './deriveChild'
 import derivePath from './derivePath'
 import { Network } from '../types'
+import { p2pkh } from '@scure/btc-signer'
+
+const DASH_VERSIONS = {
+  mainnet: { pubKeyHash: 0x4c, scriptHash: 0x10, bech32: 'dc', wif: 0xcc, private: 0x0488ade4, public: 0x0488b21e },
+  testnet: { pubKeyHash: 0x8c, scriptHash: 0x13, bech32: 'dc', wif: 0xef, private: 0x04358394, public: 0x043587cf }
+}
 
 /**
  * Collection of functions to work with private keys and seed phrases
@@ -16,20 +22,22 @@ export class KeyPairController {
    * @param mnemonic {string} - The BIP39 mnemonic phrase.
    * @param salt {string=} -  Optional salt for seed derivation.
    *
-   * @return {Promise<Uint8Array>} Seed bytes
+   * @return {Uint8Array} Seed bytes
    */
-  async mnemonicToSeed (mnemonic: string, salt?: string): Promise<Uint8Array> {
-    return await mnemonicToSeed(mnemonic, salt)
+  mnemonicToSeed (mnemonic: string, salt?: string): Uint8Array {
+    return mnemonicToSeed(mnemonic, salt)
   }
 
   /**
    * Returns seed from mnemonic phrase
    *
-   * @return {HDKey} HDKey
    * @param seed {Uint8Array}
+   * @param network {Network} network
+   *
+   * @return {HDKey} HDKey
    */
-  seedToHdKey (seed: Uint8Array): HDKey {
-    return HDKey.fromMasterSeed(seed)
+  seedToHdKey (seed: Uint8Array, network: Network = 'mainnet'): HDKey {
+    return HDKey.fromMasterSeed(seed, DASH_VERSIONS[network])
   }
 
   /**
@@ -66,5 +74,15 @@ export class KeyPairController {
     const pathPostfix = `/5'/0'/0'/${identityIndex}'/${keyIndex}'`
 
     return derivePath(hdKey, `m/9'/${networkIndex}'${pathPostfix}`)
+  }
+
+  /**
+   * Returns address
+   *
+   */
+  p2pkhAddress (publicKey: Uint8Array, network: Network): string {
+    const P2PKH = p2pkh(publicKey, DASH_VERSIONS[network])
+
+    return P2PKH.address
   }
 }
