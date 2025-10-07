@@ -1,7 +1,7 @@
 import { DataContractWASM, PlatformVersionWASM, PrivateKeyWASM } from 'pshenmic-dpp'
 import stringToIndexValueBytes from '../../src/utils/stringToIndexValueBytes'
-import {DashPlatformSDK} from "../../src/DashPlatformSDK";
-import {ContestedStateResultType, ResourceVoteChoice} from "../../src/types";
+import { DashPlatformSDK } from '../../src/DashPlatformSDK'
+import { ContestedStateResultType, ResourceVoteChoice } from '../../src/types'
 
 let sdk: DashPlatformSDK
 let contract: DataContractWASM
