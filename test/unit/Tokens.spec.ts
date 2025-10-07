@@ -1,5 +1,5 @@
-import { DashPlatformSDK } from '../../src/types'
-import { PrivateKeyWASM, StateTransitionWASM, TokenBaseTransitionWASM, TokenEmergencyActionWASM } from 'pshenmic-dpp'
+import { StateTransitionWASM, TokenBaseTransitionWASM, TokenEmergencyActionWASM } from 'pshenmic-dpp'
+import {DashPlatformSDK} from "../../src/DashPlatformSDK";
 
 let sdk: DashPlatformSDK
 

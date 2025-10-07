@@ -19,7 +19,7 @@ describe('DPNS names', () => {
   })
 
   test('should be able to search names by DPNS name', async () => {
-    const documents = await sdk.names.searchByName('cryptofan.dash')
+    const documents = await sdk.names.searchByName('xyz.dash')
 
     expect(documents?.length).toEqual(1)
     expect(documents[0]).toEqual(expect.any(DocumentWASM))

@@ -3,8 +3,7 @@ import {
   IdentityWASM, KeyType,
   PrivateKeyWASM, Purpose, SecurityLevel
 } from 'pshenmic-dpp'
-import { DashPlatformSDK } from '../../dist/bundle.js'
-import { IdentityPublicKeyInCreation } from '../../src/types'
+import {DashPlatformSDK, IdentityPublicKeyInCreation} from '../../src/types'
 let sdk: DashPlatformSDK
 
 describe('Identity', () => {
