@@ -60,7 +60,7 @@ export class DashPlatformSDK {
       throw new Error('If options is passed, network must be set (either mainnet or testnet)')
     }
 
-    this.network = options?.network ?? 'testnet'
+    this.network = options?.network ?? 'mainnet'
     this.signer = options?.signer
     this.options = options
 
