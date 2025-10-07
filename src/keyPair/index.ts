@@ -65,8 +65,16 @@ export class KeyPairController {
   }
 
   /**
-   * Returns seed from mnemonic phrase
+   * Derives an {HDKey} child by identity index and key index from an {HDKey}
    *
+   * Usually used to get a identity private key from seed
+   *
+   * @param hdKey {HDKey}
+   * @param identityIndex {number}
+   * @param keyIndex {number}
+   * @param network {Network}
+   *
+   * @returns {HDKey}
    */
   deriveIdentityPrivateKey (hdKey: HDKey, identityIndex: number, keyIndex: number, network: Network): HDKey {
     const networkIndex = network === 'mainnet' ? 5 : 1
@@ -77,8 +85,12 @@ export class KeyPairController {
   }
 
   /**
-   * Returns address
+   * Converts {PublicKey} to a Dash network address (P2PKH)
    *
+   * @param publicKey {Uint8Array}
+   * @param network {Network}
+   *
+   * @returns {string}
    */
   p2pkhAddress (publicKey: Uint8Array, network: Network): string {
     const P2PKH = p2pkh(publicKey, DASH_VERSIONS[network])
