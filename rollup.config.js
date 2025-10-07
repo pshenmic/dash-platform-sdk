@@ -1,8 +1,6 @@
 import resolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
-import { bundleStats } from 'rollup-plugin-bundle-stats'
-import { terser } from 'rollup-plugin-terser'
-// import babel from 'rollup-plugin-babel'
+import terser from '@rollup/plugin-terser'
 
 export default [
   {
@@ -51,8 +49,7 @@ export default [
         nameCache: null, // or specify a name cache object
         safari10: false,
         toplevel: false
-      }),
-      bundleStats()
+      })
     ]
   }
 ]
