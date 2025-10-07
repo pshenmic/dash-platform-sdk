@@ -1,13 +1,18 @@
-import { sha256 as sha256Func } from 'hash.js'
-import hexToBytes from './hexToBytes'
 import { IdentifierWASM } from 'pshenmic-dpp'
+import sha256 from './sha256'
+import bytesToHex from './bytesToHex'
+import hexToBytes from './hexToBytes'
 
-export function createVoterIdentityId (proTxHash: string, publicKeyHash: string): IdentifierWASM {
-  const hash = sha256Func().update(hexToBytes(proTxHash))
+export async function createVoterIdentityId (proTxHash: string, publicKeyHash: string): Promise<IdentifierWASM> {
+  const proTxHashBytes = hexToBytes(proTxHash)
+  const publicKeyHashBytes = hexToBytes(publicKeyHash)
 
-  hash.update(hexToBytes(publicKeyHash))
+  const mergedArray = new Uint8Array(proTxHashBytes.length + publicKeyHashBytes.length)
 
-  const voterHex = hash.digest('hex')
+  mergedArray.set(proTxHashBytes)
+  mergedArray.set(publicKeyHashBytes, proTxHashBytes.length)
 
-  return IdentifierWASM.fromHex(voterHex)
+  const voterIdentifierBytes = await sha256(mergedArray) as Uint8Array
+
+  return IdentifierWASM.fromHex(bytesToHex(voterIdentifierBytes))
 }

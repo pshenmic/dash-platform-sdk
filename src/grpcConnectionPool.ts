@@ -1,9 +1,35 @@
-import getRandomArrayItem from './utils/getRandomArrayItem'
-import { Channel, Client, createChannel, createClient } from 'nice-grpc-web'
-import { GetStatusRequest, GetStatusResponse, PlatformDefinition } from '../proto/generated/platform'
+import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
+import { PlatformClient } from '../proto/generated/platform.client'
 import getEvonodeList from './utils/getEvonodeList'
-import { GRPC_DEFAULT_POOL_LIMIT } from './constants'
-import { GRPCOptions } from './DashPlatformSDK'
+import { GetStatusRequest } from '../proto/generated/platform'
+import getRandomArrayItem from './utils/getRandomArrayItem'
+import { Network } from './types'
+
+const GRPC_DEFAULT_POOL_LIMIT = 5
+export type MasternodeList = Record<string, MasternodeInfo>
+export interface GRPCOptions {
+  poolLimit: 5
+  dapiUrl?: string | string[]
+}
+
+export interface MasternodeInfo {
+  proTxHash: string
+  address: string
+  payee: string
+  status: string
+  type: string
+  platformNodeID: string
+  platformP2PPort: number
+  platformHTTPPort: number
+  pospenaltyscore: number
+  consecutivePayments: number
+  lastpaidtime: number
+  lastpaidblock: number
+  owneraddress: string
+  votingaddress: string
+  collateraladdress: string
+  pubkeyoperator: string
+}
 
 const seedNodes = {
   testnet: [
@@ -20,11 +46,18 @@ const seedNodes = {
   ]
 }
 
-export default class GRPCConnectionPool {
-  channels: Channel[]
-  network: string
+const createClient = (url: string, abortController?: AbortController): PlatformClient => {
+  return new PlatformClient(new GrpcWebFetchTransport({
+    baseUrl: url,
+    abort: abortController?.signal
+  }))
+}
 
-  constructor (network: 'testnet' | 'mainnet', grpcOptions?: GRPCOptions) {
+export default class GRPCConnectionPool {
+  dapiUrls: string[]
+  network: Network
+
+  constructor (network: Network, grpcOptions?: GRPCOptions) {
     const grpcPoolLimit = grpcOptions?.poolLimit ?? GRPC_DEFAULT_POOL_LIMIT
 
     this.network = network
@@ -32,15 +65,15 @@ export default class GRPCConnectionPool {
     this._initialize(network, grpcPoolLimit, grpcOptions?.dapiUrl).catch(console.error)
   }
 
-  async _initialize (network: 'testnet' | 'mainnet', poolLimit: number, dapiUrl?: string | string[]): Promise<void> {
+  async _initialize (network: Network, poolLimit: number, dapiUrl?: string | string[]): Promise<void> {
     if (typeof dapiUrl === 'string') {
-      this.channels = [createChannel(dapiUrl)]
+      this.dapiUrls = [dapiUrl]
 
       return
     }
 
     if (Array.isArray(dapiUrl)) {
-      this.channels = dapiUrl.map(dapiUrl => createChannel(dapiUrl))
+      this.dapiUrls = dapiUrl
 
       return
     }
@@ -50,7 +83,7 @@ export default class GRPCConnectionPool {
     }
 
     // Add default seed nodes
-    this.channels = (seedNodes[network].map((dapiUrl: string) => createChannel(dapiUrl)))
+    this.dapiUrls = seedNodes[network]
 
     // retrieve last evonodes list
     const evonodeList = await getEvonodeList(network)
@@ -67,26 +100,26 @@ export default class GRPCConnectionPool {
 
     // healthcheck nodes
     for (const url of networkDAPIUrls) {
-      if (this.channels.length > poolLimit) {
+      if (this.dapiUrls.length > poolLimit) {
         break
       }
 
       try {
-        const channel = createChannel(url)
-        const client = createClient(PlatformDefinition, channel)
-        const response: GetStatusResponse = await client.getStatus(GetStatusRequest.fromPartial({ v0: {} }))
-        const { v0 } = response
+        const client = createClient(url)
 
-        if (v0?.chain != null) {
-          this.channels.push(createChannel(url))
+        const { response } = await client.getStatus(GetStatusRequest.create({}))
+
+        if (response.version.oneofKind === 'v0' && response.version.v0.chain != null) {
+          this.dapiUrls.push(url)
         }
       } catch (e) {
       }
     }
   }
 
-  getClient (): Client<PlatformDefinition> {
-    const channel = getRandomArrayItem(this.channels)
-    return createClient(PlatformDefinition, channel)
+  getClient (abortController?: AbortController): PlatformClient {
+    const dapiUrl = getRandomArrayItem(this.dapiUrls)
+
+    return createClient(dapiUrl, abortController)
   }
 }

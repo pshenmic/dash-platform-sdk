@@ -3,13 +3,12 @@ import {
   IdentityWASM, KeyType,
   PrivateKeyWASM, Purpose, SecurityLevel
 } from 'pshenmic-dpp'
-import { DashPlatformSDK } from '../../src/DashPlatformSDK'
-import { IdentityPublicKeyInCreation } from '../../src/types'
+import { DashPlatformSDK, IdentityPublicKeyInCreation } from '../../src/types'
 let sdk: DashPlatformSDK
 
 describe('Identity', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK()
+    sdk = new DashPlatformSDK({network: 'testnet'})
   })
 
   test('should be able to get identity by identifier', async () => {
@@ -44,7 +43,7 @@ describe('Identity', () => {
   })
 
   test('should be able to get identity nonce', async () => {
-    const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+    const identifier = '34vkjdeUTP2z798SiXqoB6EAuobh51kXYURqVa9xkujf'
 
     const identityNonce = await sdk.identities.getIdentityNonce(identifier)
 

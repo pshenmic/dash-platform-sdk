@@ -1,8 +1,5 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
-import {
-  GetTokenContractInfoRequest,
-  GetTokenContractInfoResponse_GetTokenContractInfoResponseV0
-} from '../../proto/generated/platform'
+import { GetTokenContractInfoRequest } from '../../proto/generated/platform'
 import { IdentifierLike } from '../types'
 import { IdentifierWASM, PlatformVersionWASM, verifyTokenContractInfoProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
@@ -17,20 +14,31 @@ export interface TokenContractInfo {
 export default async function getTokenContractInfo (grpcPool: GRPCConnectionPool, tokenIdentifier: IdentifierLike): Promise<TokenContractInfo> {
   const tokenId = new IdentifierWASM(tokenIdentifier)
 
-  const request = GetTokenContractInfoRequest.fromPartial({
-    v0: {
-      tokenId: (tokenId).bytes(),
-      prove: true
+  const getTokenContractInfoRequest = GetTokenContractInfoRequest.create({
+    version: {
+      oneofKind: 'v0',
+      v0: {
+        tokenId: (tokenId).bytes(),
+        prove: true
+      }
     }
   })
 
-  const { v0 } = await grpcPool.getClient().getTokenContractInfo(request)
+  const { response } = await grpcPool.getClient().getTokenContractInfo(getTokenContractInfoRequest)
 
-  const { proof, metadata } = v0 as GetTokenContractInfoResponse_GetTokenContractInfoResponseV0
+  const { version } = response
 
-  if (proof == null) {
-    throw new Error('Proof not found')
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
   }
+
+  const { v0 } = version
+
+  if (v0.result.oneofKind !== 'proof') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+  }
+
+  const { result: { proof }, metadata } = v0
 
   if (metadata == null) {
     throw new Error('Metadata not found')
@@ -52,7 +60,7 @@ export default async function getTokenContractInfo (grpcPool: GRPCConnectionPool
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')

@@ -1,8 +1,11 @@
 {
   "compilerOptions": {
     "outDir": "dist",
+    "rootDir": ".",
     "allowJs": false,
-    "target": "es5",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "declaration": true,
     "strictNullChecks": true,
     "emitDeclarationOnly": false
@@ -12,5 +15,10 @@
     "./src/**/*",
     "./types/**/*",
     "./test/**/*",
+    "./node_modules/@scure/bip32/node_modules/@scure/base/index.ts",
+    "./node_modules/@scure/bip39/node_modules/@scure/base/index.ts",
+    "./node_modules/micro-packed/node_modules/@scure/base/index.ts",
+    "./node_modules/@scure/btc-signer/node_modules/@scure/base/index.ts",
+    "./node_modules/@scure/bip32/index.ts"
   ]
 }

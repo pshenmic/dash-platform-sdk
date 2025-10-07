@@ -4,7 +4,7 @@ let sdk: DashPlatformSDK
 
 describe('DashPlatformSDK', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK()
+    sdk = new DashPlatformSDK({network: 'testnet'})
   })
 
   test('should be constructable throw `new`', () => {

@@ -1,6 +1,6 @@
 import sha256 from './sha256'
 
-export default function signRequestId (prefix: string, height: bigint, round: number): Uint8Array {
+export default async function signRequestId (prefix: string, height: bigint, round: number): Promise<Uint8Array> {
   const prefixBytes = new TextEncoder().encode(prefix)
 
   // len + i64 + i32 (prefix length + 8 bytes for height + 4 bytes for round)
@@ -22,5 +22,5 @@ export default function signRequestId (prefix: string, height: bigint, round: nu
   // Write round as 32-bit little-endian integer
   view.setInt32(offset, round, true)
 
-  return sha256(uint8View) as Uint8Array
+  return await sha256(uint8View) as Uint8Array
 }

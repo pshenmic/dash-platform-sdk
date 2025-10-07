@@ -1,6 +1,6 @@
-import { MasternodeList } from '../types'
+import { MasternodeList, Network } from '../types'
 
-export default async function getDAPINodeList (network: 'testnet' | 'mainnet'): Promise<MasternodeList> {
+export default async function getDAPINodeList (network: Network): Promise<MasternodeList> {
   const url = `https://${network === 'mainnet' ? '' : 'testnet.'}platform-explorer.pshenmic.dev/validators?isActive=true`
 
   const resp = await fetch(url)

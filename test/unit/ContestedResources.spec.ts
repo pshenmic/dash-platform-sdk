@@ -1,6 +1,7 @@
 import { DataContractWASM, PlatformVersionWASM, PrivateKeyWASM } from 'pshenmic-dpp'
-import { DashPlatformSDK, ContestedStateResultType, ResourceVoteChoice } from '../../src/types'
 import stringToIndexValueBytes from '../../src/utils/stringToIndexValueBytes'
+import { DashPlatformSDK } from '../../src/DashPlatformSDK'
+import { ContestedStateResultType, ResourceVoteChoice } from '../../src/types'
 
 let sdk: DashPlatformSDK
 let contract: DataContractWASM
@@ -232,11 +233,12 @@ describe('Contested Resources', () => {
     const documentTypeName = 'domain'
     const indexName = 'parentNameAndLabel'
     const indexValues = ['dash', sdk.names.normalizeLabel('testidentity')]
-    const proTxHash = '559db949f305ae7ca1f2c3fafbde707a5adcb9ef7d53f99df4600d72b6bab965'
+    const proTxHash = 'd9b090cfc19caf2e27d512e69c43812a274bdf29c081d0ade4fd272ad56a5f89'
     const choice: ResourceVoteChoice = 'CKKYnVeKoxCbvuEhiT6MDoQaRyXgDECwtxoKL5cqucZE'
-    const privateKey = PrivateKeyWASM.fromHex('bf175afa03d3b3647e3480bb1feffb9d4a76c1e40eb2c2b0f8b5884b42dbe955', 'testnet')
+    const privateKey = PrivateKeyWASM.fromWIF('cPGCETHtoevguQoyTSdsowCEF91yqhrcikcvBNK2CuTwpSLV7m9Z')
 
-    const voterIdentifier = sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    const voterIdentifier = await sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    expect(voterIdentifier.base58()).toEqual('HqfLeB9PLg3t9CL25tRNkEDPjAnDaHAMmthRNe8ucn8q')
     const voterIdentity = await sdk.identities.getIdentityByIdentifier(voterIdentifier)
 
     const [identityPublicKey] = voterIdentity.getPublicKeys().filter(identityPublicKey => privateKey.getPublicKeyHash() === identityPublicKey.getPublicKeyHash())
@@ -256,11 +258,12 @@ describe('Contested Resources', () => {
     const documentTypeName = 'domain'
     const indexName = 'parentNameAndLabel'
     const indexValues = ['dash', sdk.names.normalizeLabel('testidentity')]
-    const proTxHash = '559db949f305ae7ca1f2c3fafbde707a5adcb9ef7d53f99df4600d72b6bab965'
+    const proTxHash = 'd9b090cfc19caf2e27d512e69c43812a274bdf29c081d0ade4fd272ad56a5f89'
     const choice: ResourceVoteChoice = 'abstain'
-    const privateKey = PrivateKeyWASM.fromHex('bf175afa03d3b3647e3480bb1feffb9d4a76c1e40eb2c2b0f8b5884b42dbe955', 'testnet')
+    const privateKey = PrivateKeyWASM.fromWIF('cPGCETHtoevguQoyTSdsowCEF91yqhrcikcvBNK2CuTwpSLV7m9Z')
 
-    const voterIdentifier = sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    const voterIdentifier = await sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    expect(voterIdentifier.base58()).toEqual('HqfLeB9PLg3t9CL25tRNkEDPjAnDaHAMmthRNe8ucn8q')
     const voterIdentity = await sdk.identities.getIdentityByIdentifier(voterIdentifier)
 
     const [identityPublicKey] = voterIdentity.getPublicKeys().filter(identityPublicKey => privateKey.getPublicKeyHash() === identityPublicKey.getPublicKeyHash())
@@ -280,11 +283,12 @@ describe('Contested Resources', () => {
     const documentTypeName = 'domain'
     const indexName = 'parentNameAndLabel'
     const indexValues = ['dash', sdk.names.normalizeLabel('testidentity')]
-    const proTxHash = '559db949f305ae7ca1f2c3fafbde707a5adcb9ef7d53f99df4600d72b6bab965'
+    const proTxHash = 'd9b090cfc19caf2e27d512e69c43812a274bdf29c081d0ade4fd272ad56a5f89'
     const choice: ResourceVoteChoice = 'lock'
-    const privateKey = PrivateKeyWASM.fromHex('bf175afa03d3b3647e3480bb1feffb9d4a76c1e40eb2c2b0f8b5884b42dbe955', 'testnet')
+    const privateKey = PrivateKeyWASM.fromWIF('cPGCETHtoevguQoyTSdsowCEF91yqhrcikcvBNK2CuTwpSLV7m9Z')
 
-    const voterIdentifier = sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    const voterIdentifier = await sdk.voting.createVoterIdentityId(proTxHash, privateKey.getPublicKeyHash())
+    expect(voterIdentifier.base58()).toEqual('HqfLeB9PLg3t9CL25tRNkEDPjAnDaHAMmthRNe8ucn8q')
     const voterIdentity = await sdk.identities.getIdentityByIdentifier(voterIdentifier)
 
     const [identityPublicKey] = voterIdentity.getPublicKeys().filter(identityPublicKey => privateKey.getPublicKeyHash() === identityPublicKey.getPublicKeyHash())

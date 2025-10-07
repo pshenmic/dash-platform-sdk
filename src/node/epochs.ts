@@ -1,12 +1,10 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
-import {
-  GetEpochsInfoRequest,
-  GetEpochsInfoResponse_GetEpochsInfoResponseV0
-} from '../../proto/generated/platform'
+import { GetEpochsInfoRequest } from '../../proto/generated/platform'
 import { PlatformVersionWASM, verifyEpochsInfoProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
+import { UInt32Value } from '../../proto/generated/google/protobuf/wrappers'
 
 export interface EpochInfo {
   number: number
@@ -18,22 +16,33 @@ export interface EpochInfo {
 }
 
 export default async function epochs (grpcPool: GRPCConnectionPool, count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
-  const request = GetEpochsInfoRequest.fromPartial({
-    v0: {
-      startEpoch: start,
-      count,
-      ascending,
-      prove: true
+  const getEpochsInfoRequest = GetEpochsInfoRequest.create({
+    version: {
+      oneofKind: 'v0',
+      v0: {
+        startEpoch: start != null ? UInt32Value.create({ value: start }) : undefined,
+        count,
+        ascending,
+        prove: true
+      }
     }
   })
 
-  const { v0 } = await grpcPool.getClient().getEpochsInfo(request)
+  const { response } = await grpcPool.getClient().getEpochsInfo(getEpochsInfoRequest)
 
-  const { proof, metadata } = v0 as GetEpochsInfoResponse_GetEpochsInfoResponseV0
+  const { version } = response
 
-  if (proof == null) {
-    throw new Error('Proof not found')
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
   }
+
+  const { v0 } = version
+
+  if (v0.result.oneofKind !== 'proof') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+  }
+
+  const { result: { proof }, metadata } = v0
 
   if (metadata == null) {
     throw new Error('Metadata not found')
@@ -52,7 +61,7 @@ export default async function epochs (grpcPool: GRPCConnectionPool, count: numbe
   )
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')

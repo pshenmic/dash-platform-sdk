@@ -1,24 +1,35 @@
-import {
-  GetDocumentsResponse_GetDocumentsResponseV0,
-  GetTotalCreditsInPlatformRequest
-} from '../../proto/generated/platform'
+import { GetTotalCreditsInPlatformRequest } from '../../proto/generated/platform'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import { HALVING_INTERVAL, MAINNET_ACTIVATION_HEIGHT, TESTNET_ACTIVATION_HEIGHT } from '../constants'
 import { PlatformVersionWASM, verifyTotalCreditsProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import bytesToHex from '../utils/bytesToHex'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
+import { Network } from '../types'
 
-export default async function totalCredits (grpcPool: GRPCConnectionPool, network: 'testnet' | 'mainnet'): Promise<bigint> {
-  const request = GetTotalCreditsInPlatformRequest.fromPartial({ v0: { prove: true } })
+export default async function totalCredits (grpcPool: GRPCConnectionPool, network: Network): Promise<bigint> {
+  const getTotalCreditsInPlatformRequest = GetTotalCreditsInPlatformRequest.create({
+    version: {
+      oneofKind: 'v0',
+      v0: { prove: true }
+    }
+  })
 
-  const { v0 } = await grpcPool.getClient().getTotalCreditsInPlatform(request)
+  const { response } = await grpcPool.getClient().getTotalCreditsInPlatform(getTotalCreditsInPlatformRequest)
 
-  const { proof, metadata } = v0 as GetDocumentsResponse_GetDocumentsResponseV0
+  const { version } = response
 
-  if (proof == null) {
-    throw new Error('Proof not found')
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
   }
+
+  const { v0 } = version
+
+  if (v0.result.oneofKind !== 'proof') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+  }
+
+  const { result: { proof }, metadata } = v0
 
   if (metadata == null) {
     throw new Error('Metadata not found')
@@ -36,7 +47,7 @@ export default async function totalCredits (grpcPool: GRPCConnectionPool, networ
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')

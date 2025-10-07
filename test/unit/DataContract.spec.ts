@@ -1,7 +1,4 @@
-import {
-  DataContractWASM,
-  StateTransitionWASM
-} from 'pshenmic-dpp'
+import { DataContractWASM, StateTransitionWASM } from 'pshenmic-dpp'
 import { DashPlatformSDK, DataContractConfig } from '../../src/types'
 
 let sdk: DashPlatformSDK
@@ -13,7 +10,7 @@ let schema: object
 
 describe('DataContract', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK()
+    sdk = new DashPlatformSDK({network: 'testnet'})
 
     ownerIdentifier = 'GARSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
     identityNonce = BigInt(11)

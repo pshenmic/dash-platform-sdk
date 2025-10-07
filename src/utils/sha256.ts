@@ -1,11 +1,17 @@
-import { sha256 as sha256Func } from 'hash.js'
+import bytesToHex from './bytesToHex'
+import { typedArrayToBuffer } from './bytesToTypedArray'
 
-export default function sha256 (input: Uint8Array | string): Uint8Array | string {
-  const hash = sha256Func().update(input)
-
+export default async function sha256 (input: Uint8Array | string): Promise<Uint8Array | string> {
   if (typeof input === 'string') {
-    return hash.digest('hex')
+    const encoder = new TextEncoder()
+    const data = encoder.encode(input)
+    const hash = await crypto.subtle.digest('SHA-256', data)
+
+    return bytesToHex(new Uint8Array(hash))
   } else {
-    return Uint8Array.from(hash.digest())
+    const arrayBuffer: ArrayBuffer = typedArrayToBuffer(input)
+    const hash = await crypto.subtle.digest('SHA-256', arrayBuffer)
+
+    return new Uint8Array(hash)
   }
 }

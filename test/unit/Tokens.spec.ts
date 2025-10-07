@@ -1,11 +1,11 @@
-import { DashPlatformSDK } from '../../src/types'
 import { StateTransitionWASM, TokenBaseTransitionWASM, TokenEmergencyActionWASM } from 'pshenmic-dpp'
+import { DashPlatformSDK } from '../../src/DashPlatformSDK'
 
 let sdk: DashPlatformSDK
 
 describe('Tokens', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK()
+    sdk = new DashPlatformSDK({network: 'testnet'})
   })
 
   test('should be able to get token total supply', async () => {

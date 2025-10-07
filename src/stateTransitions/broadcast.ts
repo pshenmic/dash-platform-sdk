@@ -7,7 +7,7 @@ export default async function broadcast (grpcPool: GRPCConnectionPool, stateTran
     throw new Error('State Transition is not signed')
   }
 
-  const broadcastStateTransitionRequest = BroadcastStateTransitionRequest.fromPartial({
+  const broadcastStateTransitionRequest = BroadcastStateTransitionRequest.create({
     stateTransition: stateTransition.bytes()
   })
 

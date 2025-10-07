@@ -1,8 +1,5 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
-import {
-  GetTokenTotalSupplyRequest,
-  GetTokenTotalSupplyResponse_GetTokenTotalSupplyResponseV0
-} from '../../proto/generated/platform'
+import { GetTokenTotalSupplyRequest } from '../../proto/generated/platform'
 import { IdentifierLike, TokenTotalSupply } from '../types'
 import { IdentifierWASM, PlatformVersionWASM, verifyTokenTotalSupplyProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
@@ -12,20 +9,31 @@ import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 export default async function getTokenTotalSupply (grpcPool: GRPCConnectionPool, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
   const tokenId = new IdentifierWASM(tokenIdentifier)
 
-  const request = GetTokenTotalSupplyRequest.fromPartial({
-    v0: {
-      tokenId: (tokenId).bytes(),
-      prove: true
+  const getTokenTotalSupplyRequest = GetTokenTotalSupplyRequest.create({
+    version: {
+      oneofKind: 'v0',
+      v0: {
+        tokenId: (tokenId).bytes(),
+        prove: true
+      }
     }
   })
 
-  const { v0 } = await grpcPool.getClient().getTokenTotalSupply(request)
+  const { response } = await grpcPool.getClient().getTokenTotalSupply(getTokenTotalSupplyRequest)
 
-  const { proof, metadata } = v0 as GetTokenTotalSupplyResponse_GetTokenTotalSupplyResponseV0
+  const { version } = response
 
-  if (proof == null) {
-    throw new Error('Proof not found')
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
   }
+
+  const { v0 } = version
+
+  if (v0.result.oneofKind !== 'proof') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+  }
+
+  const { result: { proof }, metadata } = v0
 
   if (metadata == null) {
     throw new Error('Metadata not found')
@@ -43,7 +51,7 @@ export default async function getTokenTotalSupply (grpcPool: GRPCConnectionPool,
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')

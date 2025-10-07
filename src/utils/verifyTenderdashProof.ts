@@ -1,12 +1,11 @@
 import { CanonicalVote, Proof, ResponseMetadata, SignedMsgType, StateId } from '../../proto/generated/platform'
 import { calculateSignHash } from './calculateSignHash'
 import { calculateStateIdHash } from './calculateStateIdHash'
-// import verifyBls from './verifyBls'
 import { verifySignatureDigest } from 'pshenmic-dpp'
 import hexToBytes from './hexToBytes'
 
-export default function verifyTenderdashProof (proof: Proof, metadata: ResponseMetadata, rootHash: Uint8Array, quorumPublicKey: string): boolean {
-  const stateId = StateId.fromPartial({
+export default async function verifyTenderdashProof (proof: Proof, metadata: ResponseMetadata, rootHash: Uint8Array, quorumPublicKey: string): Promise<boolean> {
+  const stateId = StateId.create({
     appVersion: String(metadata.protocolVersion),
     coreChainLockedHeight: metadata.coreChainLockedHeight,
     time: metadata.timeMs,
@@ -14,9 +13,9 @@ export default function verifyTenderdashProof (proof: Proof, metadata: ResponseM
     height: metadata.height
   })
 
-  const stateIdHash = calculateStateIdHash(stateId)
+  const stateIdHash = await calculateStateIdHash(stateId)
 
-  const commit = CanonicalVote.fromPartial({
+  const commit = CanonicalVote.create({
     type: SignedMsgType.PRECOMMIT,
     blockId: proof.blockIdHash,
     chainId: metadata.chainId,
@@ -25,7 +24,7 @@ export default function verifyTenderdashProof (proof: Proof, metadata: ResponseM
     stateId: stateIdHash
   })
 
-  const signDigest = calculateSignHash(
+  const signDigest = await calculateSignHash(
     commit,
     metadata.chainId,
     proof.quorumType,

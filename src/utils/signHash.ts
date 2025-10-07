@@ -1,6 +1,6 @@
 import sha256 from './sha256'
 
-export default function signHash (quorumType: number, quorumHash: Uint8Array, requestId: Uint8Array, signBytesHash: Uint8Array): Uint8Array {
+export default async function signHash (quorumType: number, quorumHash: Uint8Array, requestId: Uint8Array, signBytesHash: Uint8Array): Promise<Uint8Array> {
   // Calculate total length: 1 byte for quorumType + 3 arrays of 32 bytes each
   const totalLength = 1 + quorumHash.length + requestId.length + signBytesHash.length
   const combined = new Uint8Array(totalLength)
@@ -25,5 +25,5 @@ export default function signHash (quorumType: number, quorumHash: Uint8Array, re
   const reversedSignBytesHash = new Uint8Array(signBytesHash).reverse()
   combined.set(reversedSignBytesHash, offset)
 
-  return sha256(sha256(combined)) as Uint8Array
+  return await sha256(await sha256(combined)) as Uint8Array
 }

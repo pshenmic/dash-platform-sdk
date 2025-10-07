@@ -1,6 +1,6 @@
 import getStatus from './status'
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { NodeStatus } from '../types'
+import { Network, NodeStatus } from '../types'
 import getEpochsInfo, { EpochInfo } from './epochs'
 import getTotalCredits from './totalCredits'
 
@@ -12,9 +12,9 @@ import getTotalCredits from './totalCredits'
 export class NodeController {
   /** @ignore **/
   grpcPool: GRPCConnectionPool
-  network: 'testnet' | 'mainnet'
+  network: Network
 
-  constructor (grpcPool: GRPCConnectionPool, network: 'testnet' | 'mainnet') {
+  constructor (grpcPool: GRPCConnectionPool, network: Network) {
     this.grpcPool = grpcPool
     this.network = network
   }

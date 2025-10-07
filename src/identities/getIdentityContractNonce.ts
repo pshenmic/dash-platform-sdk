@@ -1,7 +1,4 @@
-import {
-  GetIdentityContractNonceRequest,
-  GetIdentityContractNonceResponse_GetIdentityContractNonceResponseV0
-} from '../../proto/generated/platform'
+import { GetIdentityContractNonceRequest } from '../../proto/generated/platform'
 import { IdentifierLike } from '../types'
 import { IdentifierWASM, PlatformVersionWASM, verifyIdentityContractNonceProof } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool'
@@ -15,21 +12,32 @@ export default async function getIdentityContractNonce (grpcPool: GRPCConnection
   const identityIdentifier = new IdentifierWASM(identity)
   const dataContractIdentifier = new IdentifierWASM(dataContract)
 
-  const getIdentityContractNonceRequest = GetIdentityContractNonceRequest.fromPartial({
-    v0: {
-      identityId: identityIdentifier.bytes(),
-      contractId: dataContractIdentifier.bytes(),
-      prove: true
+  const getIdentityContractNonceRequest = GetIdentityContractNonceRequest.create({
+    version: {
+      oneofKind: 'v0',
+      v0: {
+        identityId: identityIdentifier.bytes(),
+        contractId: dataContractIdentifier.bytes(),
+        prove: true
+      }
     }
   })
 
-  const { v0 } = await grpcPool.getClient().getIdentityContractNonce(getIdentityContractNonceRequest)
+  const { response } = await grpcPool.getClient().getIdentityContractNonce(getIdentityContractNonceRequest)
 
-  const { proof, metadata } = v0 as GetIdentityContractNonceResponse_GetIdentityContractNonceResponseV0
+  const { version } = response
 
-  if (proof == null) {
-    throw new Error('Proof not found')
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
   }
+
+  const { v0 } = version
+
+  if (v0.result.oneofKind !== 'proof') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+  }
+
+  const { result: { proof }, metadata } = v0
 
   if (metadata == null) {
     throw new Error('Metadata not found')
@@ -46,7 +54,7 @@ export default async function getIdentityContractNonce (grpcPool: GRPCConnection
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')

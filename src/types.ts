@@ -7,25 +7,17 @@ import {
   TokenPricingScheduleWASM
 } from 'pshenmic-dpp'
 
-import { Versions } from 'dashhd'
-
 export { IdentifierWASM, IdentityWASM, DocumentWASM, DataContractWASM, StateTransitionWASM, IdentityPublicKeyWASM } from 'pshenmic-dpp'
 
 export type IdentifierLike = IdentifierWASM | string | Uint8Array
+
+export type Network = 'mainnet' | 'testnet'
 
 export { DashPlatformSDK } from './DashPlatformSDK'
 
 export type MasternodeList = Record<string, MasternodeInfo>
 
 export { AbstractSigner } from './signer/AbstractSigner'
-
-export interface WalletToIdentityKeyOpts {
-  network?: 'mainnet' | 'testnet'
-}
-
-export interface NetworkVersion {
-  version: Versions
-}
 
 export interface DocumentTransitionParams {
   identityContractNonce: bigint
@@ -66,19 +58,19 @@ export interface MasternodeInfo {
 
 export interface NodeStatus {
   version: {
-    software: {
+    software?: {
       dapi: string
       drive?:
       | string
       | undefined
       tenderdash?: string | undefined
     } | undefined
-    protocol: {
-      tenderdash: {
-        p2p: number
+    protocol?: {
+      tenderdash?: {
+        p2P: number
         block: number
       } | undefined
-      drive: {
+      drive?: {
         latest: number
         current: number
       } | undefined

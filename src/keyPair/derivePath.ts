@@ -1,6 +1,5 @@
-import { HDKey } from 'dashhd'
-import * as DashHD from 'dashhd'
+import { HDKey } from '@scure/bip32'
 
-export default async function derivePath (parent: HDKey, path: string): Promise<HDKey> {
-  return await DashHD.derivePath(parent, path)
+export default function derivePath (hdKey: HDKey, path: string): HDKey {
+  return hdKey.derive(path)
 }

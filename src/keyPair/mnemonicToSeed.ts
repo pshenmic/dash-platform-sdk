@@ -1,5 +1,5 @@
-import * as DashPhrase from 'dashphrase'
+import { mnemonicToSeedSync as func } from '@scure/bip39'
 
-export default async function mnemonicToSeed (mnemonic: string, salt?: string, verify?: boolean): Promise<Uint8Array> {
-  return DashPhrase.toSeed(mnemonic, salt, { verify })
+export default function mnemonicToSeed (mnemonic: string, salt?: string): Uint8Array {
+  return func(mnemonic, salt)
 }

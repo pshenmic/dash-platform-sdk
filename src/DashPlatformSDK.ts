@@ -11,6 +11,7 @@ import { ContestedResourcesController } from './contestedResources'
 import { TokensController } from './tokens'
 import { AbstractSigner } from './signer/AbstractSigner'
 import { VotingController } from './voting'
+import { Network } from './types'
 
 export interface GRPCOptions {
   poolLimit: 5
@@ -18,7 +19,7 @@ export interface GRPCOptions {
 }
 
 export interface SDKOptions {
-  network: 'testnet' | 'mainnet'
+  network: Network
   grpc?: GRPCOptions
   /** @deprecated Use {GRPCOptions} instead, will be removed in next major version **/
   dapiUrl?: string | string[]
@@ -29,7 +30,7 @@ export interface SDKOptions {
  * Javascript SDK for that let you interact with a Dash Platform blockchain
  */
 export class DashPlatformSDK {
-  network: 'testnet' | 'mainnet'
+  network: Network
   /** @ignore **/
   grpcPool: GRPCConnectionPool
   /** @ignore **/
@@ -59,7 +60,7 @@ export class DashPlatformSDK {
       throw new Error('If options is passed, network must be set (either mainnet or testnet)')
     }
 
-    this.network = options?.network ?? 'testnet'
+    this.network = options?.network ?? 'mainnet'
     this.signer = options?.signer
     this.options = options
 
@@ -84,7 +85,7 @@ export class DashPlatformSDK {
    * @param grpcPool
    * @param network
    */
-  _initialize (grpcPool: GRPCConnectionPool, network: 'testnet' | 'mainnet'): void {
+  _initialize (grpcPool: GRPCConnectionPool, network: Network): void {
     this.grpcPool = grpcPool
 
     this.stateTransitions = new StateTransitionsController(grpcPool)
@@ -117,7 +118,7 @@ export class DashPlatformSDK {
    *
    * @param network {string}
    */
-  setNetwork (network: 'testnet' | 'mainnet'): void {
+  setNetwork (network: Network): void {
     if (network !== 'testnet' && network !== 'mainnet') {
       throw new Error('Unknown network, should be mainnet or testnet')
     }

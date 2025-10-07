@@ -1,8 +1,5 @@
 import { DataContractWASM, IdentifierWASM, PlatformVersionWASM, verifyContractProof } from 'pshenmic-dpp'
-import {
-  GetDataContractRequest,
-  GetDataContractResponse_GetDataContractResponseV0
-} from '../../proto/generated/platform'
+import { GetDataContractRequest } from '../../proto/generated/platform'
 import { IdentifierLike } from '../types'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
@@ -17,20 +14,31 @@ export default async function getByIdentifier (grpcPool: GRPCConnectionPool, ide
     return DataContractWASM.fromBase64(DPNS_DATA_CONTRACT_BYTES, true, 9)
   }
 
-  const getDataContractRequest = GetDataContractRequest.fromPartial({
-    v0: {
-      id: id.bytes(),
-      prove: true
+  const getDataContractRequest = GetDataContractRequest.create({
+    version: {
+      oneofKind: 'v0',
+      v0: {
+        id: id.bytes(),
+        prove: true
+      }
     }
   })
 
-  const { v0 } = await grpcPool.getClient().getDataContract(getDataContractRequest)
+  const { response } = await grpcPool.getClient().getDataContract(getDataContractRequest)
 
-  const { proof, metadata } = v0 as GetDataContractResponse_GetDataContractResponseV0
+  const { version } = response
 
-  if (proof == null) {
-    throw new Error('Proof not found')
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
   }
+
+  const { v0 } = version
+
+  if (v0.result.oneofKind !== 'proof') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+  }
+
+  const { result: { proof }, metadata } = v0
 
   if (metadata == null) {
     throw new Error('Metadata not found')
@@ -47,7 +55,7 @@ export default async function getByIdentifier (grpcPool: GRPCConnectionPool, ide
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')

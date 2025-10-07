@@ -1,18 +1,25 @@
 import { NodeStatus } from '../types'
-import { GetStatusRequest, GetStatusResponse } from '../../proto/generated/platform'
+import { GetStatusRequest } from '../../proto/generated/platform'
 import GRPCConnectionPool from '../grpcConnectionPool'
 import bytesToHex from '../utils/bytesToHex'
 
 export default async function status (grpcPool: GRPCConnectionPool): Promise<NodeStatus> {
-  const getStatusRequest = GetStatusRequest.fromPartial({ v0: {} })
+  const getStatusRequest = GetStatusRequest.create({
+    version: {
+      oneofKind: 'v0',
+      v0: {}
+    }
+  })
 
-  const response: GetStatusResponse = await grpcPool.getClient().getStatus(getStatusRequest)
+  const { response } = await grpcPool.getClient().getStatus(getStatusRequest)
 
-  const { v0 } = response
+  const { version } = response
 
-  if (v0 == null) {
-    throw new Error('Unable to get node status')
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
   }
+
+  const { v0 } = version
 
   return {
     node: (v0.node != null)

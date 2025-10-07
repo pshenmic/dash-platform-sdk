@@ -1,6 +1,6 @@
 import sha256 from './sha256'
 
-export function calculateMsgHash (chainId: string, height: bigint, round: number, type: number, blockId: Uint8Array, stateId: Uint8Array): Uint8Array {
+export async function calculateMsgHash (chainId: string, height: bigint, round: number, type: number, blockId: Uint8Array, stateId: Uint8Array): Promise<Uint8Array> {
   const fixedSize = 4 + 8 + 8 + 32 + 32
   const chainIdBytes = new TextEncoder().encode(chainId)
   const totalSize = fixedSize + chainIdBytes.length
@@ -38,5 +38,5 @@ export function calculateMsgHash (chainId: string, height: bigint, round: number
   // Copy chainId bytes
   uint8View.set(chainIdBytes, offset)
 
-  return sha256(uint8View) as Uint8Array
+  return await sha256(uint8View) as Uint8Array
 }

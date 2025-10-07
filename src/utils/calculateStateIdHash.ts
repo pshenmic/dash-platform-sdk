@@ -1,13 +1,14 @@
 import { StateId } from '../../proto/generated/platform'
-import { BinaryWriter } from '@bufbuild/protobuf/wire'
 import sha256 from './sha256'
+import { BinaryWriter } from '@bufbuild/protobuf/wire'
 
-export function calculateStateIdHash (stateId: StateId): Uint8Array {
-  const encoded = StateId.encode(stateId).finish()
-
+export async function calculateStateIdHash (stateId: StateId): Promise<Uint8Array> {
   const writer = new BinaryWriter()
+
+  // @ts-expect-error
+  const encoded = StateId.internalBinaryWrite(stateId, writer, { writeUnknownFields: false }).finish()
 
   writer.bytes(encoded)
 
-  return sha256(writer.finish()) as Uint8Array
+  return await sha256(writer.finish()) as Uint8Array
 }
