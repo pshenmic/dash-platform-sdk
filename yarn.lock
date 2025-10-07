@@ -3358,6 +3358,11 @@ fdir@^6.2.0:
   resolved "https://registry.yarnpkg.com/fdir/-/fdir-6.5.0.tgz#ed2ab967a331ade62f18d077dae192684d50d350"
   integrity sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==
 
+fflate@^0.8.2:
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/fflate/-/fflate-0.8.2.tgz#fc8631f5347812ad6028bbe4a2308b2792aa1dea"
+  integrity sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==
+
 file-entry-cache@^6.0.1:
   version "6.0.1"
   resolved "https://registry.npmjs.org/file-entry-cache/-/file-entry-cache-6.0.1.tgz"
@@ -5152,10 +5157,12 @@ protoc@^32.1.0:
   resolved "https://registry.yarnpkg.com/protoc/-/protoc-32.1.0.tgz#c3e6230aca544de1e7d1fe44672f6a680218912a"
   integrity sha512-yICJJCGHJLM9ao5W2V4CGp1d7xuBsdHzgVDw6L8mdDtoIcqzN3arNPOm9Jx4Ufp5vfhQfJGkNUDo6mm/SLPdXw==
 
-pshenmic-dpp@1.1.0-dev.1:
-  version "1.1.0-dev.1"
-  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.1.0-dev.1.tgz#45c5ba3bbf79bf96379475c02a952eaff21df6ba"
-  integrity sha512-0izLfOnWRlQp6b7rfhxDAGRwvrrjcAaL3hih+Q60b+I/4unnJOs/zatCfYcF3b58+6nRm5jsVfwqXnyQbBH+uA==
+pshenmic-dpp@1.1.0-dev.6:
+  version "1.1.0-dev.6"
+  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.1.0-dev.6.tgz#a8a04ffb49610a060b700cb88f5490dfd1c51f74"
+  integrity sha512-ULaAwjT4GaacO46lYLSDhNAt7OxQSdCr4/XSJZ08AAE4FKClA/UBk3LGKMc2leHLsiFVLCXG/k479JGasOHS8w==
+  dependencies:
+    fflate "^0.8.2"
 
 punycode.js@^2.3.1:
   version "2.3.1"
