@@ -8,7 +8,7 @@ let sdk: DashPlatformSDK
 
 describe('Identity', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK({network: 'testnet'})
+    sdk = new DashPlatformSDK({ network: 'testnet' })
   })
 
   test('should be able to get identity by identifier', async () => {

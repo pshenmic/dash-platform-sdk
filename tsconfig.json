@@ -13,12 +13,6 @@
   "include": [
     "./index.ts",
     "./src/**/*",
-    "./types/**/*",
-    "./test/**/*",
-    "./node_modules/@scure/bip32/node_modules/@scure/base/index.ts",
-    "./node_modules/@scure/bip39/node_modules/@scure/base/index.ts",
-    "./node_modules/micro-packed/node_modules/@scure/base/index.ts",
-    "./node_modules/@scure/btc-signer/node_modules/@scure/base/index.ts",
-    "./node_modules/@scure/bip32/index.ts"
+    "./test/**/*"
   ]
 }

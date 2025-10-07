@@ -10,7 +10,7 @@ let data: object
 
 describe('Document', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK({network: 'testnet'})
+    sdk = new DashPlatformSDK({ network: 'testnet' })
     dataContract = '6QMfQTdKpC3Y9uWBcTwXeY3KdzRLDqASUsDnQ4MEc9XC'
     identity = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
     revision = BigInt(1)
