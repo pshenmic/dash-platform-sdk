@@ -1,5 +1,11 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
-import { IdentifierLike, TokenTotalSupply, TokenTransitionParams, TokenTransitionType } from '../types'
+import {
+  IdentifierLike,
+  TokenDirectPurchasePrices,
+  TokenTotalSupply,
+  TokenTransitionParams,
+  TokenTransitionType
+} from '../types'
 import getIdentitiesTokenBalances, { IdentitiesTokenBalances } from './getIdentitiesTokenBalances'
 import getIdentityTokensBalances, { IdentityTokenBalances } from './getIdentityTokensBalances'
 import getTokenContractInfo, { TokenContractInfo } from './getTokenContractInfo'
@@ -7,6 +13,7 @@ import getTokenTotalSupply from './getTokenTotalSupply'
 import createStateTransition from './createStateTransition'
 import { IdentifierWASM, StateTransitionWASM, TokenBaseTransitionWASM, TokenPricingScheduleWASM } from 'pshenmic-dpp'
 import getIdentityContractNonce from '../identities/getIdentityContractNonce'
+import getTokenDirectPurchasePrices from './getTokenDirectPurchasePrices'
 
 /**
  * Tokens controller for requesting information about tokens and tokens holders
@@ -65,6 +72,17 @@ export class TokensController {
    */
   async getTokenTotalSupply (tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
     return await getTokenTotalSupply(this.grpcPool, tokenIdentifier)
+  }
+
+  /**
+   * Retrieves a tokens prices
+   *
+   * @param tokenIdentifiers {IdentifierLike[]} - token ids which price we need
+   *
+   * @return {Promise<TokenDirectPurchasePrices[]>}
+   */
+  async getTokensDirectPurchasePrice (tokenIdentifiers: IdentifierLike[]): Promise<TokenDirectPurchasePrices[]> {
+    return await getTokenDirectPurchasePrices(this.grpcPool, tokenIdentifiers)
   }
 
   /**
