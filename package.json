@@ -46,7 +46,7 @@
     "docs": "typedoc"
   },
   "peerDependencies": {
-    "pshenmic-dpp": "1.1.0-dev.1"
+    "pshenmic-dpp": "1.1.0-dev.6"
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.6.0",

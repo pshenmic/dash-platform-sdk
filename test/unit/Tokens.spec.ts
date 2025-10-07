@@ -5,7 +5,7 @@ let sdk: DashPlatformSDK
 
 describe('Tokens', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK()
+    sdk = new DashPlatformSDK({network: 'testnet'})
   })
 
   test('should be able to get token total supply', async () => {

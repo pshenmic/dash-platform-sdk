@@ -4,7 +4,7 @@ let sdk: DashPlatformSDK
 
 describe('Node', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK()
+    sdk = new DashPlatformSDK({network: 'testnet'})
   })
 
   test('should be able to call getStatus', async () => {
