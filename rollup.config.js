@@ -14,7 +14,7 @@ export default [
     input: 'index.ts',
     output: {
       name: 'DashPlatformSDK',
-      file: 'dist/bundle.js',
+      file: 'dist/bundle.min.js',
       format: 'umd'
     },
     plugins: [
