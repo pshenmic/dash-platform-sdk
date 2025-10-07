@@ -59,7 +59,7 @@ jobs:
 
     - name: Generate GRPC client
       run: |
-        yarn build:grpc
+        npm run build:grpc
 
     - name: Run tests with npm
       run: |
@@ -86,13 +86,13 @@ jobs:
 #        node-version: ${{ matrix.node-version }}
 #        cache: "pnpm"
 
-    - name: Generate GRPC client
-      run: |
-        yarn build:grpc
-
     - name: Install dependencies
       run: |
         pnpm install
+
+    - name: Generate GRPC client
+      run: |
+        pnpm build:grpc
 
     - name: Run tests with npm
       run: |
