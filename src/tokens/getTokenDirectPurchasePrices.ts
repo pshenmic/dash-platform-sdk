@@ -1,30 +1,39 @@
 import GRPCConnectionPool from '../grpcConnectionPool'
 import { IdentifierLike, TokenDirectPurchasePrices } from '../types'
 import { IdentifierWASM, PlatformVersionWASM, verifyTokenDirectPurchasePrices } from 'pshenmic-dpp'
-import {
-  GetTokenDirectPurchasePricesRequest,
-  GetTokenDirectPurchasePricesResponse_GetTokenDirectPurchasePricesResponseV0
-} from '../../proto/generated/platform'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof'
 import bytesToHex from '../utils/bytesToHex'
+import { GetTokenDirectPurchasePricesRequest } from '../../proto/generated/platform'
 
 export default async function getTokenDirectPurchasePrices (grpcPool: GRPCConnectionPool, tokenIdentifiers: IdentifierLike[]): Promise<TokenDirectPurchasePrices[]> {
   const tokenIds = tokenIdentifiers.map(tokenId => new IdentifierWASM(tokenId).bytes())
 
-  const request = GetTokenDirectPurchasePricesRequest.fromPartial({
-    v0: {
-      tokenIds,
-      prove: true
+  const request = GetTokenDirectPurchasePricesRequest.create({
+    version: {
+      oneofKind: 'v0',
+      v0: {
+        tokenIds,
+        prove: true
+      }
     }
   })
 
-  const { v0 } = await grpcPool.getClient().getTokenDirectPurchasePrices(request)
+  const { response } = await grpcPool.getClient().getTokenDirectPurchasePrices(request)
 
-  const { proof, metadata } = v0 as GetTokenDirectPurchasePricesResponse_GetTokenDirectPurchasePricesResponseV0
-  if (proof == null) {
-    throw new Error('Proof not found')
+  const { version } = response
+
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
   }
+
+  const { v0 } = version
+
+  if (v0.result.oneofKind !== 'proof') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+  }
+
+  const { result: { proof }, metadata } = v0
 
   if (metadata == null) {
     throw new Error('Metadata not found')
@@ -43,7 +52,7 @@ export default async function getTokenDirectPurchasePrices (grpcPool: GRPCConnec
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')
