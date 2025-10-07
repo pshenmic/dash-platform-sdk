@@ -38,7 +38,7 @@
     "typescript": "^5.8.2"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.js",
+    "build": "tsc && rollup -c rollup.config.js",
     "build:grpc": "protoc -I=./proto --ts_opt generate_dependencies --ts_out=proto/generated --ts_opt=long_type_string ./proto/platform.proto",
     "build:typescript": "tsc",
     "lint": "ts-standard --fix",

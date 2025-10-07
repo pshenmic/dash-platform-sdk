@@ -18,7 +18,14 @@ export default [
       format: 'umd'
     },
     plugins: [
-      typescript({ module: 'ESNext' }),
+      typescript({
+        module: 'ESNext',
+        include: [
+          './proto/generated/**/*',
+          './index.ts',
+          './src/**/*'
+        ]
+      }),
       // babel(),
       resolve({
         'pshenmic-dpp': true
