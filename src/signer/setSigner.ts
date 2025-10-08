@@ -1,4 +1,4 @@
-import { AbstractSigner } from './AbstractSigner'
+import { AbstractSigner } from './AbstractSigner.js'
 
 export default function setSigner (signer: AbstractSigner): void {
   this.signer = signer

@@ -13,11 +13,11 @@ export type IdentifierLike = IdentifierWASM | string | Uint8Array
 
 export type Network = 'mainnet' | 'testnet'
 
-export { DashPlatformSDK } from './DashPlatformSDK'
+export { DashPlatformSDK } from './DashPlatformSDK.js'
 
 export type MasternodeList = Record<string, MasternodeInfo>
 
-export { AbstractSigner } from './signer/AbstractSigner'
+export { AbstractSigner } from './signer/AbstractSigner.js'
 
 export interface DocumentTransitionParams {
   identityContractNonce: bigint

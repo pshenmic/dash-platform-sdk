@@ -1,7 +1,7 @@
 import { StateTransitionWASM } from 'pshenmic-dpp'
-import waitForStateTransitionResult from './waitForStateTransitionResult'
-import broadcast from './broadcast'
-import GRPCConnectionPool from '../grpcConnectionPool'
+import waitForStateTransitionResult from './waitForStateTransitionResult.js'
+import broadcast from './broadcast.js'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
 
 /**
  * Collection of methods to perform state transitions (transactions) such like broadcast, wait for state transition result

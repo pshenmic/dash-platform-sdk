@@ -1,10 +1,10 @@
-import { GetIdentityByPublicKeyHashRequest } from '../../proto/generated/platform'
+import { GetIdentityByPublicKeyHashRequest } from '../../proto/generated/platform.js'
 import { IdentityWASM, PlatformVersionWASM, verifyIdentityByUniqueKeyHashProof } from 'pshenmic-dpp'
-import GRPCConnectionPool from '../grpcConnectionPool'
-import hexToBytes from '../utils/hexToBytes'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
-import bytesToHex from '../utils/bytesToHex'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import hexToBytes from '../utils/hexToBytes.js'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 
 export default async function getIdentityByPublicKeyHash (grpcPool: GRPCConnectionPool, hex: string): Promise<IdentityWASM> {
   const getIdentityByPublicKeyHashRequest = GetIdentityByPublicKeyHashRequest.create({

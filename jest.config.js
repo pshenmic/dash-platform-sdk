@@ -1,5 +1,8 @@
 export default {
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
+  moduleNameMapper: {
+    '^(\\.\\.?\\/.+)\\.js$': '$1'
+  },
   transformIgnorePatterns: [
     '/node_modules/(?!(?:.pnpm/))(?!pshenmic-dpp|@protobuf-ts/grpcweb-transport|@scure*|@noble*|cbor-x|micro-packed)'
   ],
@@ -8,7 +11,5 @@ export default {
   // maxWorkers: 1,
   testEnvironment: 'node',
   testTimeout: 40000,
-  moduleNameMapper: {
-    '^wasm-drive-verify$': ['<rootDir>/node_modules/wasm-drive-verify']
-  }
+  extensionsToTreatAsEsm: ['.ts']
 }

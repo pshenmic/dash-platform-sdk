@@ -1,5 +1,5 @@
-import bytesToHex from './bytesToHex'
-import { typedArrayToBuffer } from './bytesToTypedArray'
+import bytesToHex from './bytesToHex.js'
+import { typedArrayToBuffer } from './bytesToTypedArray.js'
 
 export default async function sha256 (input: Uint8Array | string): Promise<Uint8Array | string> {
   if (typeof input === 'string') {

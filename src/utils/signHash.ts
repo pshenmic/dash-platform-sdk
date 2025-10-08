@@ -1,4 +1,4 @@
-import sha256 from './sha256'
+import sha256 from './sha256.js'
 
 export default async function signHash (quorumType: number, quorumHash: Uint8Array, requestId: Uint8Array, signBytesHash: Uint8Array): Promise<Uint8Array> {
   // Calculate total length: 1 byte for quorumType + 3 arrays of 32 bytes each

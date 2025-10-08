@@ -1,7 +1,7 @@
 import { IdentifierWASM } from 'pshenmic-dpp'
-import sha256 from './sha256'
-import bytesToHex from './bytesToHex'
-import hexToBytes from './hexToBytes'
+import sha256 from './sha256.js'
+import bytesToHex from './bytesToHex.js'
+import hexToBytes from './hexToBytes.js'
 
 export async function createVoterIdentityId (proTxHash: string, publicKeyHash: string): Promise<IdentifierWASM> {
   const proTxHashBytes = hexToBytes(proTxHash)

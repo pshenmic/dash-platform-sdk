@@ -1,8 +1,8 @@
-import broadcast from '../../src/stateTransitions/broadcast'
+import broadcast from '../../src/stateTransitions/broadcast.js'
 
 import { DocumentWASM, PrivateKeyWASM } from 'pshenmic-dpp'
-import { DashPlatformSDK } from '../../src/DashPlatformSDK'
-import sleep from '../../src/utils/sleep'
+import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
+import sleep from '../../src/utils/sleep.js'
 jest.mock('../../src/stateTransitions/broadcast')
 jest.mock('../../src/utils/sleep')
 

@@ -10,7 +10,7 @@ import {
   DocumentWASM,
   StateTransitionWASM
 } from 'pshenmic-dpp'
-import { DocumentTransitionParams } from '../types'
+import { DocumentTransitionParams } from '../types.js'
 
 const documentTransitionsMap = {
   create: {

@@ -1,17 +1,17 @@
 import {
   ContestedResourceVoteState,
   ContestedStateResultType
-} from '../types'
-import GRPCConnectionPool from '../grpcConnectionPool'
+} from '../types.js'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
 import {
   GetContestedResourceVoteStateRequest,
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_ResultType,
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
-} from '../../proto/generated/platform'
+} from '../../proto/generated/platform.js'
 import { DataContractWASM, DocumentWASM, IdentifierWASM, PlatformVersionWASM, verifyVotePollVoteStateProof } from 'pshenmic-dpp'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
-import bytesToHex from '../utils/bytesToHex'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import bytesToHex from '../utils/bytesToHex.js'
 
 export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 

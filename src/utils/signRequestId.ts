@@ -1,4 +1,4 @@
-import sha256 from './sha256'
+import sha256 from './sha256.js'
 
 export default async function signRequestId (prefix: string, height: bigint, round: number): Promise<Uint8Array> {
   const prefixBytes = new TextEncoder().encode(prefix)

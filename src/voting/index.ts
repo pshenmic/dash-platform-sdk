@@ -1,7 +1,7 @@
-import { IdentifierLike, ResourceVoteChoice } from '../types'
-import createVote from './createVote'
+import { IdentifierLike, ResourceVoteChoice } from '../types.js'
+import createVote from './createVote.js'
 import { IdentifierWASM, MasternodeVoteTransitionWASM, ResourceVoteChoiceWASM, StateTransitionWASM, VoteWASM } from 'pshenmic-dpp'
-import { createVoterIdentityId } from '../utils/createVoterIdentityId'
+import { createVoterIdentityId } from '../utils/createVoterIdentityId.js'
 
 /**
  * Voting controller for performing masternode votes

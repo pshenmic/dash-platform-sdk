@@ -14,7 +14,7 @@ import {
   TokenTransferTransitionWASM, TokenTransitionWASM,
   TokenUnFreezeTransitionWASM
 } from 'pshenmic-dpp'
-import { TokenTransitionParams, TokenTransitionType } from '../types'
+import { TokenTransitionParams, TokenTransitionType } from '../types.js'
 
 const tokenTransitionsMap = {
   burn: {

@@ -1,7 +1,7 @@
-import { NodeStatus } from '../types'
-import { GetStatusRequest } from '../../proto/generated/platform'
-import GRPCConnectionPool from '../grpcConnectionPool'
-import bytesToHex from '../utils/bytesToHex'
+import { NodeStatus } from '../types.js'
+import { GetStatusRequest } from '../../proto/generated/platform.js'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import bytesToHex from '../utils/bytesToHex.js'
 
 export default async function status (grpcPool: GRPCConnectionPool): Promise<NodeStatus> {
   const getStatusRequest = GetStatusRequest.create({

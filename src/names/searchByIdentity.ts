@@ -1,6 +1,6 @@
 import { DocumentWASM, IdentifierWASM } from 'pshenmic-dpp'
-import GRPCConnectionPool from '../grpcConnectionPool'
-import query from '../documents/query'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import query from '../documents/query.js'
 
 const DPNS_DATA_CONTRACT_ID = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 

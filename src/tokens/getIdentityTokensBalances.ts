@@ -1,10 +1,10 @@
-import GRPCConnectionPool from '../grpcConnectionPool'
-import { IdentifierLike } from '../types'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { IdentifierLike } from '../types.js'
 import { IdentifierWASM, PlatformVersionWASM, verifyTokensBalancesForIdentityProof } from 'pshenmic-dpp'
-import { GetIdentityTokenBalancesRequest } from '../../proto/generated/platform'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
-import bytesToHex from '../utils/bytesToHex'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof'
+import { GetIdentityTokenBalancesRequest } from '../../proto/generated/platform.js'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 
 export interface IdentityTokenBalances {
   tokenId: IdentifierWASM

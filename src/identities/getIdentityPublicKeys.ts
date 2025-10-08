@@ -1,10 +1,10 @@
-import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/platform'
+import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/platform.js'
 import { IdentifierWASM, IdentityPublicKeyWASM, PlatformVersionWASM, verifyIdentityKeysByIdentifierProof } from 'pshenmic-dpp'
-import { IdentifierLike } from '../types'
-import GRPCConnectionPool from '../grpcConnectionPool'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
-import bytesToHex from '../utils/bytesToHex'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof'
+import { IdentifierLike } from '../types.js'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 
 export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<IdentityPublicKeyWASM[]> {
   const id = new IdentifierWASM(identifier)

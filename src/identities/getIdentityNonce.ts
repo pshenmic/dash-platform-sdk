@@ -1,10 +1,10 @@
-import { GetIdentityNonceRequest } from '../../proto/generated/platform'
+import { GetIdentityNonceRequest } from '../../proto/generated/platform.js'
 import { IdentifierWASM, PlatformVersionWASM, verifyIdentityNonceProof } from 'pshenmic-dpp'
-import { IdentifierLike } from '../types'
-import GRPCConnectionPool from '../grpcConnectionPool'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
-import bytesToHex from '../utils/bytesToHex'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof'
+import { IdentifierLike } from '../types.js'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 
 const IDENTITY_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 

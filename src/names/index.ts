@@ -1,13 +1,13 @@
-import GRPCConnectionPool from '../grpcConnectionPool'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { DocumentWASM, IdentifierWASM, PrivateKeyWASM } from 'pshenmic-dpp'
-import { IdentifierLike } from '../types'
-import searchByName from './searchByName'
-import searchByIdentity from './searchByIdentity'
-import registerName from './registerName'
-import validateName from './validateName'
-import getIdentityByIdentifier from '../identities/getIdentityByIdentifier'
-import convertToHomographSafeChars from '../utils/convertToHomographSafeChars'
-import testNameContested from './testNameContested'
+import { IdentifierLike } from '../types.js'
+import searchByName from './searchByName.js'
+import searchByIdentity from './searchByIdentity.js'
+import registerName from './registerName.js'
+import validateName from './validateName.js'
+import getIdentityByIdentifier from '../identities/getIdentityByIdentifier.js'
+import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js'
+import testNameContested from './testNameContested.js'
 
 /**
  * Functions related to DPNS names (usernames)

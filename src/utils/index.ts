@@ -1,7 +1,7 @@
-import convertToHomographSafeChars from './convertToHomographSafeChars'
+import convertToHomographSafeChars from './convertToHomographSafeChars.js'
 import { base58 } from '@scure/base'
-import hexToBytes from './hexToBytes'
-import bytesToHex from './bytesToHex'
+import hexToBytes from './hexToBytes.js'
+import bytesToHex from './bytesToHex.js'
 
 /**
  * Collection of conversion functions

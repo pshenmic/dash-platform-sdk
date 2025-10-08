@@ -1,5 +1,5 @@
 import { DataContractWASM, IdentifierWASM, PlatformVersionWASM, TokenConfigurationWASM } from 'pshenmic-dpp'
-import { DataContractConfig, IdentifierLike } from '../types'
+import { DataContractConfig, IdentifierLike } from '../types.js'
 
 export default function createDataContract (
   ownerId: IdentifierLike,

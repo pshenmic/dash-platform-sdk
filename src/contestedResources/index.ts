@@ -1,7 +1,7 @@
-import GRPCConnectionPool from '../grpcConnectionPool'
-import { ContestedResourceVoteState, ContestedStateResultType } from '../types'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { ContestedResourceVoteState, ContestedStateResultType } from '../types.js'
 import { DataContractWASM } from 'pshenmic-dpp'
-import getContestedResourceVoteState, { StartAtIdentifierInfo } from './getContestedResourceVoteState'
+import getContestedResourceVoteState, { StartAtIdentifierInfo } from './getContestedResourceVoteState.js'
 
 /**
  * Contested Resources controller for requesting information about contested resources
