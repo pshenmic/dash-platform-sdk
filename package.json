@@ -40,7 +40,7 @@
   },
   "scripts": {
     "build": "tsc && rollup -c rollup.config.js",
-    "build:grpc": "protoc -I=./proto --ts_opt generate_dependencies --ts_out=proto/generated --ts_opt=output_javascript_es2020 --ts_opt=long_type_string ./proto/platform.proto && npm run patch:grpc",
+    "build:grpc": "protoc -I=./proto --ts_opt generate_dependencies --ts_out=proto/generated --ts_opt=output_typescript --ts_opt=long_type_string ./proto/platform.proto && npm run patch:grpc",
     "build:typescript": "tsc",
     "patch:grpc": "node scripts/patch-esm-grpc.js",
     "lint": "ts-standard --fix",
