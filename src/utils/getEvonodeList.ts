@@ -1,4 +1,4 @@
-import { MasternodeList, Network } from '../types'
+import { MasternodeList, Network } from '../types.js'
 
 export default async function getDAPINodeList (network: Network): Promise<MasternodeList> {
   const url = `https://${network === 'mainnet' ? '' : 'testnet.'}platform-explorer.pshenmic.dev/validators?isActive=true`

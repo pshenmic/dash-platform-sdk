@@ -1,5 +1,5 @@
-import { StateId } from '../../proto/generated/platform'
-import sha256 from './sha256'
+import { StateId } from '../../proto/generated/platform.js'
+import sha256 from './sha256.js'
 import { BinaryWriter } from '@bufbuild/protobuf/wire'
 
 export async function calculateStateIdHash (stateId: StateId): Promise<Uint8Array> {

@@ -1,13 +1,13 @@
-import { GetDocumentsRequest } from '../../proto/generated/platform'
+import { GetDocumentsRequest } from '../../proto/generated/platform.js'
 import { DocumentWASM, IdentifierWASM, PlatformVersionWASM, verifyDocumentsProof } from 'pshenmic-dpp'
-import { DAPI_DEFAULT_LIMIT } from '../constants'
-import { IdentifierLike } from '../types'
-import GRPCConnectionPool from '../grpcConnectionPool'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
-import bytesToHex from '../utils/bytesToHex'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof'
+import { DAPI_DEFAULT_LIMIT } from '../constants.js'
+import { IdentifierLike } from '../types.js'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { encode } from 'cbor-x'
-import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier'
+import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 
 export default async function query (
   grpcPool: GRPCConnectionPool,

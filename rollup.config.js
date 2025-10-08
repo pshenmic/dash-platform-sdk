@@ -5,7 +5,7 @@ import terser from '@rollup/plugin-terser'
 export default [
   {
     onwarn: function (warning, handler) {
-      if (warning.code === 'THIS_IS_UNDEFINED' || (warning.loc.file.indexOf('@scure') !== -1 && warning.pluginCode === 'TS2345')) {
+      if (warning.code === 'THIS_IS_UNDEFINED' || (warning?.loc?.file?.indexOf('@scure') !== -1 && warning.pluginCode === 'TS2345')) {
         return
       }
 
@@ -19,7 +19,6 @@ export default [
     },
     plugins: [
       typescript({
-        module: 'ESNext',
         include: [
           './proto/generated/**/*',
           './index.ts',

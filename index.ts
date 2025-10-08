@@ -1,3 +1,3 @@
-import { DashPlatformSDK } from './src/DashPlatformSDK'
+import { DashPlatformSDK } from './src/DashPlatformSDK.js'
 
 export { DashPlatformSDK }

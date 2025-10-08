@@ -1,5 +1,5 @@
-import { DocumentTransitionParams, IdentifierLike } from '../types'
-import createDocument from './create'
+import { DocumentTransitionParams, IdentifierLike } from '../types.js'
+import createDocument from './create.js'
 import {
   DocumentWASM,
   IdentifierWASM,
@@ -7,9 +7,9 @@ import {
   StateTransitionWASM,
   TokenPaymentInfoWASM
 } from 'pshenmic-dpp'
-import createStateTransition from './createStateTransition'
-import GRPCConnectionPool from '../grpcConnectionPool'
-import query from './query'
+import createStateTransition from './createStateTransition.js'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import query from './query.js'
 
 /**
  * Collection of methods to work with documents like creation, querying or preparing a transition action

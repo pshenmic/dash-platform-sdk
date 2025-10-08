@@ -4,8 +4,8 @@
     "rootDir": ".",
     "allowJs": false,
     "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "declaration": true,
     "strictNullChecks": true,
     "emitDeclarationOnly": false

@@ -1,9 +1,9 @@
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
-import { PlatformClient } from '../proto/generated/platform.client'
-import getEvonodeList from './utils/getEvonodeList'
-import { GetStatusRequest } from '../proto/generated/platform'
-import getRandomArrayItem from './utils/getRandomArrayItem'
-import { Network } from './types'
+import { PlatformClient } from '../proto/generated/platform.client.js'
+import getEvonodeList from './utils/getEvonodeList.js'
+import { GetStatusRequest } from '../proto/generated/platform.js'
+import getRandomArrayItem from './utils/getRandomArrayItem.js'
+import { Network } from './types.js'
 
 const GRPC_DEFAULT_POOL_LIMIT = 5
 export type MasternodeList = Record<string, MasternodeInfo>

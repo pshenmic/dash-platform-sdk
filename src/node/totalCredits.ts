@@ -1,11 +1,11 @@
-import { GetTotalCreditsInPlatformRequest } from '../../proto/generated/platform'
-import GRPCConnectionPool from '../grpcConnectionPool'
-import { HALVING_INTERVAL, MAINNET_ACTIVATION_HEIGHT, TESTNET_ACTIVATION_HEIGHT } from '../constants'
+import { GetTotalCreditsInPlatformRequest } from '../../proto/generated/platform.js'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { HALVING_INTERVAL, MAINNET_ACTIVATION_HEIGHT, TESTNET_ACTIVATION_HEIGHT } from '../constants.js'
 import { PlatformVersionWASM, verifyTotalCreditsProof } from 'pshenmic-dpp'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
-import bytesToHex from '../utils/bytesToHex'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof'
-import { Network } from '../types'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import { Network } from '../types.js'
 
 export default async function totalCredits (grpcPool: GRPCConnectionPool, network: Network): Promise<bigint> {
   const getTotalCreditsInPlatformRequest = GetTotalCreditsInPlatformRequest.create({

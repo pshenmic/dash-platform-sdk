@@ -1,4 +1,4 @@
-import sha256 from './sha256'
+import sha256 from './sha256.js'
 
 export async function calculateMsgHash (chainId: string, height: bigint, round: number, type: number, blockId: Uint8Array, stateId: Uint8Array): Promise<Uint8Array> {
   const fixedSize = 4 + 8 + 8 + 32 + 32

@@ -1,10 +1,10 @@
-import GRPCConnectionPool from '../grpcConnectionPool'
-import { GetTokenTotalSupplyRequest } from '../../proto/generated/platform'
-import { IdentifierLike, TokenTotalSupply } from '../types'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GetTokenTotalSupplyRequest } from '../../proto/generated/platform.js'
+import { IdentifierLike, TokenTotalSupply } from '../types.js'
 import { IdentifierWASM, PlatformVersionWASM, verifyTokenTotalSupplyProof } from 'pshenmic-dpp'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
-import bytesToHex from '../utils/bytesToHex'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 
 export default async function getTokenTotalSupply (grpcPool: GRPCConnectionPool, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
   const tokenId = new IdentifierWASM(tokenIdentifier)

@@ -1,19 +1,19 @@
-import GRPCConnectionPool from '../grpcConnectionPool'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
 import {
   IdentifierLike,
   TokenDirectPurchasePrices,
   TokenTotalSupply,
   TokenTransitionParams,
   TokenTransitionType
-} from '../types'
-import getIdentitiesTokenBalances, { IdentitiesTokenBalances } from './getIdentitiesTokenBalances'
-import getIdentityTokensBalances, { IdentityTokenBalances } from './getIdentityTokensBalances'
-import getTokenContractInfo, { TokenContractInfo } from './getTokenContractInfo'
-import getTokenTotalSupply from './getTokenTotalSupply'
-import createStateTransition from './createStateTransition'
+} from '../types.js'
+import getIdentitiesTokenBalances, { IdentitiesTokenBalances } from './getIdentitiesTokenBalances.js'
+import getIdentityTokensBalances, { IdentityTokenBalances } from './getIdentityTokensBalances.js'
+import getTokenContractInfo, { TokenContractInfo } from './getTokenContractInfo.js'
+import getTokenTotalSupply from './getTokenTotalSupply.js'
+import createStateTransition from './createStateTransition.js'
 import { IdentifierWASM, StateTransitionWASM, TokenBaseTransitionWASM, TokenPricingScheduleWASM } from 'pshenmic-dpp'
-import getIdentityContractNonce from '../identities/getIdentityContractNonce'
-import getTokenDirectPurchasePrices from './getTokenDirectPurchasePrices'
+import getIdentityContractNonce from '../identities/getIdentityContractNonce.js'
+import getTokenDirectPurchasePrices from './getTokenDirectPurchasePrices.js'
 
 /**
  * Tokens controller for requesting information about tokens and tokens holders

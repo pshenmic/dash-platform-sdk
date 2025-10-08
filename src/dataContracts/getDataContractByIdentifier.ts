@@ -1,11 +1,11 @@
 import { DataContractWASM, IdentifierWASM, PlatformVersionWASM, verifyContractProof } from 'pshenmic-dpp'
-import { GetDataContractRequest } from '../../proto/generated/platform'
-import { IdentifierLike } from '../types'
-import GRPCConnectionPool from '../grpcConnectionPool'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey'
-import bytesToHex from '../utils/bytesToHex'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof'
-import { DPNS_DATA_CONTRACT_BYTES, DPNS_DATA_CONTRACT_ID } from '../constants'
+import { GetDataContractRequest } from '../../proto/generated/platform.js'
+import { IdentifierLike } from '../types.js'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import { DPNS_DATA_CONTRACT_BYTES, DPNS_DATA_CONTRACT_ID } from '../constants.js'
 
 export default async function getByIdentifier (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<DataContractWASM> {
   const id = new IdentifierWASM(identifier)

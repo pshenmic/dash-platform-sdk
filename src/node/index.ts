@@ -1,8 +1,8 @@
-import getStatus from './status'
-import GRPCConnectionPool from '../grpcConnectionPool'
-import { Network, NodeStatus } from '../types'
-import getEpochsInfo, { EpochInfo } from './epochs'
-import getTotalCredits from './totalCredits'
+import getStatus from './status.js'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { Network, NodeStatus } from '../types.js'
+import getEpochsInfo, { EpochInfo } from './epochs.js'
+import getTotalCredits from './totalCredits.js'
 
 /**
  * Node controller for requesting information about DAPI node

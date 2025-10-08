@@ -1,18 +1,18 @@
-import getIdentityContractNonce from './getIdentityContractNonce'
-import getIdentityPublicKeys from './getIdentityPublicKeys'
-import getIdentityNonce from './getIdentityNonce'
-import getIdentityBalance from './getIdentityBalance'
-import getIdentityByPublicKeyHash from './getIdentityByPublicKeyHash'
-import { IdentifierLike, IdentityTransitionParams } from '../types'
-import GRPCConnectionPool from '../grpcConnectionPool'
-import getIdentityByIdentifier from './getIdentityByIdentifier'
+import getIdentityContractNonce from './getIdentityContractNonce.js'
+import getIdentityPublicKeys from './getIdentityPublicKeys.js'
+import getIdentityNonce from './getIdentityNonce.js'
+import getIdentityBalance from './getIdentityBalance.js'
+import getIdentityByPublicKeyHash from './getIdentityByPublicKeyHash.js'
+import { IdentifierLike, IdentityTransitionParams } from '../types.js'
+import GRPCConnectionPool from '../grpcConnectionPool.js'
+import getIdentityByIdentifier from './getIdentityByIdentifier.js'
 import {
   AssetLockProofWASM, ContractBoundsWASM, IdentifierWASM, IdentityPublicKeyInCreationWASM,
   IdentityPublicKeyWASM, IdentityWASM, OutPointWASM, StateTransitionWASM
 } from 'pshenmic-dpp'
-import createStateTransition from './createStateTransition'
-import getIdentityByNonUniquePublicKeyHash from './getIdentityByNonUniquePublicKeyHash'
-import hexToBytes from '../utils/hexToBytes'
+import createStateTransition from './createStateTransition.js'
+import getIdentityByNonUniquePublicKeyHash from './getIdentityByNonUniquePublicKeyHash.js'
+import hexToBytes from '../utils/hexToBytes.js'
 
 /**
  * Collection of methods to query identities and its related data

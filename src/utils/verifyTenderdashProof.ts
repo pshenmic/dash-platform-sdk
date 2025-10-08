@@ -1,8 +1,8 @@
-import { CanonicalVote, Proof, ResponseMetadata, SignedMsgType, StateId } from '../../proto/generated/platform'
-import { calculateSignHash } from './calculateSignHash'
-import { calculateStateIdHash } from './calculateStateIdHash'
+import { CanonicalVote, Proof, ResponseMetadata, SignedMsgType, StateId } from '../../proto/generated/platform.js'
+import { calculateSignHash } from './calculateSignHash.js'
+import { calculateStateIdHash } from './calculateStateIdHash.js'
 import { verifySignatureDigest } from 'pshenmic-dpp'
-import hexToBytes from './hexToBytes'
+import hexToBytes from './hexToBytes.js'
 
 export default async function verifyTenderdashProof (proof: Proof, metadata: ResponseMetadata, rootHash: Uint8Array, quorumPublicKey: string): Promise<boolean> {
   const stateId = StateId.create({
