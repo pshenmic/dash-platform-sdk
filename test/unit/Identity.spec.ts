@@ -1,9 +1,11 @@
 import {
+  CoreScriptWASM,
   IdentityPublicKeyWASM,
   IdentityWASM, KeyType,
-  PrivateKeyWASM, Purpose, SecurityLevel
+  PrivateKeyWASM, Purpose, SecurityLevel, StateTransitionWASM
 } from 'pshenmic-dpp'
 import { DashPlatformSDK, IdentityPublicKeyInCreation } from '../../src/types.js'
+import { base58 } from '@scure/base'
 let sdk: DashPlatformSDK
 
 describe('Identity', () => {
@@ -282,6 +284,51 @@ describe('Identity', () => {
       })
 
       identityUpdateTransition.signByPrivateKey(masterPrivateKey, masterKeyId, KeyType.ECDSA_SECP256K1)
+    })
+
+    test('should able be create credit transfer transition', async () => {
+      const identityId = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+      const recipientId = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+      const amount = 100000n
+      const identityNonce = await sdk.identities.getIdentityNonce(identityId)
+
+      const stateTransition = sdk.identities.createStateTransition('creditTransfer', { identityId, identityNonce, recipientId, amount })
+
+      expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
+    })
+
+    test('should be able create credit withdrawal', async () => {
+      const identityId = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+      const amount = 100000n
+      const identityNonce = await sdk.identities.getIdentityNonce(identityId)
+      const withdrawalAddress = 'yjHVQ3dj37UJwXFmvMTKR9ZVfoJSc3opTD'
+
+      const stateTransition = sdk.identities.createStateTransition('withdrawal', { identityId, identityNonce, amount, withdrawalAddress })
+
+      expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
+    })
+
+    test('should be able create credit withdrawal with custom CoreScript', async () => {
+      const identityId = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+      const amount = 100000n
+      const identityNonce = await sdk.identities.getIdentityNonce(identityId)
+      const withdrawalAddress = 'yjHVQ3dj37UJwXFmvMTKR9ZVfoJSc3opTD'
+      const outputScript = CoreScriptWASM.newP2PKH(base58.decode(withdrawalAddress).slice(1, 21))
+
+      const stateTransition = sdk.identities.createStateTransition('withdrawal', { identityId, identityNonce, amount, outputScript })
+
+      expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
+    })
+
+    test('should be able create credit withdrawal with no withdrawal address', async () => {
+      const identityId = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+      const recipientId = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+      const amount = 100000n
+      const identityNonce = await sdk.identities.getIdentityNonce(identityId)
+
+      const stateTransition = sdk.identities.createStateTransition('creditTransfer', { identityId, recipientId, amount, identityNonce })
+
+      expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
     })
   })
 })

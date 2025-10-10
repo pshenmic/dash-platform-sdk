@@ -2,7 +2,9 @@ import {
   IdentityCreateTransitionWASM,
   IdentityTopUpTransitionWASM,
   IdentityUpdateTransitionWASM,
-  StateTransitionWASM
+  IdentityCreditTransferWASM,
+  StateTransitionWASM,
+  IdentityCreditWithdrawalTransitionWASM
 } from 'pshenmic-dpp'
 import { IdentityTransitionParams } from '../types.js'
 
@@ -21,10 +23,20 @@ const identityTransitionsMap = {
     class: IdentityUpdateTransitionWASM,
     arguments: ['identityId', 'revision', 'identityNonce', 'addPublicKeys', 'disablePublicKeyIds'],
     optionalArguments: ['userFeeIncrease']
+  },
+  creditTransfer: {
+    class: IdentityCreditTransferWASM,
+    arguments: ['identityId', 'amount', 'recipientId', 'identityNonce'],
+    optionalArguments: ['userFeeIncrease']
+  },
+  withdrawal: {
+    class: IdentityCreditWithdrawalTransitionWASM,
+    arguments: ['identityId', 'amount', 'coreFeePerByte', 'pooling', 'identityNonce', 'outputScript'],
+    optionalArguments: ['userFeeIncrease']
   }
 }
 
-export default function createStateTransition (type: 'create' | 'update' | 'topUp', params: IdentityTransitionParams): StateTransitionWASM {
+export default function createStateTransition (type: 'create' | 'update' | 'topUp' | 'creditTransfer' | 'withdrawal', params: IdentityTransitionParams): StateTransitionWASM {
   const { class: TransitionClass, arguments: classArguments, optionalArguments } = identityTransitionsMap[type]
 
   if (TransitionClass == null) {
