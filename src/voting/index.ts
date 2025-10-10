@@ -45,9 +45,9 @@ export class VotingController {
   }
 
   /**
-     * Creates a {StateTransitionWASM} from masternoe protxhash and voter identity
+     * Creates a {StateTransitionWASM} from masternode Pro Tx Hash and voter identity
      *
-     * @param voteWASM {VoteWASM} vote instance from .createMsternodeVote() method
+     * @param voteWASM {VoteWASM} vote instance from .createMasternodeVote() method
      * @param proTxHash {string} pro tx hash of the masternode as hex
      * @param voterIdentity {IdentifierWASM} voter identity identifier
      * @param identityNonce {BigInt} identity nonce

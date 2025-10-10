@@ -2,6 +2,9 @@ import convertToHomographSafeChars from './convertToHomographSafeChars.js'
 import { base58 } from '@scure/base'
 import hexToBytes from './hexToBytes.js'
 import bytesToHex from './bytesToHex.js'
+import { createVoterIdentityId } from './createVoterIdentityId.js'
+import { IdentifierWASM } from 'pshenmic-dpp'
+import { createMasternodeIdentityId } from './createMasternodeIdentityId.js'
 
 /**
  * Collection of conversion functions
@@ -62,5 +65,28 @@ export class UtilsController {
    */
   convertToHomographSafeChars (str: string): string {
     return convertToHomographSafeChars(str)
+  }
+
+  /**
+   * Creates a voting identity identifier from proTxHash and voting address
+   *
+   * @param proTxHash {string} Pro TX Hash in hex format
+   * @param publicKeyHash {string} Voting address's public key hash (20 bytes), in hex
+   *
+   * @return {Promise<string>}
+   */
+  async createVoterIdentifier (proTxHash: string, publicKeyHash: string): Promise<IdentifierWASM> {
+    return await createVoterIdentityId(proTxHash, publicKeyHash)
+  }
+
+  /**
+   * Creates a masternode identity identifier from proTxHash
+   *
+   * @param proTxHash {string} Pro TX Hash in hex format
+   *
+   * @return {string}
+   * */
+  createMasternodeIdentifier (proTxHash: string): IdentifierWASM {
+    return createMasternodeIdentityId(proTxHash)
   }
 }
