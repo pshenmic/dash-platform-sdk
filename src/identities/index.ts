@@ -7,12 +7,20 @@ import { IdentifierLike, IdentityTransitionParams } from '../types.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import getIdentityByIdentifier from './getIdentityByIdentifier.js'
 import {
-  AssetLockProofWASM, ContractBoundsWASM, IdentifierWASM, IdentityPublicKeyInCreationWASM,
-  IdentityPublicKeyWASM, IdentityWASM, OutPointWASM, StateTransitionWASM
+  AssetLockProofWASM,
+  ContractBoundsWASM, CoreScriptWASM,
+  IdentifierWASM,
+  IdentityPublicKeyInCreationWASM,
+  IdentityPublicKeyWASM,
+  IdentityWASM,
+  OutPointWASM,
+  PoolingWASM,
+  StateTransitionWASM
 } from 'pshenmic-dpp'
 import createStateTransition from './createStateTransition.js'
 import getIdentityByNonUniquePublicKeyHash from './getIdentityByNonUniquePublicKeyHash.js'
 import hexToBytes from '../utils/hexToBytes.js'
+import { base58 } from '@scure/base'
 
 /**
  * Collection of methods to query identities and its related data
@@ -114,10 +122,12 @@ export class IdentitiesController {
    * all necessary AssetLockProof data to make the transaction.
    * Both InstantSend and ChainLock AssetLock proofs supported
    *
-   * @param type {string} type of transition, must be a one of ('create' | 'update' | 'topUp')
+   * Please refer to Identity.spec.js or README for example commands
+   *
+   * @param type {string} type of transition, must be a one of ('create' | 'update' | 'topUp' | 'creditTransfer' | 'withdrawal')
    * @param params {IdentityTransitionParams} params
    */
-  createStateTransition (type: 'create' | 'update' | 'topUp', params: IdentityTransitionParams): StateTransitionWASM {
+  createStateTransition (type: 'create' | 'update' | 'topUp' | 'creditTransfer' | 'withdrawal', params: IdentityTransitionParams): StateTransitionWASM {
     if (params.identityId != null) {
       params.identityId = new IdentifierWASM(params.identityId)
     }
@@ -158,6 +168,17 @@ export class IdentitiesController {
       params.publicKeys = params.publicKeys
         .map(({ id, purpose, securityLevel, keyType, readOnly, data, signature, contractBounds }) =>
           new IdentityPublicKeyInCreationWASM(id, purpose, securityLevel, keyType, readOnly, data, signature, (contractBounds != null) ? new ContractBoundsWASM(contractBounds.dataContractId, contractBounds.documentType) : undefined))
+    }
+
+    if (params.recipientId != null) {
+      params.recipientId = new IdentifierWASM(params.recipientId)
+    }
+
+    if (type === 'withdrawal') {
+      // @ts-expect-error
+      params.pooling = params.pooling != null ? PoolingWASM[params.pooling] : PoolingWASM.Standard
+      params.coreFeePerByte = params.coreFeePerByte ?? 1
+      params.outputScript = params.outputScript ?? (params.withdrawalAddress != null ? CoreScriptWASM.newP2PKH(base58.decode(params.withdrawalAddress).slice(1, 21)) : undefined)
     }
 
     return createStateTransition(type, params)

@@ -1,4 +1,5 @@
 import {
+  CoreScriptWASM,
   DocumentWASM,
   GasFeesPaidByWASM,
   IdentifierWASM,
@@ -7,7 +8,15 @@ import {
   TokenPricingScheduleWASM
 } from 'pshenmic-dpp'
 
-export { IdentifierWASM, IdentityWASM, DocumentWASM, DataContractWASM, StateTransitionWASM, IdentityPublicKeyWASM } from 'pshenmic-dpp'
+export {
+  CoreScriptWASM,
+  DocumentWASM,
+  GasFeesPaidByWASM,
+  IdentifierWASM,
+  KeyType, Purpose, SecurityLevel,
+  TokenEmergencyActionWASM,
+  TokenPricingScheduleWASM
+} from 'pshenmic-dpp'
 
 export type IdentifierLike = IdentifierWASM | string | Uint8Array
 
@@ -220,7 +229,13 @@ export interface IdentityTransitionParams {
   disablePublicKeyIds?: number[]
   revision?: bigint
   identityNonce?: bigint
+  amount?: bigint
   identityId?: IdentifierLike
+  recipientId?: IdentifierLike
+  withdrawalAddress?: string
+  outputScript?: CoreScriptWASM
+  pooling?: 'Standard' | 'Never' | 'IfAvailable'
+  coreFeePerByte?: number
   userFeeIncrease?: number
 }
 

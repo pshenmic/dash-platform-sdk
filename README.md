@@ -838,6 +838,36 @@ const stateTransition = sdk.voting.createStateTransition(vote, proTxHash, voterI
 stateTransition.sign(privateKey, identityPublicKey)
 ```
 
+### Identity Credit Transfer
+Create a credit transfer transition (send credits to another identity)
+
+```javascript
+const identityId = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+const recipientId = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
+const amount = 100000n
+const identityNonce = await sdk.identities.getIdentityNonce(identityId)
+
+const stateTransition = sdk.identities.createStateTransition('creditTransfer', {identityId,identityNonce,recipientId, amount})
+
+// sign
+stateTransition.sign(privateKey, identityPublicKey)
+```
+
+### Identity Credit Withdrawal
+Create a credit transfer transition (send credits to another identity)
+
+```javascript
+const identityId = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+const amount = 100000n
+const identityNonce = await sdk.identities.getIdentityNonce(identityId)
+const withdrawalAddress = 'yjHVQ3dj37UJwXFmvMTKR9ZVfoJSc3opTD'
+
+const stateTransition = sdk.identities.createStateTransition('withdrawal', {identityId, identityNonce, amount, withdrawalAddress})
+
+// sign
+stateTransition.sign(privateKey, identityPublicKey)
+```
+
 ### State Transition
 #### Broadcast state transition
 
