@@ -9,7 +9,6 @@ import { NamesController } from './names/index.js'
 import { DataContractsController } from './dataContracts/index.js'
 import { ContestedResourcesController } from './contestedResources/index.js'
 import { TokensController } from './tokens/index.js'
-import { AbstractSigner } from './signer/AbstractSigner.js'
 import { VotingController } from './voting/index.js'
 import { Network } from './types.js'
 
@@ -23,7 +22,6 @@ export interface SDKOptions {
   grpc?: GRPCOptions
   /** @deprecated Use {GRPCOptions} instead, will be removed in next major version **/
   dapiUrl?: string | string[]
-  signer?: AbstractSigner
 }
 
 /**
@@ -46,7 +44,6 @@ export class DashPlatformSDK {
   tokens: TokensController
   utils: UtilsController
   names: NamesController
-  signer?: AbstractSigner
   node: NodeController
 
   /**
@@ -61,7 +58,6 @@ export class DashPlatformSDK {
     }
 
     this.network = options?.network ?? 'mainnet'
-    this.signer = options?.signer
     this.options = options
 
     this.utils = new UtilsController()
@@ -98,10 +94,6 @@ export class DashPlatformSDK {
     this.tokens = new TokensController(grpcPool)
     this.names = new NamesController(grpcPool)
     this.keyPair = new KeyPairController()
-  }
-
-  setSigner (signer: AbstractSigner): void {
-    this.signer = signer
   }
 
   /**
