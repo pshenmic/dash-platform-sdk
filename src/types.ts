@@ -157,6 +157,7 @@ export interface ContestedResourceVoteState {
   contenders: Contender[]
   abstainVoteTally?: number | undefined
   lockVoteTally?: number | undefined
+  skipped: boolean
   finishedVoteInfo?: FinishedVoteInfo
 }
 

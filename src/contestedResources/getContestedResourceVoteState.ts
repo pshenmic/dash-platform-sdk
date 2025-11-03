@@ -103,12 +103,13 @@ export default async function getContestedResourceVoteState (
 
   return {
     contenders: contenders.map(contender => ({
-      ...contender,
       identifier: contender.identityId,
-      document: contender.serializedDocument != null ? DocumentWASM.fromBytes(contender.serializedDocument, contract, documentTypeName, PlatformVersionWASM.PLATFORM_V9) : undefined
+      document: contender.serializedDocument != null ? DocumentWASM.fromBytes(contender.serializedDocument, contract, documentTypeName, PlatformVersionWASM.PLATFORM_V9) : undefined,
+      voteTally: contender.voteTally
     })),
     abstainVoteTally: result?.abstainingVoteTally ?? 0,
     lockVoteTally: result?.lockedVoteTally ?? 0,
+    skipped: result?.skipped === 1,
     finishedVoteInfo: (winner != null)
       ? {
           type: winner.type,
