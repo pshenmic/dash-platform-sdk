@@ -16,6 +16,6 @@ export default function createDocument (
     dataContractId,
     owner,
     documentId,
-    owner,
+    owner
   )
 }

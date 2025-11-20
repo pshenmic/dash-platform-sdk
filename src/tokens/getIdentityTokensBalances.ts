@@ -5,7 +5,7 @@ import { GetIdentityTokenBalancesRequest } from '../../proto/generated/platform.
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import {LATEST_PLATFORM_VERSION} from "../constants.js";
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface IdentityTokenBalances {
   tokenId: IdentifierWASM

@@ -12,7 +12,7 @@ import { DataContractWASM, DocumentWASM, IdentifierWASM, PlatformVersionWASM, ve
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
-import {LATEST_PLATFORM_VERSION} from "../constants.js";
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 

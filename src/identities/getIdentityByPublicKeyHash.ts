@@ -5,7 +5,7 @@ import hexToBytes from '../utils/hexToBytes.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import {LATEST_PLATFORM_VERSION} from "../constants.js";
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getIdentityByPublicKeyHash (grpcPool: GRPCConnectionPool, hex: string): Promise<IdentityWASM> {
   const getIdentityByPublicKeyHashRequest = GetIdentityByPublicKeyHashRequest.create({

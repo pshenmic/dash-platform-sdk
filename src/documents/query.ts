@@ -1,6 +1,6 @@
 import { GetDocumentsRequest } from '../../proto/generated/platform.js'
 import { DocumentWASM, IdentifierWASM, verifyDocumentsProof } from 'pshenmic-dpp'
-import {DAPI_DEFAULT_LIMIT, LATEST_PLATFORM_VERSION} from '../constants.js'
+import { DAPI_DEFAULT_LIMIT, LATEST_PLATFORM_VERSION } from '../constants.js'
 import { IdentifierLike } from '../types.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'

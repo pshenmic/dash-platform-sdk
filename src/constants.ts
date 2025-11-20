@@ -1,4 +1,4 @@
-import {PlatformVersionWASM} from "pshenmic-dpp";
+import { PlatformVersionWASM } from 'pshenmic-dpp'
 
 /**
  * Default amount of documents to retrieve from DAPI

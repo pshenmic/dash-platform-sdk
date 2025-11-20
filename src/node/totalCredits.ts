@@ -6,7 +6,7 @@ import {
   MAINNET_ACTIVATION_HEIGHT,
   TESTNET_ACTIVATION_HEIGHT
 } from '../constants.js'
-import {verifyTotalCreditsProof } from 'pshenmic-dpp'
+import { verifyTotalCreditsProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'

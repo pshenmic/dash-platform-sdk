@@ -5,7 +5,7 @@ import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import { GetTokenDirectPurchasePricesRequest } from '../../proto/generated/platform.js'
-import {LATEST_PLATFORM_VERSION} from "../constants.js";
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getTokenDirectPurchasePrices (grpcPool: GRPCConnectionPool, tokenIdentifiers: IdentifierLike[]): Promise<TokenDirectPurchasePrices[]> {
   const tokenIds = tokenIdentifiers.map(tokenId => new IdentifierWASM(tokenId).bytes())
