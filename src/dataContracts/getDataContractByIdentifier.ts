@@ -1,11 +1,11 @@
-import { DataContractWASM, IdentifierWASM, PlatformVersionWASM, verifyContractProof } from 'pshenmic-dpp'
+import { DataContractWASM, IdentifierWASM, verifyContractProof } from 'pshenmic-dpp'
 import { GetDataContractRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike } from '../types.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import { DPNS_DATA_CONTRACT_BYTES, DPNS_DATA_CONTRACT_ID } from '../constants.js'
+import {DPNS_DATA_CONTRACT_BYTES, DPNS_DATA_CONTRACT_ID, LATEST_PLATFORM_VERSION} from '../constants.js'
 
 export default async function getByIdentifier (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<DataContractWASM> {
   const id = new IdentifierWASM(identifier)
@@ -47,7 +47,7 @@ export default async function getByIdentifier (grpcPool: GRPCConnectionPool, ide
   const {
     rootHash,
     dataContract
-  } = verifyContractProof(proof.grovedbProof, undefined, false, false, id.bytes(), PlatformVersionWASM.PLATFORM_V9)
+  } = verifyContractProof(proof.grovedbProof, undefined, false, false, id.bytes(), LATEST_PLATFORM_VERSION)
 
   if (dataContract == null) {
     throw new Error(`Data Contract with identifier ${id.base58()} not found`)

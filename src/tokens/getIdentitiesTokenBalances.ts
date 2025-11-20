@@ -1,10 +1,11 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { GetIdentitiesTokenBalancesRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike } from '../types.js'
-import { IdentifierWASM, PlatformVersionWASM, verifyTokenBalancesForIdentitiesProof } from 'pshenmic-dpp'
+import { IdentifierWASM, verifyTokenBalancesForIdentitiesProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import {LATEST_PLATFORM_VERSION} from "../constants.js";
 
 export interface IdentitiesTokenBalances {
   identityId: IdentifierWASM
@@ -54,7 +55,7 @@ export default async function getIdentitiesTokenBalances (grpcPool: GRPCConnecti
     tokenId,
     true,
     ids,
-    PlatformVersionWASM.PLATFORM_V9
+    LATEST_PLATFORM_VERSION
   )
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))

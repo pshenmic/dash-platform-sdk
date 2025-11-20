@@ -1,10 +1,11 @@
 import { GetIdentityBalanceRequest } from '../../proto/generated/platform.js'
-import { IdentifierWASM, PlatformVersionWASM, verifyIdentityBalanceProof } from 'pshenmic-dpp'
+import { IdentifierWASM, verifyIdentityBalanceProof } from 'pshenmic-dpp'
 import { IdentifierLike } from '../types.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
+import {LATEST_PLATFORM_VERSION} from "../constants.js";
 
 export default async function getIdentityBalance (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<bigint> {
   const id = new IdentifierWASM(identifier)
@@ -42,7 +43,7 @@ export default async function getIdentityBalance (grpcPool: GRPCConnectionPool, 
   const {
     rootHash,
     balance
-  } = verifyIdentityBalanceProof(proof.grovedbProof, id.bytes(), true, PlatformVersionWASM.PLATFORM_V9)
+  } = verifyIdentityBalanceProof(proof.grovedbProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
 
   if (balance == null) {
     throw new Error(`Failed to fetch balance for identifier ${id.base58()}`)

@@ -1,10 +1,11 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { GetEpochsInfoRequest } from '../../proto/generated/platform.js'
-import { PlatformVersionWASM, verifyEpochsInfoProof } from 'pshenmic-dpp'
+import { verifyEpochsInfoProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { UInt32Value } from '../../proto/generated/google/protobuf/wrappers.js'
+import {LATEST_PLATFORM_VERSION} from "../constants.js";
 
 export interface EpochInfo {
   number: number
@@ -57,7 +58,7 @@ export default async function epochs (grpcPool: GRPCConnectionPool, count: numbe
     start,
     count,
     ascending,
-    PlatformVersionWASM.PLATFORM_V9
+    LATEST_PLATFORM_VERSION
   )
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 

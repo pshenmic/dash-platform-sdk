@@ -1,10 +1,11 @@
 import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/platform.js'
-import { IdentifierWASM, IdentityPublicKeyWASM, PlatformVersionWASM, verifyIdentityKeysByIdentifierProof } from 'pshenmic-dpp'
+import { IdentifierWASM, IdentityPublicKeyWASM, verifyIdentityKeysByIdentifierProof } from 'pshenmic-dpp'
 import { IdentifierLike } from '../types.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import {LATEST_PLATFORM_VERSION} from "../constants.js";
 
 export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<IdentityPublicKeyWASM[]> {
   const id = new IdentifierWASM(identifier)
@@ -48,7 +49,7 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPoo
   const {
     rootHash,
     identity
-  } = verifyIdentityKeysByIdentifierProof(proof.grovedbProof, id.bytes(), null, false, false, true, null, null, PlatformVersionWASM.PLATFORM_V9)
+  } = verifyIdentityKeysByIdentifierProof(proof.grovedbProof, id.bytes(), null, false, false, true, null, null, LATEST_PLATFORM_VERSION)
 
   if (identity == null) {
     throw new Error(`Identity with identifier ${id.base58()} not found`)

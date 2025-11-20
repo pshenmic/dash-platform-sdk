@@ -12,6 +12,7 @@ import { DataContractWASM, DocumentWASM, IdentifierWASM, PlatformVersionWASM, ve
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
+import {LATEST_PLATFORM_VERSION} from "../constants.js";
 
 export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 
@@ -83,7 +84,7 @@ export default async function getContestedResourceVoteState (
     allowIncludeLockedAndAbstainingVoteTally,
     count,
     startAtIdentifierInfo,
-    PlatformVersionWASM.PLATFORM_V9
+    LATEST_PLATFORM_VERSION
   )
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))

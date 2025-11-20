@@ -15,6 +15,7 @@ export default function createDocument (
     revision ?? BigInt(1),
     dataContractId,
     owner,
-    documentId
+    documentId,
+    owner,
   )
 }
