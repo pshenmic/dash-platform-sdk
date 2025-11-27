@@ -107,12 +107,13 @@ export class IdentitiesController {
 
   /**
    * Retrieve given Identity's public keys
-   * @param identifier
+   * @param identifier {IdentifierLike}
+   * @param keyIds {=number[]} optional, specific keyIds to request
    *
    * @return {Promise<IdentityPublicKeyWASM[]>}
    */
-  async getIdentityPublicKeys (identifier: IdentifierLike): Promise<IdentityPublicKeyWASM[]> {
-    return await getIdentityPublicKeys(this.grpcPool, identifier)
+  async getIdentityPublicKeys (identifier: IdentifierLike, keyIds?: number[]): Promise<IdentityPublicKeyWASM[]> {
+    return await getIdentityPublicKeys(this.grpcPool, identifier, keyIds)
   }
 
   /**

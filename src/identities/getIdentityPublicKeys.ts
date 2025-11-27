@@ -6,20 +6,31 @@ import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 
-export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<IdentityPublicKeyWASM[]> {
+export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPool, identifier: IdentifierLike, keyIds?: number[]): Promise<IdentityPublicKeyWASM[]> {
   const id = new IdentifierWASM(identifier)
+
+  let requestType: KeyRequestType = {
+    request: {
+      oneofKind: 'allKeys',
+      allKeys: {}
+    }
+  }
+
+  if (keyIds != null) {
+    requestType = {
+      request: {
+        oneofKind: 'specificKeys',
+        specificKeys: { keyIds }
+      }
+    }
+  }
 
   const getIdentityKeysRequest = GetIdentityKeysRequest.create({
     version: {
       oneofKind: 'v0',
       v0: {
         identityId: id.bytes(),
-        requestType: KeyRequestType.create({
-          request: {
-            oneofKind: 'allKeys',
-            allKeys: {}
-          }
-        }),
+        requestType: KeyRequestType.create(requestType),
         prove: true
       }
     }
@@ -48,7 +59,7 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCConnectionPoo
   const {
     rootHash,
     identity
-  } = verifyIdentityKeysByIdentifierProof(proof.grovedbProof, id.bytes(), null, false, false, true, null, null, PlatformVersionWASM.PLATFORM_V9)
+  } = verifyIdentityKeysByIdentifierProof(proof.grovedbProof, id.bytes(), keyIds != null ? keyIds : null, false, false, true, null, null, PlatformVersionWASM.PLATFORM_V9)
 
   if (identity == null) {
     throw new Error(`Identity with identifier ${id.base58()} not found`)
