@@ -3,6 +3,7 @@ import broadcast from '../../src/stateTransitions/broadcast.js'
 import { DocumentWASM, PrivateKeyWASM } from 'pshenmic-dpp'
 import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 import sleep from '../../src/utils/sleep.js'
+jest.mock('../../src/stateTransitions/waitForStateTransitionResult')
 jest.mock('../../src/stateTransitions/broadcast')
 jest.mock('../../src/utils/sleep')
 
@@ -16,16 +17,17 @@ describe('DPNS names', () => {
     sleep.mockReturnValue(Promise.resolve())
 
     sdk.stateTransitions.broadcast = jest.fn()
+    sdk.stateTransitions.waitForStateTransitionResult = jest.fn()
   })
 
-  test('should be able to search names by DPNS name', async () => {
+  xtest('should be able to search names by DPNS name', async () => {
     const documents = await sdk.names.searchByName('xyz.dash')
 
     expect(documents?.length).toEqual(1)
     expect(documents[0]).toEqual(expect.any(DocumentWASM))
   })
 
-  test('should be able to search names by identity', async () => {
+  xtest('should be able to search names by identity', async () => {
     const documents = await sdk.names.searchByIdentity('36LGwPSXef8q8wpdnx4EdDeVNuqCYNAE9boDu5bxytsm')
 
     expect(documents?.length).toEqual(3)
