@@ -47,6 +47,8 @@ service Platform {
       returns (GetTokenDirectPurchasePricesResponse);
   rpc getTokenTotalSupply(GetTokenTotalSupplyRequest)
       returns (GetTokenTotalSupplyResponse);
+  rpc waitForStateTransitionResult(WaitForStateTransitionResultRequest)
+      returns (WaitForStateTransitionResultResponse);
 }
 
 // Proof message includes cryptographic proofs for validating responses
@@ -937,4 +939,26 @@ message CanonicalVote {
     bytes block_id = 4;
     bytes state_id = 5;
     string chain_id = 99;
+}
+
+message WaitForStateTransitionResultRequest {
+  message WaitForStateTransitionResultRequestV0 {
+    bytes state_transition_hash =
+        1;          // The hash of the state transition to wait for
+    bool prove = 2; // Flag to request a proof as the response
+  }
+  oneof version { WaitForStateTransitionResultRequestV0 v0 = 1; }
+}
+
+message WaitForStateTransitionResultResponse {
+  message WaitForStateTransitionResultResponseV0 {
+    oneof result {
+      StateTransitionBroadcastError error =
+          1; // Any error that occurred during the state transition broadcast
+      Proof proof =
+          2; // Cryptographic proof for the state transition, if requested
+    }
+    ResponseMetadata metadata = 3; // Metadata about the blockchain state
+  }
+  oneof version { WaitForStateTransitionResultResponseV0 v0 = 1; }
 }
