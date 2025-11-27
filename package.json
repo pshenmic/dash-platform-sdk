@@ -58,6 +58,6 @@
     "@scure/bip39": "^2.0.0",
     "@scure/btc-signer": "^2.0.1",
     "cbor-x": "^1.6.0",
-    "pshenmic-dpp": "1.1.0-dev.7"
+    "pshenmic-dpp": "1.1.2-dev.3"
   }
 }
