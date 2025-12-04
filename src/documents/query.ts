@@ -1,6 +1,6 @@
 import { GetDocumentsRequest } from '../../proto/generated/platform.js'
-import { DocumentWASM, IdentifierWASM, PlatformVersionWASM, verifyDocumentsProof } from 'pshenmic-dpp'
-import { DAPI_DEFAULT_LIMIT } from '../constants.js'
+import { DocumentWASM, IdentifierWASM, verifyDocumentsProof } from 'pshenmic-dpp'
+import { DAPI_DEFAULT_LIMIT, LATEST_PLATFORM_VERSION } from '../constants.js'
 import { IdentifierLike } from '../types.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
@@ -82,7 +82,7 @@ export default async function query (
   const {
     rootHash,
     documents
-  } = verifyDocumentsProof(proof.grovedbProof, dataContract, documentTypeName, where, orderBy, limit, startAt?.bytes(), startAtIncluded, BigInt(metadata?.timeMs), PlatformVersionWASM.PLATFORM_V9)
+  } = verifyDocumentsProof(proof.grovedbProof, dataContract, documentTypeName, where, orderBy, limit, startAt?.bytes(), startAtIncluded, BigInt(metadata?.timeMs), LATEST_PLATFORM_VERSION)
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)

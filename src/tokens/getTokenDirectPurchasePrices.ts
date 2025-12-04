@@ -1,10 +1,11 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { IdentifierLike, TokenDirectPurchasePrices } from '../types.js'
-import { IdentifierWASM, PlatformVersionWASM, verifyTokenDirectPurchasePrices } from 'pshenmic-dpp'
+import { IdentifierWASM, verifyTokenDirectPurchasePrices } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import { GetTokenDirectPurchasePricesRequest } from '../../proto/generated/platform.js'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getTokenDirectPurchasePrices (grpcPool: GRPCConnectionPool, tokenIdentifiers: IdentifierLike[]): Promise<TokenDirectPurchasePrices[]> {
   const tokenIds = tokenIdentifiers.map(tokenId => new IdentifierWASM(tokenId).bytes())
@@ -43,7 +44,7 @@ export default async function getTokenDirectPurchasePrices (grpcPool: GRPCConnec
     proof.grovedbProof,
     tokenIds,
     true,
-    PlatformVersionWASM.PLATFORM_V9
+    LATEST_PLATFORM_VERSION
   )
 
   if (prices == null) {

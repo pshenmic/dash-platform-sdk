@@ -1,11 +1,12 @@
 import { GetIdentityByNonUniquePublicKeyHashRequest } from '../../proto/generated/platform.js'
-import { IdentityWASM, PlatformVersionWASM, verifyIdentifierByNonUniquePublicKeyHashProof } from 'pshenmic-dpp'
+import { IdentityWASM, verifyIdentifierByNonUniquePublicKeyHashProof } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import hexToBytes from '../utils/hexToBytes.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import getIdentityByIdentifier from './getIdentityByIdentifier.js'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRPCConnectionPool, hex: string): Promise<IdentityWASM> {
   const getIdentityByNonUniquePublicKeyHashRequest = GetIdentityByNonUniquePublicKeyHashRequest.create({
@@ -45,7 +46,7 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
   const {
     rootHash,
     identifier
-  } = verifyIdentifierByNonUniquePublicKeyHashProof(proof.grovedbIdentityPublicKeyHashProof.grovedbProof, false, hexToBytes(hex), undefined, PlatformVersionWASM.PLATFORM_V9)
+  } = verifyIdentifierByNonUniquePublicKeyHashProof(proof.grovedbIdentityPublicKeyHashProof.grovedbProof, false, hexToBytes(hex), undefined, LATEST_PLATFORM_VERSION)
 
   if (identifier == null) {
     throw new Error(`Identity with non unique public key hash ${hex} not found`)

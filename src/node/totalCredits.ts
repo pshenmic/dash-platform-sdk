@@ -1,7 +1,12 @@
 import { GetTotalCreditsInPlatformRequest } from '../../proto/generated/platform.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
-import { HALVING_INTERVAL, MAINNET_ACTIVATION_HEIGHT, TESTNET_ACTIVATION_HEIGHT } from '../constants.js'
-import { PlatformVersionWASM, verifyTotalCreditsProof } from 'pshenmic-dpp'
+import {
+  HALVING_INTERVAL,
+  LATEST_PLATFORM_VERSION,
+  MAINNET_ACTIVATION_HEIGHT,
+  TESTNET_ACTIVATION_HEIGHT
+} from '../constants.js'
+import { verifyTotalCreditsProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
@@ -42,7 +47,7 @@ export default async function totalCredits (grpcPool: GRPCConnectionPool, networ
     HALVING_INTERVAL,
     activationHeight,
     Number(metadata.height),
-    PlatformVersionWASM.PLATFORM_V9
+    LATEST_PLATFORM_VERSION
   )
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))

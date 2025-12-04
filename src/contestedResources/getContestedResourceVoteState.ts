@@ -12,6 +12,7 @@ import { DataContractWASM, DocumentWASM, IdentifierWASM, PlatformVersionWASM, ve
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 
@@ -83,7 +84,7 @@ export default async function getContestedResourceVoteState (
     allowIncludeLockedAndAbstainingVoteTally,
     count,
     startAtIdentifierInfo,
-    PlatformVersionWASM.PLATFORM_V9
+    LATEST_PLATFORM_VERSION
   )
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
@@ -103,12 +104,13 @@ export default async function getContestedResourceVoteState (
 
   return {
     contenders: contenders.map(contender => ({
-      ...contender,
       identifier: contender.identityId,
-      document: contender.serializedDocument != null ? DocumentWASM.fromBytes(contender.serializedDocument, contract, documentTypeName, PlatformVersionWASM.PLATFORM_V9) : undefined
+      document: contender.serializedDocument != null ? DocumentWASM.fromBytes(contender.serializedDocument, contract, documentTypeName, PlatformVersionWASM.PLATFORM_V9) : undefined,
+      voteTally: contender.voteTally
     })),
     abstainVoteTally: result?.abstainingVoteTally ?? 0,
     lockVoteTally: result?.lockedVoteTally ?? 0,
+    skipped: result?.skipped === 1,
     finishedVoteInfo: (winner != null)
       ? {
           type: winner.type,

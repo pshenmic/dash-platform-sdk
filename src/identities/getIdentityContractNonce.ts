@@ -1,10 +1,11 @@
 import { GetIdentityContractNonceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike } from '../types.js'
-import { IdentifierWASM, PlatformVersionWASM, verifyIdentityContractNonceProof } from 'pshenmic-dpp'
+import { IdentifierWASM, verifyIdentityContractNonceProof } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 const IDENTITY_CONTRACT_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 
@@ -46,7 +47,7 @@ export default async function getIdentityContractNonce (grpcPool: GRPCConnection
   const {
     rootHash,
     contractNonce
-  } = verifyIdentityContractNonceProof(proof.grovedbProof, identityIdentifier.bytes(), dataContractIdentifier.bytes(), true, PlatformVersionWASM.PLATFORM_V9)
+  } = verifyIdentityContractNonceProof(proof.grovedbProof, identityIdentifier.bytes(), dataContractIdentifier.bytes(), true, LATEST_PLATFORM_VERSION)
 
   if (contractNonce == null) {
     return BigInt(0)

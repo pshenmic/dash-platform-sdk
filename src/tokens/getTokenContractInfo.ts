@@ -1,10 +1,11 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { GetTokenContractInfoRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike } from '../types.js'
-import { IdentifierWASM, PlatformVersionWASM, verifyTokenContractInfoProof } from 'pshenmic-dpp'
+import { IdentifierWASM, verifyTokenContractInfoProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface TokenContractInfo {
   dataContractId: IdentifierWASM
@@ -51,7 +52,7 @@ export default async function getTokenContractInfo (grpcPool: GRPCConnectionPool
     proof.grovedbProof,
     tokenId,
     true,
-    PlatformVersionWASM.PLATFORM_V9
+    LATEST_PLATFORM_VERSION
   )
 
   if (contractInfo == null) {

@@ -205,6 +205,7 @@ describe('Contested Resources', () => {
     expect(voteState.contenders.length).toBeGreaterThan(0)
     expect(voteState.abstainVoteTally).toBeDefined()
     expect(voteState.lockVoteTally).toBeDefined()
+    expect(voteState.skipped).toBeDefined()
   })
 
   test('should be able to get contested resource vote state for incorrect values', async () => {

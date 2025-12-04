@@ -1,10 +1,11 @@
 import { GetIdentityByPublicKeyHashRequest } from '../../proto/generated/platform.js'
-import { IdentityWASM, PlatformVersionWASM, verifyIdentityByUniqueKeyHashProof } from 'pshenmic-dpp'
+import { IdentityWASM, verifyIdentityByUniqueKeyHashProof } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import hexToBytes from '../utils/hexToBytes.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getIdentityByPublicKeyHash (grpcPool: GRPCConnectionPool, hex: string): Promise<IdentityWASM> {
   const getIdentityByPublicKeyHashRequest = GetIdentityByPublicKeyHashRequest.create({
@@ -40,7 +41,7 @@ export default async function getIdentityByPublicKeyHash (grpcPool: GRPCConnecti
   const {
     rootHash,
     identity
-  } = verifyIdentityByUniqueKeyHashProof(proof.grovedbProof, hexToBytes(hex), PlatformVersionWASM.PLATFORM_V9)
+  } = verifyIdentityByUniqueKeyHashProof(proof.grovedbProof, hexToBytes(hex), LATEST_PLATFORM_VERSION)
 
   if (identity == null) {
     throw new Error(`Identity with public key hash ${hex} not found`)
