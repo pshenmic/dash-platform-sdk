@@ -5,6 +5,7 @@ import bytesToHex from './bytesToHex.js'
 import { createVoterIdentityId } from './createVoterIdentityId.js'
 import { IdentifierWASM } from 'pshenmic-dpp'
 import { createMasternodeIdentityId } from './createMasternodeIdentityId.js'
+import {IdentifierLike} from "../types.js";
 
 /**
  * Collection of conversion functions
@@ -88,5 +89,20 @@ export class UtilsController {
    * */
   createMasternodeIdentifier (proTxHash: string): IdentifierWASM {
     return createMasternodeIdentityId(proTxHash)
+  }
+
+  /**
+   * Validates an identifier, accepts string or buffer
+   *
+   * @param identifier {IdentifierLike} identifier to test
+   * @return {boolean}
+   * */
+  validateIdentifier (identifier: IdentifierLike): boolean {
+    try {
+      new IdentifierWASM(identifier)
+      return true
+    } catch (e) {
+      return false
+    }
   }
 }
