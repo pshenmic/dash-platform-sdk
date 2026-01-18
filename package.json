@@ -48,7 +48,7 @@
     "docs": "typedoc"
   },
   "peerDependencies": {
-    "pshenmic-dpp": "1.1.2-dev.4"
+    "pshenmic-dpp": "1.1.2-dev.8"
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.6.0",
@@ -59,6 +59,6 @@
     "@scure/bip39": "^2.0.0",
     "@scure/btc-signer": "^2.0.1",
     "cbor-x": "^1.6.0",
-    "pshenmic-dpp": "1.1.2-dev.4"
+    "pshenmic-dpp": "1.1.2-dev.8"
   }
 }
