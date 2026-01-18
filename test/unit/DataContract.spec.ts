@@ -16,7 +16,7 @@ describe('DataContract', () => {
     identityNonce = BigInt(11)
 
     config = {
-      $format_version: '0',
+      $format_version: '1',
       canBeDeleted: true,
       readonly: true,
       keepsHistory: false,
@@ -24,7 +24,8 @@ describe('DataContract', () => {
       documentsMutableContractDefault: false,
       documentsCanBeDeletedContractDefault: true,
       requiresIdentityEncryptionBoundedKey: null,
-      requiresIdentityDecryptionBoundedKey: null
+      requiresIdentityDecryptionBoundedKey: null,
+      sizedIntegerTypes: true
     }
 
     schema = {
