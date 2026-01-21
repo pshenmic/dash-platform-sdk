@@ -1,4 +1,4 @@
-import { NodeStatus } from '../types.js'
+import { NodeStatus } from '../../types.js'
 import { GetStatusRequest } from '../../proto/generated/platform.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import bytesToHex from '../utils/bytesToHex.js'

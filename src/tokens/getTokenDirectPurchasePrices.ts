@@ -1,5 +1,5 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
-import { IdentifierLike, TokenDirectPurchasePrices } from '../types.js'
+import { IdentifierLike, TokenDirectPurchasePrices } from '../../types.js'
 import { IdentifierWASM, verifyTokenDirectPurchasePrices } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'

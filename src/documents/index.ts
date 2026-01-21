@@ -1,4 +1,4 @@
-import { DocumentTransitionParams, IdentifierLike } from '../types.js'
+import { DocumentTransitionParams, IdentifierLike } from '../../types.js'
 import createDocument from './create.js'
 import {
   DocumentWASM,

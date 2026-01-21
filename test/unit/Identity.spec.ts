@@ -4,7 +4,7 @@ import {
   IdentityWASM, KeyType,
   PrivateKeyWASM, Purpose, SecurityLevel, StateTransitionWASM
 } from 'pshenmic-dpp'
-import { DashPlatformSDK, IdentityPublicKeyInCreation } from '../../src/types.js'
+import { DashPlatformSDK, IdentityPublicKeyInCreation } from '../../types.js'
 import { base58 } from '@scure/base'
 let sdk: DashPlatformSDK
 

@@ -6,7 +6,7 @@ import {
   StateTransitionWASM,
   IdentityCreditWithdrawalTransitionWASM
 } from 'pshenmic-dpp'
-import { IdentityTransitionParams } from '../types.js'
+import { IdentityTransitionParams } from '../../types.js'
 
 const identityTransitionsMap = {
   create: {

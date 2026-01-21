@@ -2,7 +2,7 @@ import { HDKey } from '@scure/bip32'
 import mnemonicToSeed from './mnemonicToSeed.js'
 import deriveChild from './deriveChild.js'
 import derivePath from './derivePath.js'
-import { Network } from '../types.js'
+import { Network } from '../../types.js'
 import { p2pkh } from '@scure/btc-signer'
 
 const DASH_VERSIONS = {

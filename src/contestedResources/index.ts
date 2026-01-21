@@ -1,5 +1,5 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
-import { ContestedResourceVoteState, ContestedStateResultType } from '../types.js'
+import { ContestedResourceVoteState, ContestedStateResultType } from '../../types.js'
 import { DataContractWASM } from 'pshenmic-dpp'
 import getContestedResourceVoteState, { StartAtIdentifierInfo } from './getContestedResourceVoteState.js'
 

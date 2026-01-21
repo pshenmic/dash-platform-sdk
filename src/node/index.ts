@@ -1,6 +1,6 @@
 import getStatus from './status.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
-import { Network, NodeStatus } from '../types.js'
+import { Network, NodeStatus } from '../../types.js'
 import getEpochsInfo, { EpochInfo } from './epochs.js'
 import getTotalCredits from './totalCredits.js'
 

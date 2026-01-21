@@ -15,14 +15,23 @@ export {
   IdentifierWASM,
   KeyType, Purpose, SecurityLevel,
   TokenEmergencyActionWASM,
-  TokenPricingScheduleWASM
+  TokenPricingScheduleWASM,
+  StateTransitionWASM,
+  BatchTransitionWASM,
+  IdentityPublicKeyWASM,
+  PrivateKeyWASM,
+  DataContractUpdateTransitionWASM,
+  IdentityWASM,
+  IdentityUpdateTransitionWASM,
+  IdentityCreditTransferWASM,
+  MasternodeVoteTransitionWASM
 } from 'pshenmic-dpp'
 
 export type IdentifierLike = IdentifierWASM | string | Uint8Array
 
 export type Network = 'mainnet' | 'testnet'
 
-export { DashPlatformSDK } from './DashPlatformSDK.js'
+export { DashPlatformSDK } from './src/DashPlatformSDK.js'
 
 export type MasternodeList = Record<string, MasternodeInfo>
 
@@ -170,7 +179,7 @@ export interface DataContractConfig {
   documentsMutableContractDefault: boolean
   documentsCanBeDeletedContractDefault: boolean
   requiresIdentityEncryptionBoundedKey?: number | null
-  requiresIdentityDecryptionBoundedKey?: number | null,
+  requiresIdentityDecryptionBoundedKey?: number | null
   sizedIntegerTypes: boolean
 }
 
