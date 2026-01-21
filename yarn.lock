@@ -5214,10 +5214,10 @@ protoc@^32.1.0:
   resolved "https://registry.npmjs.org/protoc/-/protoc-32.1.0.tgz"
   integrity sha512-yICJJCGHJLM9ao5W2V4CGp1d7xuBsdHzgVDw6L8mdDtoIcqzN3arNPOm9Jx4Ufp5vfhQfJGkNUDo6mm/SLPdXw==
 
-pshenmic-dpp@1.1.2-dev.5:
-  version "1.1.2-dev.5"
-  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.1.2-dev.5.tgz#e9f3dbb001dc8998aae2454faa91e164f5dde573"
-  integrity sha512-Pw7Cn+tCeZRGsOO3Dhu/SlAQ9angttWqr/xqfPXAuPvEQc2LIl8Ab7W+Gtwy+oiOMjTRdtX0YNEjpVxAxVYUHw==
+pshenmic-dpp@1.1.2-dev.8:
+  version "1.1.2-dev.8"
+  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.1.2-dev.8.tgz#ecb15836c6ec9cbc994d7535f360e020f10e2e04"
+  integrity sha512-P3czQ6uJYHr7XJ2OSWUH+FNej7Qpa+bz8Ld7+FtUqjGCBpwK6GTGQy1PDmACT9nP8+DXpFTUGu7Au9u66kvcdA==
   dependencies:
     fflate "^0.8.2"
 

@@ -170,7 +170,8 @@ export interface DataContractConfig {
   documentsMutableContractDefault: boolean
   documentsCanBeDeletedContractDefault: boolean
   requiresIdentityEncryptionBoundedKey?: number | null
-  requiresIdentityDecryptionBoundedKey?: number | null
+  requiresIdentityDecryptionBoundedKey?: number | null,
+  sizedIntegerTypes: boolean
 }
 
 export type TokenTransitionType = 'burn' | 'mint' | 'transfer' | 'freeze' | 'unfreeze' | 'destroyFrozenFunds' | 'emergencyAction' | 'directPurchase' | 'setPriceForDirectPurchase'
