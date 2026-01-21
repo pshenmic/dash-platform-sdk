@@ -1,6 +1,6 @@
 import { DataContractWASM, IdentifierWASM, verifyContractProof } from 'pshenmic-dpp'
 import { GetDataContractRequest } from '../../proto/generated/platform.js'
-import { IdentifierLike } from '../types.js'
+import { IdentifierLike } from '../../types.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'

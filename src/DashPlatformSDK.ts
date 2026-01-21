@@ -10,7 +10,7 @@ import { DataContractsController } from './dataContracts/index.js'
 import { ContestedResourcesController } from './contestedResources/index.js'
 import { TokensController } from './tokens/index.js'
 import { VotingController } from './voting/index.js'
-import { Network } from './types.js'
+import { Network } from '../types.js'
 
 export interface GRPCOptions {
   poolLimit: 5

@@ -15,14 +15,23 @@ export {
   IdentifierWASM,
   KeyType, Purpose, SecurityLevel,
   TokenEmergencyActionWASM,
-  TokenPricingScheduleWASM
+  TokenPricingScheduleWASM,
+  StateTransitionWASM,
+  BatchTransitionWASM,
+  IdentityPublicKeyWASM,
+  PrivateKeyWASM,
+  DataContractUpdateTransitionWASM,
+  IdentityWASM,
+  IdentityUpdateTransitionWASM,
+  IdentityCreditTransferWASM,
+  MasternodeVoteTransitionWASM
 } from 'pshenmic-dpp'
 
 export type IdentifierLike = IdentifierWASM | string | Uint8Array
 
 export type Network = 'mainnet' | 'testnet'
 
-export { DashPlatformSDK } from './DashPlatformSDK.js'
+export { DashPlatformSDK } from './src/DashPlatformSDK.js'
 
 export type MasternodeList = Record<string, MasternodeInfo>
 
@@ -68,8 +77,8 @@ export interface NodeStatus {
     software?: {
       dapi: string
       drive?:
-      | string
-      | undefined
+          | string
+          | undefined
       tenderdash?: string | undefined
     } | undefined
     protocol?: {
@@ -116,11 +125,11 @@ export interface NodeStatus {
   time: {
     local: string
     block?:
-    | string
-    | undefined
+        | string
+        | undefined
     genesis?:
-    | string
-    | undefined
+        | string
+        | undefined
     epoch?: number | undefined
   } | undefined
 }

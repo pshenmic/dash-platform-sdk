@@ -1,6 +1,6 @@
 import { GetIdentityNonceRequest } from '../../proto/generated/platform.js'
 import { IdentifierWASM, verifyIdentityNonceProof } from 'pshenmic-dpp'
-import { IdentifierLike } from '../types.js'
+import { IdentifierLike } from '../../types.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'

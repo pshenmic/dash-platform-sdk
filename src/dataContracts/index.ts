@@ -1,4 +1,4 @@
-import { DataContractConfig, IdentifierLike } from '../types.js'
+import { DataContractConfig, IdentifierLike } from '../../types.js'
 import getDataContractByIdentifier from './getDataContractByIdentifier.js'
 import { DataContractWASM, PlatformVersionWASM, StateTransitionWASM, TokenConfigurationWASM } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool.js'

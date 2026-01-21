@@ -10,7 +10,7 @@ import { verifyTotalCreditsProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import { Network } from '../types.js'
+import { Network } from '../../types.js'
 
 export default async function totalCredits (grpcPool: GRPCConnectionPool, network: Network): Promise<bigint> {
   const getTotalCreditsInPlatformRequest = GetTotalCreditsInPlatformRequest.create({

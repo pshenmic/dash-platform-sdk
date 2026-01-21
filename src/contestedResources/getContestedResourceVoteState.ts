@@ -1,7 +1,7 @@
 import {
   ContestedResourceVoteState,
   ContestedStateResultType
-} from '../types.js'
+} from '../../types.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import {
   GetContestedResourceVoteStateRequest,

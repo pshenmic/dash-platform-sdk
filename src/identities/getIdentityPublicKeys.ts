@@ -1,6 +1,6 @@
 import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/platform.js'
 import { IdentifierWASM, IdentityPublicKeyWASM, verifyIdentityKeysByIdentifierProof } from 'pshenmic-dpp'
-import { IdentifierLike } from '../types.js'
+import { IdentifierLike } from '../../types.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'

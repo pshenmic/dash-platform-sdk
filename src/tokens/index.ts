@@ -5,7 +5,7 @@ import {
   TokenTotalSupply,
   TokenTransitionParams,
   TokenTransitionType
-} from '../types.js'
+} from '../../types.js'
 import getIdentitiesTokenBalances, { IdentitiesTokenBalances } from './getIdentitiesTokenBalances.js'
 import getIdentityTokensBalances, { IdentityTokenBalances } from './getIdentityTokensBalances.js'
 import getTokenContractInfo, { TokenContractInfo } from './getTokenContractInfo.js'

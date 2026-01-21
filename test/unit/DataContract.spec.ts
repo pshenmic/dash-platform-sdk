@@ -1,5 +1,5 @@
 import { DataContractWASM, StateTransitionWASM } from 'pshenmic-dpp'
-import { DashPlatformSDK, DataContractConfig } from '../../src/types.js'
+import { DashPlatformSDK, DataContractConfig } from '../../types.js'
 
 let sdk: DashPlatformSDK
 
