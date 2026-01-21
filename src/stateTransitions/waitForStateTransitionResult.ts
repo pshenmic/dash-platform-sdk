@@ -66,7 +66,7 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCConnec
     }
   } else if (v0.result.oneofKind === 'error') {
     const { code, message, data } = v0.result.error
-    throw new Error(`State transition ${txHash} failed to execute with code ${String(code)}, message: ${message}, data: ${base64.encode(data)}`)
+    throw new Error(`State transition ${txHash} failed to execute with code ${String(code)}, message: ${String(message)}, data: ${base64.encode(data)}`)
   } else {
     throw new Error('Unexpected oneOfKind returned for waitForStateTransitionResult')
   }
