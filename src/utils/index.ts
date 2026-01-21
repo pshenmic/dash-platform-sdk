@@ -5,7 +5,7 @@ import bytesToHex from './bytesToHex.js'
 import { createVoterIdentityId } from './createVoterIdentityId.js'
 import { IdentifierWASM } from 'pshenmic-dpp'
 import { createMasternodeIdentityId } from './createMasternodeIdentityId.js'
-import {IdentifierLike} from "../../types.js";
+import { IdentifierLike } from '../../types.js'
 
 /**
  * Collection of conversion functions
@@ -99,6 +99,7 @@ export class UtilsController {
    * */
   validateIdentifier (identifier: IdentifierLike): boolean {
     try {
+      // eslint-disable-next-line
       new IdentifierWASM(identifier)
       return true
     } catch (e) {

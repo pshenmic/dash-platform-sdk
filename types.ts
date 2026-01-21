@@ -77,8 +77,8 @@ export interface NodeStatus {
     software?: {
       dapi: string
       drive?:
-          | string
-          | undefined
+      | string
+      | undefined
       tenderdash?: string | undefined
     } | undefined
     protocol?: {
@@ -125,11 +125,11 @@ export interface NodeStatus {
   time: {
     local: string
     block?:
-        | string
-        | undefined
+    | string
+    | undefined
     genesis?:
-        | string
-        | undefined
+    | string
+    | undefined
     epoch?: number | undefined
   } | undefined
 }
@@ -179,7 +179,7 @@ export interface DataContractConfig {
   documentsMutableContractDefault: boolean
   documentsCanBeDeletedContractDefault: boolean
   requiresIdentityEncryptionBoundedKey?: number | null
-  requiresIdentityDecryptionBoundedKey?: number | null,
+  requiresIdentityDecryptionBoundedKey?: number | null
   sizedIntegerTypes: boolean
 }
 
