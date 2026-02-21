@@ -1,7 +1,9 @@
 import {
+  BatchTransitionWASM,
   BlockInfoWASM,
-  PlatformVersionWASM,
+  DataContractWASM,
   StateTransitionWASM,
+  MasternodeVoteTransitionWASM,
   verifyStateTransitionResult
 } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
@@ -11,6 +13,8 @@ import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { base64 } from '@scure/base'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
+import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 
 export default async function waitForStateTransitionResult (grpcPool: GRPCConnectionPool, stateTransition: StateTransitionWASM): Promise<void> {
   const txHash = stateTransition.hash(false)
@@ -48,10 +52,29 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCConnec
 
     const { timeMs, height, coreChainLockedHeight, epoch } = metadata
 
+    const knownContracts: DataContractWASM[] = []
+
+    if (stateTransition.getActionType() === 'BATCH') {
+      const batchTransition = BatchTransitionWASM.fromStateTransition(stateTransition)
+      const [transition] = batchTransition.transitions
+
+      const dataContract = await getDataContractByIdentifier(grpcPool, transition.dataContractId)
+
+      knownContracts.push(dataContract)
+    }
+
+    if (stateTransition.getActionType() === 'MASTERNODE_VOTE') {
+      const masternodeVote = MasternodeVoteTransitionWASM.fromStateTransition(stateTransition)
+
+      const dataContract = await getDataContractByIdentifier(grpcPool, masternodeVote.vote.votePoll.contractId)
+
+      knownContracts.push(dataContract)
+    }
+
     const {
       rootHash,
       result
-    } = verifyStateTransitionResult(proof.grovedbProof, stateTransition, new BlockInfoWASM(BigInt(timeMs), BigInt(height), coreChainLockedHeight, epoch), true, PlatformVersionWASM.PLATFORM_V9)
+    } = verifyStateTransitionResult(proof.grovedbProof, stateTransition, new BlockInfoWASM(BigInt(timeMs), BigInt(height), coreChainLockedHeight, epoch), knownContracts, LATEST_PLATFORM_VERSION)
 
     if (result == null) {
       throw new Error('State transition result was null')

@@ -8,7 +8,7 @@ import {
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_ResultType,
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 } from '../../proto/generated/platform.js'
-import { DataContractWASM, DocumentWASM, IdentifierWASM, PlatformVersionWASM, verifyVotePollVoteStateProof } from 'pshenmic-dpp'
+import { DataContractWASM, DocumentWASM, IdentifierWASM, verifyVotePollVoteStateProof } from 'pshenmic-dpp'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
@@ -105,7 +105,7 @@ export default async function getContestedResourceVoteState (
   return {
     contenders: contenders.map(contender => ({
       identifier: contender.identityId,
-      document: contender.serializedDocument != null ? DocumentWASM.fromBytes(contender.serializedDocument, contract, documentTypeName, PlatformVersionWASM.PLATFORM_V9) : undefined,
+      document: contender.serializedDocument != null ? DocumentWASM.fromBytes(contender.serializedDocument, contract, documentTypeName, LATEST_PLATFORM_VERSION) : undefined,
       voteTally: contender.voteTally
     })),
     abstainVoteTally: result?.abstainingVoteTally ?? 0,
