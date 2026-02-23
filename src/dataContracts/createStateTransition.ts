@@ -20,7 +20,6 @@ export default function createStateTransition (dataContract: DataContractWASM, t
     throw new Error(`Unknown DataContract transition type: ${type}. Should be 'create' or 'update'.`)
   }
 
-  // @ts-expect-error
   const dataContractTransition = new TransitionClass(dataContract, identityNonce)
 
   return dataContractTransition.toStateTransition()

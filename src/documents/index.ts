@@ -5,7 +5,7 @@ import {
   IdentifierWASM,
   PrefundedVotingBalanceWASM,
   StateTransitionWASM,
-  TokenPaymentInfoWASM
+  TokenPaymentInfoWASM, WhereClause
 } from 'pshenmic-dpp'
 import createStateTransition from './createStateTransition.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
@@ -50,7 +50,7 @@ export class DocumentsController {
    * @param startAt {IdentifierLike=} Optional offset, where startAt is an identifier of the document. Use identifier of last item in previous response
    * @param startAfter {IdentifierLike=} Same as previous, but with exclusion. Cannot be set if startAt already provided
    */
-  async query (dataContractId: IdentifierLike, documentType: string, where?: ArrayLike<any>, orderBy?: ArrayLike<any>, limit?: number, startAt?: IdentifierWASM, startAfter?: IdentifierWASM): Promise<DocumentWASM[]> {
+  async query (dataContractId: IdentifierLike, documentType: string, where?: WhereClause[], orderBy?: string[][], limit?: number, startAt?: IdentifierWASM, startAfter?: IdentifierWASM): Promise<DocumentWASM[]> {
     if (startAfter != null && startAt !== null) {
       throw new Error('You may only set either startAfter or startAt at once')
     }

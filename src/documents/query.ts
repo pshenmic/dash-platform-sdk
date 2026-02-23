@@ -1,5 +1,5 @@
 import { GetDocumentsRequest } from '../../proto/generated/platform.js'
-import { DocumentWASM, IdentifierWASM, verifyDocumentsProof } from 'pshenmic-dpp'
+import { DocumentWASM, IdentifierWASM, verifyDocumentsProof, WhereClause } from 'pshenmic-dpp'
 import { DAPI_DEFAULT_LIMIT, LATEST_PLATFORM_VERSION } from '../constants.js'
 import { IdentifierLike } from '../../types.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
@@ -13,8 +13,8 @@ export default async function query (
   grpcPool: GRPCConnectionPool,
   dataContractId: IdentifierLike,
   documentTypeName: string,
-  where?: ArrayLike<any>,
-  orderBy?: ArrayLike<any>,
+  where?: WhereClause[],
+  orderBy?: string[][],
   limit: number | undefined = 100,
   startAt?: IdentifierWASM,
   startAfter?: IdentifierWASM

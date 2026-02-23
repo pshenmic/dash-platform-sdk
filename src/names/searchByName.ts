@@ -1,5 +1,5 @@
 import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js'
-import { DocumentWASM } from 'pshenmic-dpp'
+import { DocumentWASM, WhereClause } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import query from '../documents/query.js'
 
@@ -11,7 +11,7 @@ export default async function search (grpcPool: GRPCConnectionPool, name: string
   const normalizedParentDomainName = convertToHomographSafeChars(parentDomainName)
   const normalizedLabelPrefix = convertToHomographSafeChars(label)
 
-  const where = [
+  const where: WhereClause[] = [
     ['normalizedParentDomainName', '==', normalizedParentDomainName],
     ['normalizedLabel', 'startsWith', normalizedLabelPrefix]
   ]

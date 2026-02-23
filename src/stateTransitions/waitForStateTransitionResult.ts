@@ -1,6 +1,6 @@
 import {
   BatchTransitionWASM,
-  BlockInfoWASM,
+  BlockInfo,
   DataContractWASM,
   StateTransitionWASM,
   MasternodeVoteTransitionWASM,
@@ -71,10 +71,17 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCConnec
       knownContracts.push(dataContract)
     }
 
+    const blockInfo: BlockInfo = {
+      timeMs: BigInt(timeMs),
+      height: BigInt(height),
+      coreHeight: coreChainLockedHeight,
+      epoch
+    }
+
     const {
       rootHash,
       result
-    } = verifyStateTransitionResult(proof.grovedbProof, stateTransition, new BlockInfoWASM(BigInt(timeMs), BigInt(height), coreChainLockedHeight, epoch), knownContracts, LATEST_PLATFORM_VERSION)
+    } = verifyStateTransitionResult(proof.grovedbProof, stateTransition, blockInfo, knownContracts, LATEST_PLATFORM_VERSION)
 
     if (result == null) {
       throw new Error('State transition result was null')
