@@ -47,14 +47,10 @@
     "test": "jest",
     "docs": "typedoc"
   },
-  "peerDependencies": {
-    "pshenmic-dpp": "2.0.0-dev.3"
-  },
   "dependencies": {
     "@bufbuild/protobuf": "^2.6.0",
     "@protobuf-ts/grpcweb-transport": "^2.11.1",
     "@scure/base": "^1.2.4",
-
     "@scure/bip32": "^2.0.0",
     "@scure/bip39": "^2.0.0",
     "@scure/btc-signer": "^2.0.1",
