@@ -80,6 +80,8 @@ export default async function getContestedResourceVoteState (
     documentTypeName,
     indexName,
     indexValues,
+    // same enums
+    // @ts-expect-error
     resultType,
     allowIncludeLockedAndAbstainingVoteTally,
     count,
@@ -114,7 +116,7 @@ export default async function getContestedResourceVoteState (
     finishedVoteInfo: (winner != null)
       ? {
           type: winner.type,
-          wonByIdentityId: winner.identityId != null ? new IdentifierWASM(winner.identityId) : undefined,
+          wonByIdentityId: 'identityId' in winner ? new IdentifierWASM(winner.identityId) : undefined,
           finishedAtBlockHeight: winner.blockInfo.height,
           finishedAtCoreBlockHeight: winner.blockInfo.coreHeight,
           finishedAtBlockTimeMs: winner.blockInfo.timeMs,

@@ -14,7 +14,6 @@ import {
   IdentityPublicKeyWASM,
   IdentityWASM,
   OutPointWASM,
-  PoolingWASM,
   StateTransitionWASM
 } from 'pshenmic-dpp'
 import createStateTransition from './createStateTransition.js'
@@ -176,8 +175,7 @@ export class IdentitiesController {
     }
 
     if (type === 'withdrawal') {
-      // @ts-expect-error
-      params.pooling = params.pooling != null ? PoolingWASM[params.pooling] : PoolingWASM.Standard
+      params.pooling = params.pooling ?? 'Standard'
       params.coreFeePerByte = params.coreFeePerByte ?? 1
       params.outputScript = params.outputScript ?? (params.withdrawalAddress != null ? CoreScriptWASM.newP2PKH(base58.decode(params.withdrawalAddress).slice(1, 21)) : undefined)
     }

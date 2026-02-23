@@ -39,7 +39,7 @@ describe('Tokens', () => {
 
     expect(tokensPrices.length).toEqual(2)
     expect(tokensPrices[0].tokenId).toBeTruthy()
-    expect(tokensPrices[0].price).toBeTruthy()
+    expect(tokensPrices[0].pricingSchedule).toBeTruthy()
   })
 
   test('should be able to get tokens direct purchase prices', async () => {

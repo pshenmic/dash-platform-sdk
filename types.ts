@@ -156,10 +156,10 @@ export interface Contender {
 export interface FinishedVoteInfo {
   type: string
   wonByIdentityId?: IdentifierWASM | undefined
-  finishedAtBlockHeight: string
+  finishedAtBlockHeight: bigint
   finishedAtCoreBlockHeight: number
-  finishedAtBlockTimeMs: string
-  finishedAtEpoch: number
+  finishedAtBlockTimeMs: bigint
+  finishedAtEpoch?: number
 }
 
 export interface ContestedResourceVoteState {
@@ -256,7 +256,7 @@ export interface TokenTotalSupply {
 
 export interface TokenDirectPurchasePrices {
   tokenId: IdentifierWASM
-  price: TokenPricingScheduleWASM
+  pricingSchedule?: TokenPricingScheduleWASM | undefined
 }
 
 export type ResourceVoteChoice = IdentifierLike | 'lock' | 'abstain'

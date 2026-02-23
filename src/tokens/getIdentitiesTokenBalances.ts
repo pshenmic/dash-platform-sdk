@@ -9,7 +9,7 @@ import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface IdentitiesTokenBalances {
   identityId: IdentifierWASM
-  balance?: string | undefined
+  balance?: bigint | undefined
 }
 
 export default async function getIdentitiesTokenBalances (grpcPool: GRPCConnectionPool, identifiers: IdentifierLike[], tokenIdentifier: IdentifierLike): Promise<IdentitiesTokenBalances[]> {
@@ -67,8 +67,8 @@ export default async function getIdentitiesTokenBalances (grpcPool: GRPCConnecti
   }
 
   return balances
-    .map((identityTokenBalance: { identityId: Uint8Array, balance: bigint }) => ({
-      identityId: new IdentifierWASM(identityTokenBalance.identityId),
-      balance: identityTokenBalance.balance
+    .map(({ id, balance }) => ({
+      identityId: new IdentifierWASM(id),
+      balance
     }))
 }

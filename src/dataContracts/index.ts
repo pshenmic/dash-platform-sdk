@@ -1,6 +1,11 @@
 import { DataContractConfig, IdentifierLike } from '../../types.js'
 import getDataContractByIdentifier from './getDataContractByIdentifier.js'
-import { DataContractWASM, PlatformVersionWASM, StateTransitionWASM, TokenConfigurationWASM } from 'pshenmic-dpp'
+import {
+  DataContractTokens,
+  DataContractWASM,
+  PlatformVersionWASM,
+  StateTransitionWASM
+} from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import createDataContract from './create.js'
 import createStateTransition from './createStateTransition.js'
@@ -33,7 +38,7 @@ export class DataContractsController {
    *
    * @return {DataContractWASM}
    */
-  create (ownerId: IdentifierLike, identityNonce: bigint, schema: object, fullValidation?: boolean, tokenConfiguration?: TokenConfigurationWASM, config?: DataContractConfig, platformVersion?: PlatformVersionWASM): DataContractWASM {
+  create (ownerId: IdentifierLike, identityNonce: bigint, schema: object, fullValidation?: boolean, tokenConfiguration?: DataContractTokens[], config?: DataContractConfig, platformVersion?: PlatformVersionWASM): DataContractWASM {
     return createDataContract(ownerId, identityNonce, schema, tokenConfiguration, config, fullValidation, platformVersion)
   }
 
