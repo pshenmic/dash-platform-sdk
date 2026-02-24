@@ -5243,10 +5243,10 @@ protoc@^32.1.0:
   resolved "https://registry.npmjs.org/protoc/-/protoc-32.1.0.tgz"
   integrity sha512-yICJJCGHJLM9ao5W2V4CGp1d7xuBsdHzgVDw6L8mdDtoIcqzN3arNPOm9Jx4Ufp5vfhQfJGkNUDo6mm/SLPdXw==
 
-pshenmic-dpp@2.0.0-dev.3:
-  version "2.0.0-dev.3"
-  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-2.0.0-dev.3.tgz#d0adb9628920d62f3077261769bc66f1338275ef"
-  integrity sha512-HHlk2FtAO310oar6Q3Wmg+NyXTNGCz5x/GekXv1vQexClZy3wpzmG+tVUM6/1GgpqqCMCmWsDBwaMFDGvw1ZZw==
+pshenmic-dpp@2.0.0-dev.4:
+  version "2.0.0-dev.4"
+  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-2.0.0-dev.4.tgz#e787203817921ac06985506475a04a46aa69fe86"
+  integrity sha512-zaXG8Mgts1RTB79q4KR8lFlLcCDwy5hF7uQyMIn8de/fD7xrNZafXeJBg+TX+2naj3VGsN+l9l7Z6PL/2c8jkw==
   dependencies:
     "@emnapi/core" "^1.7.0"
     "@emnapi/runtime" "^1.7.0"
