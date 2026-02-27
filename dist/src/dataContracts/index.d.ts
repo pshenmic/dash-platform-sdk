@@ -1,0 +1,49 @@
+import { DataContractConfig, IdentifierLike } from '../../types.js';
+import { DataContractTokens, DataContractWASM, PlatformVersionWASM, StateTransitionWASM } from 'pshenmic-dpp';
+import GRPCConnectionPool from '../grpcConnectionPool.js';
+/**
+ * Collection of methods necessary to work with Data Contracts in the network,
+ * such as data contract creation or retrieval
+ *
+ * @hideconstructor
+ */
+export declare class DataContractsController {
+    /** @ignore */
+    grpcPool: GRPCConnectionPool;
+    constructor(grpcPool: GRPCConnectionPool);
+    /**
+     * Creates an instance of {DataContractWASM} that can be used to
+     * register a data contract in the network.
+     *
+     * @param ownerId {IdentifierLike} Identifier of the Data Contract's owner
+     * @param identityNonce {bigint} Identity nonce
+     * @param schema {object} Data Contract schema in json
+     * @param tokenConfiguration {object=} Token configuration
+     * @param config {DataContractConfig=} Data Contract config
+     * @param fullValidation {true=} Full validation (omit it)
+     * @param platformVersion {PlatformVersionWASM=} version of the platform
+     *
+     * @return {DataContractWASM}
+     */
+    create(ownerId: IdentifierLike, identityNonce: bigint, schema: object, fullValidation?: boolean, tokenConfiguration?: DataContractTokens[], config?: DataContractConfig, platformVersion?: PlatformVersionWASM): DataContractWASM;
+    /**
+     * Retrieves a Data Contract by an identifier from the network
+     *
+     * @param identifier {IdentifierLike} Identifier of the Data Contract
+     *
+     * @return {Promise<DataContractWASM>}
+     */
+    getDataContractByIdentifier(identifier: IdentifierLike): Promise<DataContractWASM>;
+    /**
+     * Helper function to create a state transition from a {DataContractWASM} instance
+     * Pass {DataContractTransitionType} in type param to specify which type of operation you want
+     * to make: create or update.
+     *
+     * @param dataContract {DataContractWASM} An instance of DataContractWASM to create or update
+     * @param type {string} type of identity state transition to do, must be 'create' or 'update'
+     * @param identityNonce {bigint} identity contract nonce
+     *
+     * @return {StateTransitionWASM}
+     */
+    createStateTransition(dataContract: DataContractWASM, type: 'create' | 'update', identityNonce: bigint): StateTransitionWASM;
+}

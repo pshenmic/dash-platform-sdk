@@ -1,0 +1,89 @@
+import { HDKey } from '@scure/bip32';
+import mnemonicToSeed from './mnemonicToSeed.js';
+import deriveChild from './deriveChild.js';
+import derivePath from './derivePath.js';
+import { p2pkh } from '@scure/btc-signer';
+const DASH_VERSIONS = {
+    mainnet: { pubKeyHash: 0x4c, scriptHash: 0x10, bech32: 'dc', wif: 0xcc, private: 0x0488ade4, public: 0x0488b21e },
+    testnet: { pubKeyHash: 0x8c, scriptHash: 0x13, bech32: 'dc', wif: 0xef, private: 0x04358394, public: 0x043587cf }
+};
+/**
+ * Collection of functions to work with private keys and seed phrases
+ *
+ * @hideconstructor
+ */
+export class KeyPairController {
+    /**
+     * Returns seed from mnemonic phrase
+     *
+     * @param mnemonic {string} - The BIP39 mnemonic phrase.
+     * @param salt {string=} -  Optional salt for seed derivation.
+     *
+     * @return {Uint8Array} Seed bytes
+     */
+    mnemonicToSeed(mnemonic, salt) {
+        return mnemonicToSeed(mnemonic, salt);
+    }
+    /**
+     * Returns seed from mnemonic phrase
+     *
+     * @param seed {Uint8Array}
+     * @param network {Network} network
+     *
+     * @return {HDKey} HDKey
+     */
+    seedToHdKey(seed, network = 'mainnet') {
+        return HDKey.fromMasterSeed(seed, DASH_VERSIONS[network]);
+    }
+    /**
+       * Allows to derive child HD Key
+       *
+       * @param hdKey {HDKey} - The HDKey parent instance
+       * @param index {number} - Index of child
+       *
+       * @return {Promise<HDKey>} A promise that resolves child key
+       */
+    async deriveChild(hdKey, index) {
+        return deriveChild(hdKey, index);
+    }
+    /**
+       * Allows to derive HD key by path
+       *
+       * @param hdKey {HDKey} - The HDKey parent instance
+       * @param path {string} - Path of children
+       *
+       * @return {Promise<HDKey>} A promise that resolves key by path
+       */
+    async derivePath(hdKey, path) {
+        return derivePath(hdKey, path);
+    }
+    /**
+     * Derives an {HDKey} child by identity index and key index from an {HDKey}
+     *
+     * Usually used to get a identity private key from seed
+     *
+     * @param hdKey {HDKey}
+     * @param identityIndex {number}
+     * @param keyIndex {number}
+     * @param network {Network}
+     *
+     * @returns {HDKey}
+     */
+    deriveIdentityPrivateKey(hdKey, identityIndex, keyIndex, network) {
+        const networkIndex = network === 'mainnet' ? 5 : 1;
+        const pathPostfix = `/5'/0'/0'/${identityIndex}'/${keyIndex}'`;
+        return derivePath(hdKey, `m/9'/${networkIndex}'${pathPostfix}`);
+    }
+    /**
+     * Converts {PublicKey} to a Dash network address (P2PKH)
+     *
+     * @param publicKey {Uint8Array}
+     * @param network {Network}
+     *
+     * @returns {string}
+     */
+    p2pkhAddress(publicKey, network) {
+        const P2PKH = p2pkh(publicKey, DASH_VERSIONS[network]);
+        return P2PKH.address;
+    }
+}
