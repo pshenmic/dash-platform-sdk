@@ -1,4 +1,4 @@
-# dash-platform-sdk v1.3.0-dev.15
+# dash-platform-sdk v1.3.0
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pshenmic/dash-platform-sdk/blob/master/LICENSE) ![npm version](https://img.shields.io/npm/v/react.svg?style=flat) ![a](https://github.com/pshenmic/platform-explorer/actions/workflows/build.yml/badge.svg)
 
 
@@ -73,7 +73,7 @@ Now you're ready to make queries in the network and push your data!
 
 Before you start storing your data in the decentralized storage, you must provide the schema of
 your data contract. Very similar to traditional databases, you first define the schema, and then
-can start inserting data according the format you defined. 
+can start inserting data according the format you defined.
 
 https://docs.dash.org/projects/platform/en/stable/docs/protocol-ref/data-contract.html
 
@@ -96,13 +96,13 @@ const schema = {
 
 // Create DataContractWASM instance
 const dataContract = await sdk.dataContracts.create(
-  ownerIdentifier, 
-  identityNonce, 
-  schema, 
+  ownerIdentifier,
+  identityNonce,
+  schema,
 )
 
 // Turn it into StateTransitionWASM
-const stateTransition = await sdk.documents.createStateTransition(dataContract, 'create', identityNonce)
+const stateTransition = sdk.dataContracts.createStateTransition(dataContract, 'create', identityNonce)
 
 // Broadcast in the network
 await sdk.stateTransitions.broadcast(stateTransition)
@@ -119,7 +119,7 @@ const ownerId = '9VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
 const documentType = 'note'
 const revision = BigInt(1)
 
-const identityContractNonce = await sdk.docuemnts.getIdentityContractNonce(ownerId, dataContractId) // nonce
+const identityContractNonce = await sdk.identities.getIdentityContractNonce(ownerId, dataContractId) // nonce
 
 const data = {
     "message": "Hello world!",
@@ -129,7 +129,7 @@ const data = {
 const document = await sdk.documents.create(dataContractId, documentType, data, ownerId, revision)
 
 // Turn it into StateTransitionWASM
-const stateTransition = await sdk.documents.createStateTransition(dataContract, 'create', identityContractNonce)
+const stateTransition = sdk.documents.createStateTransition(document, 'create', { identityContractNonce })
 
 // Broadcast transaction
 await sdk.stateTransitions.broadcast(stateTransition)
@@ -153,10 +153,10 @@ const [document] = await sdk.documents.query(
 )
 
 // Get last identity contract nonce
-const identityContractNonce = await sdk.documents.query(ownerId, dataContractId) // nonce
+const identityContractNonce = await sdk.identities.getIdentityContractNonce(ownerId, dataContractId) // nonce
 
 // Turn it into StateTransitionWASM
-const stateTransition = await sdk.documents.createStateTransition(document, 'replace', identityContractNonce + 1n)
+const stateTransition = sdk.documents.createStateTransition(document, 'replace', { identityContractNonce: identityContractNonce + 1n })
 
 // Broadcast transaction
 await sdk.stateTransitions.broadcast(stateTransition)
@@ -169,19 +169,14 @@ You can delete the document from the state, and it will not be longer available 
 const dataContractId = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 const ownerId = '9VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
 const documentType = 'note'
-const revision = BigInt(1)
 
-const identityContractNonce = await sdk.docuemnts.getIdentityContractNonce(ownerId, dataContractId) // nonce
+const identityContractNonce = await sdk.identities.getIdentityContractNonce(ownerId, dataContractId) // nonce
 
-const data = {
-    "message": "Hello world!",
-}
-
-// Create DocumentWASM instance
-const document = await sdk.documents.create(dataContractId, documentType, data, ownerId, revision)
+// Get DocumentWASM instance from the network
+const [document] = await sdk.documents.query(dataContractId, documentType, [['$ownerId', '==', ownerId]])
 
 // Turn it into StateTransitionWASM
-const stateTransition = await sdk.documents.createStateTransition(dataContract, 'create', identityContractNonce)
+const stateTransition = sdk.documents.createStateTransition(document, 'delete', { identityContractNonce })
 
 // Broadcast transaction
 await sdk.stateTransitions.broadcast(stateTransition)
@@ -203,7 +198,7 @@ Queries a DAPI for data contract and returns a DataContractWASM instance
 ```javascript
 const dataContractIdentifier = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
-const dataContract = await sdk.dataContracts.getByIdentifier(dataContractIdentifier)
+const dataContract = await sdk.dataContracts.getDataContractByIdentifier(dataContractIdentifier)
 ```
 
 #### Create Data Contract
@@ -246,11 +241,11 @@ const tokenConfiguration = {
 }
 
 const dataContract = await sdk.dataContracts.create(
-  ownerIdentifier, 
-  identityNonce, 
-  schema, 
-  definitions, 
-  true, // fullValidation 
+  ownerIdentifier,
+  identityNonce,
+  schema,
+  definitions,
+  true, // fullValidation
   tokenConfiguration, // optional
   config,
 )
@@ -266,9 +261,9 @@ import { DataContractTransitionType } from 'dash-platform-sdk'
 const dataContract = // ... created data contract
 const identityNonce = BigInt(1)
 
-const transition = await sdk.dataContracts.createStateTransition(
-  dataContract, 
-  'create', 
+const transition = sdk.dataContracts.createStateTransition(
+  dataContract,
+  'create',
   identityNonce
 )
 ```
@@ -283,9 +278,9 @@ import { DataContractTransitionType } from 'dash-platform-sdk'
 const dataContract = // ... existing data contract with updates
 const identityNonce = BigInt(2)
 
-const transition = await sdk.dataContracts.createStateTransition(
-  dataContract, 
-  'update', 
+const transition = sdk.dataContracts.createStateTransition(
+  dataContract,
+  'update',
   identityNonce
 )
 ```
@@ -314,7 +309,7 @@ const document = await sdk.documents.create(dataContractId, documentType, data, 
 console.log(document)
 ```
 
-#### Create a Conested Resource Document
+#### Create a Contested Resource Document
 Creates a DocumentWASM instance that can be used for a state transition creation
 
 ```javascript
@@ -367,12 +362,12 @@ const startAt = document.id // for pagination
 const startAfter = document.id // for pagination
 
 const documents = await sdk.documents.query(
-  dataContractId, 
-  documentType, 
-  where, 
-  orderBy, 
-  limit, 
-  startAt, 
+  dataContractId,
+  documentType,
+  where,
+  orderBy,
+  limit,
+  startAt,
   startAfter
 )
 
@@ -389,48 +384,45 @@ const document = // ... created or fetched document
 const identityContractNonce = BigInt(1)
 
 // Create transition
-const createTransition = await sdk.documents.createStateTransition(
-  document, 
-  'create', 
-  identityContractNonce
+const createTransition = sdk.documents.createStateTransition(
+  document,
+  'create',
+  { identityContractNonce }
 )
 
 // Replace transition
-const replaceTransition = await sdk.documents.createStateTransition(
-  document, 
-  'replace', 
-  identityContractNonce
+const replaceTransition = sdk.documents.createStateTransition(
+  document,
+  'replace',
+  { identityContractNonce }
 )
 
 // Delete transition
-const deleteTransition = await sdk.documents.createStateTransition(
-  document, 
-  'delete', 
-  identityContractNonce
+const deleteTransition = sdk.documents.createStateTransition(
+  document,
+  'delete',
+  { identityContractNonce }
 )
 
-// Purchase transition (requires price parameter)
-const purchaseTransition = await sdk.documents.createStateTransition(
-  document, 
-  'purchase', 
-  identityContractNonce,
-  { price: BigInt(100) }
+// Purchase transition (requires amount parameter)
+const purchaseTransition = sdk.documents.createStateTransition(
+  document,
+  'purchase',
+  { identityContractNonce, amount: BigInt(100) }
 )
 
-// Transfer transition (requires recipient parameter)
-const transferTransition = await sdk.documents.createStateTransition(
-  document, 
-  'transfer', 
-  identityContractNonce,
-  { recipient: '8VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS' }
+// Transfer transition (requires recipientId parameter)
+const transferTransition = sdk.documents.createStateTransition(
+  document,
+  'transfer',
+  { identityContractNonce, recipientId: '8VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS' }
 )
 
 // Update price transition (requires price parameter)
-const updatePriceTransition = await sdk.documents.createStateTransition(
-  document, 
-  'updatePrice', 
-  identityContractNonce,
-  { price: BigInt(200) }
+const updatePriceTransition = sdk.documents.createStateTransition(
+  document,
+  'updatePrice',
+  { identityContractNonce, price: BigInt(200) }
 )
 ```
 ### Token State Transitions
@@ -472,6 +464,17 @@ console.log(identity)
 const publicKeyHash = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
 
 const identity = await sdk.identities.getIdentityByPublicKeyHash(publicKeyHash)
+
+console.log(identity)
+```
+
+#### Get identity by non-unique public key hash
+Used to look up voter identities by SHA-160 hashed public key
+
+```javascript
+const publicKeyHash = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+
+const identity = await sdk.identities.getIdentityByNonUniquePublicKeyHash(publicKeyHash)
 
 console.log(identity)
 ```
@@ -718,49 +721,6 @@ identityTopUpTransaction.signByPrivateKey(assetLockPrivateKey, undefined, KeyTyp
 ```
 
 More detailed process can be seen in the Identity.spec.ts
-eate an Identity
-
-Creates a new Identity in blockchain and deposit it with the equivalent amount of credits sent from L1 chain.
-
-Requires Core chain AssetLock proof data.
-
-With InstantLock
-```javascript
-const assetLockPrivateKey = PrivateKeyWASM.fromHex('deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdead', 'testnet')
-const transaction = '03000800017dada5379e34ae1b59df35ba7acb879f3afaa12fa522f4b289a34d9fa2a68825010000006b48304502210093d609f65219e0d7ee694d271c4b7460ce89d298ef3e3670d5aef957e5551ead0220085d252e16cb3aae0d4e5d371e359e844fe82db93d8e4e26b5c61dc94676b7df0121037b86a1f7a11b4cc69fc7052e5cabdc625f3db47ee283ed4b87108f2cd879521effffffff0200e1f50500000000026a004054fa02000000001976a91416bbe230f46eea86fc4bf4dd550be45dc9adfcb488ac0000000024010100e1f505000000001976a914883bccdb8bfa44e55a19a1120ff2427537f7e92488ac'
-const instantLock = '01017dada5379e34ae1b59df35ba7acb879f3afaa12fa522f4b289a34d9fa2a688250100000060afc1323120f0a3b835dd113b3221e92dea56814369925f10dd3e8f6bcfaa6aa89ed4282521863d8eb72e7e0e7d80c86ca64cce9986ae8bb63657f43f0000009179b5d130fe69bd0f2ea7bc90e9ea904a7eeea515a2612045a70925a7c678b0b09499ea307575751e22f804c443d2e1105e1fd4e30aa894324a41cd983ffe58d5312ff8db11676bd530c6ab8af1f7d2980d356dd3c86d0386da7df70aa3a66b'
-const outputIndex = 0
-
-const identityCreateStateTransition = sdk.identities.createStateTransition('create', {
-  publicKeys: [identityPublicKeyInCreation1, identityPublicKeyInCreation2],
-  assetLockProof: {
-    txid,
-    instantLock,
-    outputIndex,
-    type: 'chainLock'
-  }
-})
-```
-
-With ChainLock
-```javascript
-const assetLockPrivateKey = PrivateKeyWASM.fromHex('deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdead', 'testnet')
-const transaction = '03000800017dada5379e34ae1b59df35ba7acb879f3afaa12fa522f4b289a34d9fa2a68825010000006b48304502210093d609f65219e0d7ee694d271c4b7460ce89d298ef3e3670d5aef957e5551ead0220085d252e16cb3aae0d4e5d371e359e844fe82db93d8e4e26b5c61dc94676b7df0121037b86a1f7a11b4cc69fc7052e5cabdc625f3db47ee283ed4b87108f2cd879521effffffff0200e1f50500000000026a004054fa02000000001976a91416bbe230f46eea86fc4bf4dd550be45dc9adfcb488ac0000000024010100e1f505000000001976a914883bccdb8bfa44e55a19a1120ff2427537f7e92488ac'
-const instantLock = '01017dada5379e34ae1b59df35ba7acb879f3afaa12fa522f4b289a34d9fa2a688250100000060afc1323120f0a3b835dd113b3221e92dea56814369925f10dd3e8f6bcfaa6aa89ed4282521863d8eb72e7e0e7d80c86ca64cce9986ae8bb63657f43f0000009179b5d130fe69bd0f2ea7bc90e9ea904a7eeea515a2612045a70925a7c678b0b09499ea307575751e22f804c443d2e1105e1fd4e30aa894324a41cd983ffe58d5312ff8db11676bd530c6ab8af1f7d2980d356dd3c86d0386da7df70aa3a66b'
-const outputIndex = 0
-
-const identityCreateStateTransition = sdk.identities.createStateTransition('create', {
-  publicKeys: [identityPublicKeyInCreation1, identityPublicKeyInCreation2],
-  assetLockProof: {
-    txid,
-    outputIndex,
-    coreChainLockedHeight,
-    type: 'chainLock'
-  }
-})
-```
-
-More detailed process can be seen in the Identity.spec.ts
 
 #### Update the Identity
 
@@ -854,7 +814,7 @@ stateTransition.sign(privateKey, identityPublicKey)
 ```
 
 ### Identity Credit Withdrawal
-Create a credit transfer transition (send credits to another identity)
+Create a credit withdrawal transition (withdraw credits to a Core chain address)
 
 ```javascript
 const identityId = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
@@ -890,9 +850,48 @@ await sdk.stateTransitions.waitForStateTransitionResult(stateTransition)
 ### DPNS Names
 #### Search domain by name (ex. xyz.dash)
 ```javascript
-const [document] = await sdk.names.search('xyz.dash')
+const [document] = await sdk.names.searchByName('xyz.dash')
 
 console.log(document)
+```
+
+#### Search domains by identity
+Returns all DPNS domain documents owned by a given identity
+```javascript
+const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+
+const documents = await sdk.names.searchByIdentity(identifier)
+
+console.log(documents)
+```
+
+#### Test if name is contested
+Returns `true` if the given username falls under contested name rules (names ≤19 chars matching the DPNS pattern require a masternode vote and an additional 0.2 DASH fee)
+
+```javascript
+const isContested = sdk.names.testNameContested('alice.dash')
+
+console.log(isContested) // true or false
+```
+
+#### Validate name
+Returns `null` if the name is valid, or a string describing the reason it is invalid
+
+```javascript
+const error = sdk.names.validateName('alice.dash')
+
+if (error != null) {
+  console.error('Invalid name:', error)
+}
+```
+
+#### Register name
+Performs the full DPNS name registration sequence (preorder + domain). Contested names include an additional fee of 0.2 DASH.
+
+```javascript
+const privateKey = PrivateKeyWASM.fromHex('deadbeef...', 'testnet')
+
+await sdk.names.registerName('alice.dash', identityId, privateKey)
 ```
 
 ### Node Status
@@ -902,6 +901,34 @@ const status = await sdk.node.status()
 
 console.log(status.chain.latestBlockHash)
 console.log(status.time.epoch)
+```
+
+#### Get total credits in platform
+Returns the total amount of credits locked in the Dash Platform state as a BigInt
+
+```javascript
+const totalCredits = await sdk.node.totalCredits()
+
+console.log(totalCredits)
+```
+
+#### Get epochs info
+Returns an array of epoch information including block heights, start times, and fee multipliers
+
+```javascript
+const count = 10
+const ascending = true
+const start = 0 // optional starting epoch number
+
+const epochs = await sdk.node.getEpochsInfo(count, ascending, start)
+
+epochs.forEach(epoch => {
+  console.log(epoch.number)
+  console.log(epoch.firstBlockHeight)
+  console.log(epoch.firstCoreBlockHeight)
+  console.log(epoch.startTime)      // BigInt ms timestamp
+  console.log(epoch.feeMultiplier)  // BigInt permille
+})
 ```
 
 ### Utils
@@ -930,6 +957,115 @@ Converts a string to homograph-safe characters for DPNS names
 ```javascript
 const str = 'alice'
 const normalizedString = sdk.utils.convertToHomographSafeChars(str) // al1ce
+```
+
+#### Create voter identity identifier
+Derives the voter identity identifier from a masternode's pro tx hash and voting address public key hash
+
+```javascript
+const proTxHash = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+const publicKeyHash = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+
+const voterIdentifier = await sdk.utils.createVoterIdentifier(proTxHash, publicKeyHash)
+
+console.log(voterIdentifier.toString())
+```
+
+#### Create masternode identity identifier
+Derives the masternode identity identifier from a pro tx hash
+
+```javascript
+const proTxHash = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+
+const masternodeIdentifier = sdk.utils.createMasternodeIdentifier(proTxHash)
+
+console.log(masternodeIdentifier.toString())
+```
+
+#### Validate identifier
+Returns `true` if the given value is a valid Dash Platform identifier (base58 string, hex string, or Uint8Array of 32 bytes)
+
+```javascript
+const isValid = sdk.utils.validateIdentifier('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec')
+
+console.log(isValid) // true
+```
+
+### Key Pair
+Functions for working with BIP32/BIP39 HD keys and Dash addresses
+
+#### Mnemonic to seed
+```javascript
+const mnemonic = 'word1 word2 word3 ...'
+const seed = sdk.keyPair.mnemonicToSeed(mnemonic)
+```
+
+#### Seed to HD key
+```javascript
+const hdKey = sdk.keyPair.seedToHdKey(seed, 'testnet')
+```
+
+#### Derive identity private key
+Derives an identity private key from an HD key using the standard Dash Platform derivation path `m/9'/{networkIndex}'/5'/0'/0'/{identityIndex}'/{keyIndex}'`
+
+```javascript
+const identityIndex = 0
+const keyIndex = 0
+
+const childKey = sdk.keyPair.deriveIdentityPrivateKey(hdKey, identityIndex, keyIndex, 'testnet')
+
+const privateKeyBytes = childKey.privateKey
+```
+
+#### Derive child key
+```javascript
+const childKey = await sdk.keyPair.deriveChild(hdKey, 0)
+```
+
+#### Derive key by path
+```javascript
+const childKey = await sdk.keyPair.derivePath(hdKey, "m/9'/5'/5'/0'/0'/0'/0'")
+```
+
+#### Get P2PKH address
+Converts a public key to a Dash network address
+
+```javascript
+const address = sdk.keyPair.p2pkhAddress(publicKeyBytes, 'testnet')
+
+console.log(address) // e.g. yjHVQ3dj37UJwXFmvMTKR9ZVfoJSc3opTD
+```
+
+### Contested Resources
+#### Get contested resource vote state
+Retrieves the current vote tally and contender list for a contested resource (e.g. a DPNS name under masternode vote)
+
+```javascript
+import { ContestedStateResultType } from 'dash-platform-sdk'
+
+const dataContract = await sdk.dataContracts.getDataContractByIdentifier('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec')
+const documentTypeName = 'domain'
+const indexName = 'parentNameAndLabel'
+
+// index values must be encoded as bytes
+const indexValuesBytes = [
+  sdk.utils.hexToBytes(/* encoded 'dash' */),
+  sdk.utils.hexToBytes(/* encoded normalized label */)
+]
+
+const voteState = await sdk.contestedResources.getContestedResourceVoteState(
+  dataContract,
+  documentTypeName,
+  indexName,
+  indexValuesBytes,
+  ContestedStateResultType.DOCUMENTS_AND_VOTE_TALLY,
+  true // include locked and abstaining vote tally
+)
+
+console.log(voteState.contenders)
+console.log(voteState.abstainVoteTally)
+console.log(voteState.lockVoteTally)
+console.log(voteState.finishedVoteInfo)
 ```
 
 ### NodeStatus
