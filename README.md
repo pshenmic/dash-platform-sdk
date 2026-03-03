@@ -9,7 +9,7 @@ _Does not support Core chain by design_
 It can be used to query network, create, sign and broadcast the transactions in any Javascript environment. It works both
 in Node.js, Browsers, and with modern frontend frameworks
 
-SDK uses a pre-defined set of seed nodes (public RPC) at the start, and then tries to switch to the latest list of nodes fetched from the Dash network through https://rpc.digitalcash.dev if possible
+SDK uses a pre-defined set of seed nodes (public RPC) at the start, and then tries to switch to the latest list of nodes from the network
 
 Currently, only minimal features are included, such as document querying and creation of the documents, and all necessary related functions to do that
 There is no input validation and error handling implemented yet relying on a happy path, this is going to be fixed in next versions
