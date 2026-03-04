@@ -1,8 +1,6 @@
 .idea
 .yarn
-/build/
+#/build/
 .DS_Store
 /node_modules/
-#/dist
-/proto/generated
 docs
