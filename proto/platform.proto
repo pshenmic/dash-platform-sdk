@@ -49,6 +49,8 @@ service Platform {
       returns (GetTokenTotalSupplyResponse);
   rpc waitForStateTransitionResult(WaitForStateTransitionResultRequest)
       returns (WaitForStateTransitionResultResponse);
+  rpc getAddressInfo(GetAddressInfoRequest)
+            returns (GetAddressInfoResponse);
 }
 
 // Proof message includes cryptographic proofs for validating responses
@@ -961,4 +963,33 @@ message WaitForStateTransitionResultResponse {
     ResponseMetadata metadata = 3; // Metadata about the blockchain state
   }
   oneof version { WaitForStateTransitionResultResponseV0 v0 = 1; }
+}
+
+message GetAddressInfoRequest {
+  message GetAddressInfoRequestV0 {
+    bytes address = 1;
+    bool prove = 2;
+  }
+  oneof version { GetAddressInfoRequestV0 v0 = 1; }
+}
+
+message AddressInfoEntry {
+  bytes address = 1;
+  optional BalanceAndNonce balance_and_nonce = 2;
+}
+
+message BalanceAndNonce {
+  uint64 balance = 1;
+  uint32 nonce = 2;
+}
+
+message GetAddressInfoResponse {
+  message GetAddressInfoResponseV0 {
+    oneof result {
+      AddressInfoEntry address_info_entry = 1;
+      Proof proof = 2;
+    }
+    ResponseMetadata metadata = 3;
+  }
+  oneof version { GetAddressInfoResponseV0 v0 = 1; }
 }
