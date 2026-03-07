@@ -11,6 +11,7 @@ import { ContestedResourcesController } from './contestedResources/index.js'
 import { TokensController } from './tokens/index.js'
 import { VotingController } from './voting/index.js'
 import { Network } from '../types.js'
+import { PlatformAddressesController } from './platformAddresses/index.js'
 
 export interface GRPCOptions {
   poolLimit: 5
@@ -35,6 +36,7 @@ export class DashPlatformSDK {
   options?: SDKOptions
 
   contestedResources: ContestedResourcesController
+  platformAddresses: PlatformAddressesController
   stateTransitions: StateTransitionsController
   dataContracts: DataContractsController
   identities: IdentitiesController
@@ -70,7 +72,7 @@ export class DashPlatformSDK {
 
     this.grpcPool = new GRPCConnectionPool(this.network, this.options?.grpc)
 
-    this._initialize(this.grpcPool, this.network)
+    this._initialize(this.grpcPool)
   }
 
   /**
@@ -81,16 +83,17 @@ export class DashPlatformSDK {
    * @param grpcPool
    * @param network
    */
-  _initialize (grpcPool: GRPCConnectionPool, network: Network): void {
+  _initialize (grpcPool: GRPCConnectionPool): void {
     this.grpcPool = grpcPool
 
-    this.stateTransitions = new StateTransitionsController(grpcPool)
     this.contestedResources = new ContestedResourcesController(grpcPool)
+    this.platformAddresses = new PlatformAddressesController(grpcPool)
+    this.stateTransitions = new StateTransitionsController(grpcPool)
     this.dataContracts = new DataContractsController(grpcPool)
     this.identities = new IdentitiesController(grpcPool)
     this.documents = new DocumentsController(grpcPool)
     this.voting = new VotingController()
-    this.node = new NodeController(grpcPool, network)
+    this.node = new NodeController(grpcPool)
     this.tokens = new TokensController(grpcPool)
     this.names = new NamesController(grpcPool)
     this.keyPair = new KeyPairController()
@@ -119,6 +122,6 @@ export class DashPlatformSDK {
 
     const grpcPool = new GRPCConnectionPool(this.network, this.options?.grpc)
 
-    this._initialize(grpcPool, this.network)
+    this._initialize(grpcPool)
   }
 }

@@ -3,7 +3,7 @@ import {
   DocumentWASM,
   GasFeesPaidByWASM,
   IdentifierWASM,
-  KeyType, Purpose, SecurityLevel,
+  KeyType, PlatformAddressWASM, Purpose, SecurityLevel,
   TokenEmergencyActionWASM,
   TokenPricingScheduleWASM
 } from 'pshenmic-dpp'
@@ -260,3 +260,9 @@ export interface TokenDirectPurchasePrices {
 }
 
 export type ResourceVoteChoice = IdentifierLike | 'lock' | 'abstain'
+
+export interface PlatformAddressInfo {
+  address: PlatformAddressWASM
+  nonce: number
+  balance: bigint
+}
