@@ -72,7 +72,7 @@ export class DashPlatformSDK {
 
     this.grpcPool = new GRPCConnectionPool(this.network, this.options?.grpc)
 
-    this._initialize(this.grpcPool, this.network)
+    this._initialize(this.grpcPool)
   }
 
   /**
@@ -83,7 +83,7 @@ export class DashPlatformSDK {
    * @param grpcPool
    * @param network
    */
-  _initialize (grpcPool: GRPCConnectionPool, network: Network): void {
+  _initialize (grpcPool: GRPCConnectionPool): void {
     this.grpcPool = grpcPool
 
     this.contestedResources = new ContestedResourcesController(grpcPool)
@@ -93,7 +93,7 @@ export class DashPlatformSDK {
     this.identities = new IdentitiesController(grpcPool)
     this.documents = new DocumentsController(grpcPool)
     this.voting = new VotingController()
-    this.node = new NodeController(grpcPool, network)
+    this.node = new NodeController(grpcPool)
     this.tokens = new TokensController(grpcPool)
     this.names = new NamesController(grpcPool)
     this.keyPair = new KeyPairController()
@@ -122,6 +122,6 @@ export class DashPlatformSDK {
 
     const grpcPool = new GRPCConnectionPool(this.network, this.options?.grpc)
 
-    this._initialize(grpcPool, this.network)
+    this._initialize(grpcPool)
   }
 }
