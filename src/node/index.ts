@@ -1,6 +1,6 @@
 import getStatus from './status.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
-import { Network, NodeStatus } from '../../types.js'
+import { NodeStatus } from '../../types.js'
 import getEpochsInfo, { EpochInfo } from './epochs.js'
 import getTotalCredits from './totalCredits.js'
 
@@ -12,11 +12,9 @@ import getTotalCredits from './totalCredits.js'
 export class NodeController {
   /** @ignore **/
   grpcPool: GRPCConnectionPool
-  network: Network
 
-  constructor (grpcPool: GRPCConnectionPool, network: Network) {
+  constructor (grpcPool: GRPCConnectionPool) {
     this.grpcPool = grpcPool
-    this.network = network
   }
 
   /**
@@ -35,7 +33,7 @@ export class NodeController {
    * @return {Promise<bigint>}
    */
   async totalCredits (): Promise<bigint> {
-    return await getTotalCredits(this.grpcPool, this.network)
+    return await getTotalCredits(this.grpcPool)
   }
 
   /**

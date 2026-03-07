@@ -10,9 +10,8 @@ import { verifyTotalCreditsProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import { Network } from '../../types.js'
 
-export default async function totalCredits (grpcPool: GRPCConnectionPool, network: Network): Promise<bigint> {
+export default async function totalCredits (grpcPool: GRPCConnectionPool): Promise<bigint> {
   const getTotalCreditsInPlatformRequest = GetTotalCreditsInPlatformRequest.create({
     version: {
       oneofKind: 'v0',
@@ -40,7 +39,7 @@ export default async function totalCredits (grpcPool: GRPCConnectionPool, networ
     throw new Error('Metadata not found')
   }
 
-  const activationHeight = network === 'testnet' ? TESTNET_ACTIVATION_HEIGHT : MAINNET_ACTIVATION_HEIGHT
+  const activationHeight = grpcPool.network === 'testnet' ? TESTNET_ACTIVATION_HEIGHT : MAINNET_ACTIVATION_HEIGHT
 
   const { rootHash, totalCredits } = verifyTotalCreditsProof(
     proof.grovedbProof,
