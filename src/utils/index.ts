@@ -3,9 +3,8 @@ import { base58 } from '@scure/base'
 import hexToBytes from './hexToBytes.js'
 import bytesToHex from './bytesToHex.js'
 import { createVoterIdentityId } from './createVoterIdentityId.js'
-import { IdentifierWASM } from 'pshenmic-dpp'
+import { IdentifierLike, IdentifierWASM } from 'pshenmic-dpp'
 import { createMasternodeIdentityId } from './createMasternodeIdentityId.js'
-import { IdentifierLike } from '../../types.js'
 
 /**
  * Collection of conversion functions

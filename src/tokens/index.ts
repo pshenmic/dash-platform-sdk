@@ -1,6 +1,5 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import {
-  IdentifierLike,
   TokenDirectPurchasePrices,
   TokenTotalSupply,
   TokenTransitionParams,
@@ -11,7 +10,13 @@ import getIdentityTokensBalances, { IdentityTokenBalances } from './getIdentityT
 import getTokenContractInfo, { TokenContractInfo } from './getTokenContractInfo.js'
 import getTokenTotalSupply from './getTokenTotalSupply.js'
 import createStateTransition from './createStateTransition.js'
-import { IdentifierWASM, StateTransitionWASM, TokenBaseTransitionWASM, TokenPricingScheduleWASM } from 'pshenmic-dpp'
+import {
+  IdentifierLike,
+  IdentifierWASM,
+  StateTransitionWASM,
+  TokenBaseTransitionWASM,
+  TokenPricingScheduleWASM
+} from 'pshenmic-dpp'
 import getIdentityContractNonce from '../identities/getIdentityContractNonce.js'
 import getTokenDirectPurchasePrices from './getTokenDirectPurchasePrices.js'
 

@@ -1,7 +1,6 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { GetIdentitiesTokenBalancesRequest } from '../../proto/generated/platform.js'
-import { IdentifierLike } from '../../types.js'
-import { IdentifierWASM, verifyTokenBalancesForIdentitiesProof } from 'pshenmic-dpp'
+import { IdentifierLike, IdentifierWASM, verifyTokenBalancesForIdentitiesProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'

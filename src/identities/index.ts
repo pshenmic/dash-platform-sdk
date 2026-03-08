@@ -3,12 +3,12 @@ import getIdentityPublicKeys from './getIdentityPublicKeys.js'
 import getIdentityNonce from './getIdentityNonce.js'
 import getIdentityBalance from './getIdentityBalance.js'
 import getIdentityByPublicKeyHash from './getIdentityByPublicKeyHash.js'
-import { IdentifierLike, IdentityTransitionParams } from '../../types.js'
+import { IdentityTransitionParams } from '../../types.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import getIdentityByIdentifier from './getIdentityByIdentifier.js'
 import {
   AssetLockProofWASM,
-  ContractBoundsWASM, CoreScriptWASM,
+  ContractBoundsWASM, CoreScriptWASM, IdentifierLike,
   IdentifierWASM,
   IdentityPublicKeyInCreationWASM,
   IdentityPublicKeyWASM,

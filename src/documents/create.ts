@@ -1,5 +1,4 @@
-import { DocumentWASM } from 'pshenmic-dpp'
-import { IdentifierLike } from '../../types.js'
+import { DocumentWASM, IdentifierLike } from 'pshenmic-dpp'
 
 export default function createDocument (
   dataContractId: IdentifierLike,

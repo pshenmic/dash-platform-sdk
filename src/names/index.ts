@@ -1,6 +1,5 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
-import { DocumentWASM, IdentifierWASM, PrivateKeyWASM } from 'pshenmic-dpp'
-import { IdentifierLike } from '../../types.js'
+import { DocumentWASM, IdentifierLike, IdentifierWASM, PrivateKeyWASM } from 'pshenmic-dpp'
 import searchByName from './searchByName.js'
 import searchByIdentity from './searchByIdentity.js'
 import registerName from './registerName.js'

@@ -1,9 +1,9 @@
 import {
   CoreScriptWASM,
   DocumentWASM,
-  GasFeesPaidByWASM,
+  GasFeesPaidByWASM, IdentifierLike,
   IdentifierWASM,
-  KeyType, Purpose, SecurityLevel,
+  KeyType, PlatformAddressWASM, Purpose, SecurityLevel,
   TokenEmergencyActionWASM,
   TokenPricingScheduleWASM
 } from 'pshenmic-dpp'
@@ -24,10 +24,10 @@ export {
   IdentityWASM,
   IdentityUpdateTransitionWASM,
   IdentityCreditTransferWASM,
-  MasternodeVoteTransitionWASM
+  MasternodeVoteTransitionWASM,
+  IdentifierLike,
+  PlatformAddressLike
 } from 'pshenmic-dpp'
-
-export type IdentifierLike = IdentifierWASM | string | Uint8Array
 
 export type Network = 'mainnet' | 'testnet'
 
@@ -260,3 +260,9 @@ export interface TokenDirectPurchasePrices {
 }
 
 export type ResourceVoteChoice = IdentifierLike | 'lock' | 'abstain'
+
+export interface PlatformAddressInfo {
+  address: PlatformAddressWASM
+  nonce: number
+  balance: bigint
+}

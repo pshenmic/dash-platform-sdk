@@ -1,6 +1,5 @@
 import { GetIdentityBalanceRequest } from '../../proto/generated/platform.js'
-import { IdentifierWASM, verifyIdentityBalanceProof } from 'pshenmic-dpp'
-import { IdentifierLike } from '../../types.js'
+import { IdentifierLike, IdentifierWASM, verifyIdentityBalanceProof } from 'pshenmic-dpp'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
