@@ -15,11 +15,7 @@ export class PlatformAddressesController {
    * Make a query for address info
    *
    * @param address {PlatformAddressLike}
-   * @return {
-   *   address?: PlatformAddressWASM,
-   *   nonce?: number,
-   *   balance?: bigint
-   * }
+   * @return {Promise<PlatformAddressInfo>}
    */
   async getAddressInfo (address: PlatformAddressLike): Promise<PlatformAddressInfo> {
     return await getAddressInfo(this.grpcPool, address)
