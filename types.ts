@@ -1,7 +1,7 @@
 import {
   CoreScriptWASM,
   DocumentWASM,
-  GasFeesPaidByWASM,
+  GasFeesPaidByWASM, IdentifierLike,
   IdentifierWASM,
   KeyType, PlatformAddressWASM, Purpose, SecurityLevel,
   TokenEmergencyActionWASM,
@@ -26,8 +26,6 @@ export {
   IdentityCreditTransferWASM,
   MasternodeVoteTransitionWASM
 } from 'pshenmic-dpp'
-
-export type IdentifierLike = IdentifierWASM | string | Uint8Array
 
 export type Network = 'mainnet' | 'testnet'
 
