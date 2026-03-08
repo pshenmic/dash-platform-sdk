@@ -1,7 +1,7 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { PlatformAddressLike } from 'pshenmic-dpp'
 import { getAddressInfo } from './getAddressInfo.js'
-import {PlatformAddressInfo} from "../../types.js";
+import { PlatformAddressInfo } from '../../types.js'
 
 export class PlatformAddressesController {
   /** @ignore **/
@@ -14,7 +14,7 @@ export class PlatformAddressesController {
   /**
    * Make a query for address info
    *
-   * @param address {string | Uint8Array | PlatformAddressWASM}
+   * @param address {PlatformAddressLike}
    * @return {
    *   address?: PlatformAddressWASM,
    *   nonce?: number,

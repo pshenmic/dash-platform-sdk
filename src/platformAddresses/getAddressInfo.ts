@@ -12,13 +12,13 @@ import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { PlatformAddressInfo } from '../../types.js'
 
 export async function getAddressInfo (grpcPool: GRPCConnectionPool, platformAddress: PlatformAddressLike): Promise<PlatformAddressInfo> {
-  const normalPlatformAddress = new PlatformAddressWASM(platformAddress)
+  const platformAddressWASM = new PlatformAddressWASM(platformAddress)
 
   const getAddressInfoRequest = GetAddressInfoRequest.create({
     version: {
       oneofKind: 'v0',
       v0: {
-        address: normalPlatformAddress.bytes(),
+        address: platformAddressWASM.bytes(),
         prove: true
       }
     }
@@ -44,10 +44,10 @@ export async function getAddressInfo (grpcPool: GRPCConnectionPool, platformAddr
     throw new Error('Metadata not found')
   }
 
-  const { rootHash, address, nonce, balance } = await verifyPlatformAddressInfo(proof.grovedbProof, normalPlatformAddress, true, LATEST_PLATFORM_VERSION)
+  const { rootHash, address, nonce, balance } = await verifyPlatformAddressInfo(proof.grovedbProof, platformAddressWASM, true, LATEST_PLATFORM_VERSION)
 
   if (address == null || nonce == null || balance == null) {
-    throw new Error(`Failed to fetch info for address ${normalPlatformAddress.toBech32m(grpcPool.network)}`)
+    throw new Error(`Failed to fetch info for address ${platformAddressWASM.toBech32m(grpcPool.network)}`)
   }
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
