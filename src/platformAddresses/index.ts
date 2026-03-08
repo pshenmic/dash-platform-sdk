@@ -1,6 +1,7 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
-import { PlatformAddressLike, VerifiedPlatformAddressInfo } from 'pshenmic-dpp'
+import { PlatformAddressLike } from 'pshenmic-dpp'
 import { getAddressInfo } from './getAddressInfo.js'
+import {PlatformAddressInfo} from "../../types.js";
 
 export class PlatformAddressesController {
   /** @ignore **/
@@ -20,7 +21,7 @@ export class PlatformAddressesController {
    *   balance?: bigint
    * }
    */
-  async getAddressInfo (address: PlatformAddressLike): Promise<VerifiedPlatformAddressInfo> {
+  async getAddressInfo (address: PlatformAddressLike): Promise<PlatformAddressInfo> {
     return await getAddressInfo(this.grpcPool, address)
   }
 }

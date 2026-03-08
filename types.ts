@@ -24,7 +24,9 @@ export {
   IdentityWASM,
   IdentityUpdateTransitionWASM,
   IdentityCreditTransferWASM,
-  MasternodeVoteTransitionWASM
+  MasternodeVoteTransitionWASM,
+  IdentifierLike,
+  PlatformAddressLike
 } from 'pshenmic-dpp'
 
 export type Network = 'mainnet' | 'testnet'
