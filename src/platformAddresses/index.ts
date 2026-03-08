@@ -12,7 +12,7 @@ export class PlatformAddressesController {
   }
 
   /**
-   * Make a query for address info
+   * Makes a query for platform address info, returns an object with address, balance and nonce
    *
    * @param address {PlatformAddressLike}
    * @return {Promise<PlatformAddressInfo>}

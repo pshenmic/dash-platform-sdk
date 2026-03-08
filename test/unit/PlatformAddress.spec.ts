@@ -2,7 +2,7 @@ import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 
 let sdk: DashPlatformSDK
 
-describe('Address', () => {
+describe('PlatformAddress', () => {
   beforeAll(() => {
     sdk = new DashPlatformSDK({ network: 'testnet' })
   })
