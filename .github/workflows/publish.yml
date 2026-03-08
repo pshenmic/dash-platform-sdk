@@ -48,7 +48,7 @@ jobs:
         if: env.LATEST == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './docs'
+          path: './typedoc_docs'
 
       - name: Deploy to GitHub Pages
         if: env.LATEST == 'true'
