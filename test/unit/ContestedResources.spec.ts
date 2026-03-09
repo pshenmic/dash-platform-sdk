@@ -1,6 +1,7 @@
-import { DataContractWASM, PlatformVersionWASM, PrivateKeyWASM } from 'pshenmic-dpp'
+import { DataContractWASM, PrivateKeyWASM } from 'pshenmic-dpp'
 import { DashPlatformSDK, ContestedStateResultType, ResourceVoteChoice } from '../../types.js'
 import stringToIndexValueBytes from '../../src/utils/stringToIndexValueBytes.js'
+import { LATEST_PLATFORM_VERSION } from '../../src/constants.js'
 
 let sdk: DashPlatformSDK
 let contract: DataContractWASM
@@ -181,7 +182,7 @@ describe('Contested Resources', () => {
       undefined,
       undefined,
       true,
-      PlatformVersionWASM.PLATFORM_V9
+      LATEST_PLATFORM_VERSION
     )
 
     contract.id = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
