@@ -10,4 +10,10 @@ describe('DashPlatformSDK', () => {
   test('should be constructable throw `new`', () => {
     expect(sdk).toEqual(expect.any(DashPlatformSDK))
   })
+
+  test('should be able to deserialize consensus error', () => {
+    const err = sdk.utils.deserializeConsensusError('AwIiSW52YWxpZCBTdGF0ZSBUcmFuc2l0aW9uIHNpZ25hdHVyZQ')
+
+    expect(err).toEqual('Invalid State Transition signature')
+  })
 })
