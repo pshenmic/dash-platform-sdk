@@ -1,5 +1,5 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
-import {PlatformAddressLike, PlatformAddressWASM, verifyPlatformAddressesInfos} from 'pshenmic-dpp'
+import { PlatformAddressLike, PlatformAddressWASM, verifyPlatformAddressesInfos } from 'pshenmic-dpp'
 import { PlatformAddressInfo } from '../../types.js'
 import { GetAddressesInfosRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
