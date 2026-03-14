@@ -1,14 +1,11 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
-import { PlatformAddressLike, PlatformAddressWASM } from 'pshenmic-dpp'
+import {PlatformAddressLike, PlatformAddressWASM, verifyPlatformAddressesInfos} from 'pshenmic-dpp'
 import { PlatformAddressInfo } from '../../types.js'
 import { GetAddressesInfosRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import {
-  verifyPlatformAddressesInfos
-} from 'pshenmic-dpp/dist/src/dpp/verify/PlatformAddress/verifyPlatformAddressesInfos.js'
 
 export async function getAddressesInfos (grpcPool: GRPCConnectionPool, platformAddresses: PlatformAddressLike[]): Promise<PlatformAddressInfo[]> {
   const platformAddressesWASM = platformAddresses.map(addr => new PlatformAddressWASM(addr))
