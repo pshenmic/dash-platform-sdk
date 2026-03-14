@@ -5,6 +5,7 @@ import bytesToHex from './bytesToHex.js'
 import { createVoterIdentityId } from './createVoterIdentityId.js'
 import { IdentifierLike, IdentifierWASM } from 'pshenmic-dpp'
 import { createMasternodeIdentityId } from './createMasternodeIdentityId.js'
+import { deserializeConsensusError } from './deserializeConsensusError.js'
 
 /**
  * Collection of conversion functions
@@ -104,5 +105,15 @@ export class UtilsController {
     } catch (e) {
       return false
     }
+  }
+
+  /**
+   * Allows to deserialize consensus error
+   *
+   * @param error {string | Uint8Array} error in base64 or bytes
+   * @return {string}
+   */
+  deserializeConsensusError (error: string | Uint8Array): string {
+    return deserializeConsensusError(error)
   }
 }

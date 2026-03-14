@@ -1,30 +1,26 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
-import {
-  PlatformAddressLike,
-  PlatformAddressWASM,
-  verifyPlatformAddressInfo
-} from 'pshenmic-dpp'
-import { GetAddressInfoRequest } from '../../proto/generated/platform.js'
+import { PlatformAddressLike, PlatformAddressWASM, verifyPlatformAddressesInfos } from 'pshenmic-dpp'
+import { PlatformAddressInfo } from '../../types.js'
+import { GetAddressesInfosRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import { PlatformAddressInfo } from '../../types.js'
 
-export async function getAddressInfo (grpcPool: GRPCConnectionPool, platformAddress: PlatformAddressLike): Promise<PlatformAddressInfo> {
-  const platformAddressWASM = new PlatformAddressWASM(platformAddress)
+export async function getAddressesInfos (grpcPool: GRPCConnectionPool, platformAddresses: PlatformAddressLike[]): Promise<PlatformAddressInfo[]> {
+  const platformAddressesWASM = platformAddresses.map(addr => new PlatformAddressWASM(addr))
 
-  const getAddressInfoRequest = GetAddressInfoRequest.create({
+  const getAddressInfoRequest = GetAddressesInfosRequest.create({
     version: {
       oneofKind: 'v0',
       v0: {
-        address: platformAddressWASM.bytes(),
+        addresses: platformAddressesWASM.map(addr => addr.bytes()),
         prove: true
       }
     }
   })
 
-  const { response } = await grpcPool.getClient().getAddressInfo(getAddressInfoRequest)
+  const { response } = await grpcPool.getClient().getAddressesInfos(getAddressInfoRequest)
 
   const { version } = response
 
@@ -44,11 +40,10 @@ export async function getAddressInfo (grpcPool: GRPCConnectionPool, platformAddr
     throw new Error('Metadata not found')
   }
 
-  const { rootHash, address, nonce, balance } = verifyPlatformAddressInfo(proof.grovedbProof, platformAddressWASM, true, LATEST_PLATFORM_VERSION)
-
-  if (address == null || nonce == null || balance == null) {
-    throw new Error(`Failed to fetch info for address ${platformAddressWASM.toBech32m(grpcPool.network)}`)
-  }
+  const {
+    rootHash,
+    infos
+  } = verifyPlatformAddressesInfos(proof.grovedbProof, platformAddressesWASM, true, LATEST_PLATFORM_VERSION)
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
@@ -58,9 +53,10 @@ export async function getAddressInfo (grpcPool: GRPCConnectionPool, platformAddr
     throw new Error('Failed to verify query')
   }
 
-  return {
-    address,
-    nonce,
-    balance
-  }
+  return infos
+    .map(info => ({
+      address: info.address as PlatformAddressWASM,
+      nonce: info.nonce ?? 0,
+      balance: BigInt(info.balance ?? 0)
+    }))
 }

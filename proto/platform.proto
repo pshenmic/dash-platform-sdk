@@ -51,6 +51,8 @@ service Platform {
       returns (WaitForStateTransitionResultResponse);
   rpc getAddressInfo(GetAddressInfoRequest)
             returns (GetAddressInfoResponse);
+  rpc getAddressesInfos(GetAddressesInfosRequest)
+            returns (GetAddressesInfosResponse);
 }
 
 // Proof message includes cryptographic proofs for validating responses
@@ -992,4 +994,28 @@ message GetAddressInfoResponse {
     ResponseMetadata metadata = 3;
   }
   oneof version { GetAddressInfoResponseV0 v0 = 1; }
+}
+
+message GetAddressesInfosRequest {
+  message GetAddressesInfosRequestV0 {
+    repeated bytes addresses = 1;
+    bool prove = 2;
+  }
+  oneof version { GetAddressesInfosRequestV0 v0 = 1; }
+}
+
+
+message AddressInfoEntries {
+  repeated AddressInfoEntry address_info_entries = 1;
+}
+
+message GetAddressesInfosResponse {
+  message GetAddressesInfosResponseV0 {
+    oneof result {
+      AddressInfoEntries address_info_entries = 1;
+      Proof proof = 2;
+    }
+    ResponseMetadata metadata = 3;
+  }
+  oneof version { GetAddressesInfosResponseV0 v0 = 1; }
 }
