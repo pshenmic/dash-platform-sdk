@@ -44,7 +44,7 @@ export async function getAddressInfo (grpcPool: GRPCConnectionPool, platformAddr
     throw new Error('Metadata not found')
   }
 
-  const { rootHash, address, nonce, balance } = await verifyPlatformAddressInfo(proof.grovedbProof, platformAddressWASM, true, LATEST_PLATFORM_VERSION)
+  const { rootHash, address, nonce, balance } = verifyPlatformAddressInfo(proof.grovedbProof, platformAddressWASM, true, LATEST_PLATFORM_VERSION)
 
   if (address == null || nonce == null || balance == null) {
     throw new Error(`Failed to fetch info for address ${platformAddressWASM.toBech32m(grpcPool.network)}`)
