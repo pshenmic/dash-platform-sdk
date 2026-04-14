@@ -15,8 +15,10 @@ export default async function broadcast (grpcPool: GRPCConnectionPool, stateTran
 
     await grpcPool.getClient().broadcastStateTransition(broadcastStateTransitionRequest)
   } catch (err) {
-    if (err.meta?.['dash-serialized-consensus-error-bin']?.length !== 0) {
-      throw new Error(deserializeConsensusError(err.meta['dash-serialized-consensus-error-bin']))
+    const errorBin = err.meta?.['dash-serialized-consensus-error-bin']
+
+    if (errorBin?.length !== 0 && errorBin != null) {
+      throw new Error(deserializeConsensusError(errorBin))
     } else {
       throw err
     }
