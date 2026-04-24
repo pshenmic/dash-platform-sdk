@@ -51,7 +51,7 @@ export class DocumentsController {
    * @param startAfter {IdentifierLike=} Same as previous, but with exclusion. Cannot be set if startAt already provided
    */
   async query (dataContractId: IdentifierLike, documentType: string, where?: ArrayLike<any>, orderBy?: ArrayLike<any>, limit?: number, startAt?: IdentifierWASM, startAfter?: IdentifierWASM): Promise<DocumentWASM[]> {
-    if (startAfter != null && startAt !== null) {
+    if (startAfter != null && startAt != null) {
       throw new Error('You may only set either startAfter or startAt at once')
     }
 
