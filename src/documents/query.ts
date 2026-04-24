@@ -23,14 +23,14 @@ export default async function query (
   if (startAt != null) {
     start = {
       oneofKind: 'startAt',
-      startAt: startAt.base58()
+      startAt: startAt.bytes()
     }
   }
 
   if (startAfter != null) {
     start = {
       oneofKind: 'startAfter',
-      startAt: startAfter.base58()
+      startAfter: startAfter.bytes()
     }
   }
 
@@ -73,11 +73,12 @@ export default async function query (
   }
 
   const startAtIncluded = startAt != null
+  const startIdentifier = startAt ?? startAfter
 
   const {
     rootHash,
     documents
-  } = verifyDocumentsProof(proof.grovedbProof, dataContract, documentTypeName, where, orderBy, limit, startAt?.bytes(), startAtIncluded, BigInt(metadata?.timeMs), LATEST_PLATFORM_VERSION)
+  } = verifyDocumentsProof(proof.grovedbProof, dataContract, documentTypeName, where, orderBy, limit, startIdentifier?.bytes(), startAtIncluded, BigInt(metadata?.timeMs), LATEST_PLATFORM_VERSION)
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
