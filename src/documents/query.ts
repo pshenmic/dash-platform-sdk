@@ -18,10 +18,6 @@ export default async function query (
   startAt?: IdentifierWASM,
   startAfter?: IdentifierWASM
 ): Promise<DocumentWASM[]> {
-  if ([startAt, startAfter].filter(e => e != null).length === 2) {
-    throw new Error('Only startAt or startAfter could be specified at one time')
-  }
-
   let start
 
   if (startAt != null) {
