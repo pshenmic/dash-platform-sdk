@@ -1,6 +1,6 @@
 {
   "name": "dash-platform-sdk",
-  "version": "1.4.0-dev.9",
+  "version": "1.4.0-dev.10",
   "main": "index.js",
   "description": "Lightweight SDK for accessing Dash Platform blockchain",
   "ts-standard": {
