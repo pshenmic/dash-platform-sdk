@@ -23,7 +23,7 @@ jobs:
       - run: yarn build:grpc
       - run: yarn test
       - run: yarn build
-      - run: cp package.json dist
+      - run: cp package.json README.md dist
       - run: |
           VERSION=$(node -p "require('./package.json').version")
           if [[ "$VERSION" == *"-"* ]]; then
