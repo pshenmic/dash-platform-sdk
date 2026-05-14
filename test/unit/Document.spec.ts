@@ -55,6 +55,46 @@ describe('Document', () => {
     expect(document).toEqual(expect.any(DocumentWASM))
   })
 
+  test('should be able to get document with startAt', async () => {
+    const dataContract = '6hVQW16jyvZyGSQk2YVty4ND6bgFXozizYWnPt753uW5'
+    const documentType = 'torrent'
+    const limit = 5
+
+    // @ts-expect-error
+    const [firstQueriedDoc] = (await sdk.documents.query(dataContract, documentType, null, null, limit)).toReversed()
+    // @ts-expect-error
+    const [secondQueriedDoc] = await sdk.documents.query(dataContract, documentType, null, null, limit, firstQueriedDoc.id)
+
+    expect(secondQueriedDoc.id.base58()).toEqual(firstQueriedDoc.id.base58())
+
+    expect(secondQueriedDoc.createdAtBlockHeight).toEqual(undefined)
+
+    expect(secondQueriedDoc.dataContractId.base58()).toEqual(dataContract)
+    expect(secondQueriedDoc).toEqual(expect.any(DocumentWASM))
+  })
+
+  test('should be able to get document with startAfter', async () => {
+    const dataContract = '6hVQW16jyvZyGSQk2YVty4ND6bgFXozizYWnPt753uW5'
+    const documentType = 'torrent'
+    const limit = 5
+    const masterQueryLimit = limit*2
+
+    // @ts-expect-error
+    const masterQuery = await sdk.documents.query(dataContract, documentType, null, null, masterQueryLimit)
+
+    // @ts-expect-error
+    const [firstQueriedDoc] = (await sdk.documents.query(dataContract, documentType, null, null, limit)).toReversed()
+    // @ts-expect-error
+    const [secondQueriedDoc] = await sdk.documents.query(dataContract, documentType, null, null, limit, undefined, firstQueriedDoc.id)
+
+    expect(masterQuery[5].id.base58()).toEqual(secondQueriedDoc.id.base58())
+
+    expect(secondQueriedDoc.createdAtBlockHeight).toEqual(undefined)
+
+    expect(secondQueriedDoc.dataContractId.base58()).toEqual(dataContract)
+    expect(secondQueriedDoc).toEqual(expect.any(DocumentWASM))
+  })
+
   describe('should be able to create state transition', () => {
     test('should be able to create a create transition', async () => {
       const document = sdk.documents.create(dataContract, documentType, data, identity)
