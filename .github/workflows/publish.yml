@@ -23,7 +23,9 @@ jobs:
       - run: yarn build:grpc
       - run: yarn test
       - run: yarn build
-      - run: cp package.json README.md dist
+      - run: |
+          cp package.json README.md dist/
+          sed -i "s#](docs/#](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/docs/#g" dist/README.md
       - run: |
           VERSION=$(node -p "require('./package.json').version")
           if [[ "$VERSION" == *"-"* ]]; then
