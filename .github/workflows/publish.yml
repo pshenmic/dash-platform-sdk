@@ -17,8 +17,10 @@ jobs:
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
+      # Trusted publishing (OIDC) requires npm >= 11.5.1
+      - run: npm install -g npm@latest
       - run: yarn
       - run: yarn build:grpc
       - run: yarn test
@@ -28,13 +30,11 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           if [[ "$VERSION" == *"-"* ]]; then
             TAG=$(echo "$VERSION" | sed -E 's/^[0-9]+\.[0-9]+\.[0-9]+-([a-zA-Z0-9]+).*/\1/')
-            yarn publish dist --tag "$TAG" --non-interactive
+            npm publish ./dist --tag "$TAG" --provenance --access public
           else
             echo "LATEST=true" >> $GITHUB_ENV
-            yarn publish dist --tag latest --non-interactive
+            npm publish ./dist --tag latest --provenance --access public
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Build docs
         if: env.LATEST == 'true'
         run: |

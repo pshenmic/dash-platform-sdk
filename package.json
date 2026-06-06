@@ -3,6 +3,10 @@
   "version": "1.4.0-dev.12",
   "main": "index.js",
   "description": "Lightweight SDK for accessing Dash Platform blockchain",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pshenmic/dash-platform-sdk.git"
+  },
   "ts-standard": {
     "ignore": [
       "proto"
