@@ -23,8 +23,7 @@ jobs:
       - run: npm install -g npm@latest
       - run: yarn
       - run: yarn build:grpc
-#        TODO: Enable after 1.4.0-dev.14 release (platform-explorer validators not working without new sdk)
-#      - run: yarn test
+      - run: yarn test
       - run: yarn build
       - run: cp package.json dist
       - run: |
