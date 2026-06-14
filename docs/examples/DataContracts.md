@@ -33,7 +33,7 @@ const schema = {
 }
 
 const config = {
-  $format_version: '0',
+  $formatVersion: '0',
   canBeDeleted: true,
   readonly: false,
   keepsHistory: false,

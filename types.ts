@@ -171,7 +171,7 @@ export interface ContestedResourceVoteState {
 }
 
 export interface DataContractConfig {
-  $format_version: string
+  $formatVersion: string
   canBeDeleted: boolean
   readonly: boolean
   keepsHistory: boolean

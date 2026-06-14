@@ -16,7 +16,7 @@ describe('DataContract', () => {
     identityNonce = BigInt(11)
 
     config = {
-      $format_version: '1',
+      $formatVersion: '1',
       canBeDeleted: true,
       readonly: true,
       keepsHistory: false,
