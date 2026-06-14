@@ -8,7 +8,7 @@ describe('PlatformAddress', () => {
   })
 
   test('getAddressInfo', async () => {
-    const info = await sdk.platformAddresses.getAddressInfo('tdashevo1qpgz9hk6tkn5zj3653s8qkjmk9439qkf0gl4yxxw')
+    const info = await sdk.platformAddresses.getAddressInfo('tdash1kzg5azscav69z7m6dfzr9ner0a5vt7pn9ca4sz8d')
 
     expect(info.balance).toBeDefined()
     expect(info.nonce).toBeDefined()
@@ -17,9 +17,9 @@ describe('PlatformAddress', () => {
 
   test('getAddressesInfos', async () => {
     const addresses = [
-      'tdashevo1qpgz9hk6tkn5zj3653s8qkjmk9439qkf0gl4yxxw',
-      'tdashevo1qq79z66rh34l4u2axlz3jv34zwshggnenut9k093',
-      'tdashevo1qpwyg4khd0rh8px5cjphv9wx38psl6hma5krg9gk'
+      'tdash1kzg5azscav69z7m6dfzr9ner0a5vt7pn9ca4sz8d',
+      'tdash1kqr3cxhgel75ru0yrhj5eq8j8jt92m5enqrfajxw',
+      'tdash1kq9plfyacx9q26dtaxgwuw9lt78nyu2mzc3xwcxv'
     ]
     const info = await sdk.platformAddresses.getAddressesInfos(addresses)
 
