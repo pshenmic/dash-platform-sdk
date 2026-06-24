@@ -12,6 +12,7 @@ import { TokensController } from './tokens/index.js'
 import { VotingController } from './voting/index.js'
 import { Network } from '../types.js'
 import { PlatformAddressesController } from './platformAddresses/index.js'
+import { ShieldedController } from './shielded/index.js'
 
 export interface GRPCOptions {
   poolLimit: 5
@@ -37,6 +38,7 @@ export class DashPlatformSDK {
 
   contestedResources: ContestedResourcesController
   platformAddresses: PlatformAddressesController
+  shielded: ShieldedController
   stateTransitions: StateTransitionsController
   dataContracts: DataContractsController
   identities: IdentitiesController
@@ -88,6 +90,7 @@ export class DashPlatformSDK {
 
     this.contestedResources = new ContestedResourcesController(grpcPool)
     this.platformAddresses = new PlatformAddressesController(grpcPool)
+    this.shielded = new ShieldedController(grpcPool)
     this.stateTransitions = new StateTransitionsController(grpcPool)
     this.dataContracts = new DataContractsController(grpcPool)
     this.identities = new IdentitiesController(grpcPool)
