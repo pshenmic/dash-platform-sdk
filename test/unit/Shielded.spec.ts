@@ -69,12 +69,7 @@ function makeSpendableNote(seed: Uint8Array, value: bigint): {
 
 describe('Shielded', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK({
-      network: 'testnet', grpc: {
-        dapiUrl: 'http://127.0.0.1:1443',
-        poolLimit: 5
-      }
-    })
+    sdk = new DashPlatformSDK({network: 'testnet'})
   })
 
   test('getShieldedNotesCount', async () => {
