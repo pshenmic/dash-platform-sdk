@@ -1,5 +1,6 @@
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import {
+  IdentityCreateFromShieldedPoolParams,
   ShieldedEncryptedNote,
   ShieldedNullifierStatus,
   ShieldedTransitionParamsMap,
@@ -12,7 +13,18 @@ import getShieldedPoolState from './getShieldedPoolState.js'
 import getShieldedNotesCount from './getShieldedNotesCount.js'
 import getShieldedNullifiers from './getShieldedNullifiers.js'
 import createStateTransition from './createStateTransition.js'
-import { ShieldedBuilderWASM, StateTransitionWASM } from 'pshenmic-dpp'
+import {
+  CommitmentTreeWASM,
+  ContractBoundsWASM,
+  IdentityPublicKeyInCreationWASM,
+  recoverNotes,
+  RecoveredNoteWASM,
+  SerializedActionWASM,
+  ShieldedBuilderWASM,
+  ShieldedMemoWASM,
+  SpendableNoteWASM,
+  StateTransitionWASM
+} from 'pshenmic-dpp'
 
 /**
  * Shielded controller for requesting information about shielded pool
@@ -123,6 +135,70 @@ export class ShieldedController {
   }
 
   /**
+   * Recovers the notes owned by a wallet from a set of shielded encrypted notes
+   * (as returned by {@link getShieldedEncryptedNotes}) by trial-decrypting each
+   * with the viewing key derived from the seed (ZIP-32 m/32'/coinType'/account').
+   * Only notes addressed to the wallet are returned, each with its global leaf
+   * position (`index`) in the commitment tree.
+   *
+   * @param notes {ShieldedEncryptedNote[]} - shielded encrypted notes to scan
+   * @param seed {Uint8Array} - BIP-39 seed bytes
+   * @param account {number} - ZIP-32 account index
+   *
+   * @return {RecoveredNoteWASM[]}
+   */
+  recoverNotes (notes: ShieldedEncryptedNote[], seed: Uint8Array, account: number): RecoveredNoteWASM[] {
+    // SLIP-44 coin type: 5 = Dash mainnet, 1 = testnets. Orchard derives via ZIP-32
+    const coinType = this.grpcPool.network === 'mainnet' ? 5 : 1
+
+    // ShieldedEncryptedNote carries everything needed for trial-decryption; the
+    // spend-authorization fields (rk, spendAuthSig) are unused here, so zero them.
+    const actions = notes.map(note =>
+      new SerializedActionWASM(note.nullifier, new Uint8Array(32), note.cmx, note.encryptedNote, note.cvNet, new Uint8Array(64)))
+
+    return recoverNotes(actions, seed, coinType, account)
+  }
+
+  /**
+   * Rebuilds the note commitment tree from the full on-chain note set and
+   * witnesses the given recovered notes against it, producing the spendable
+   * notes and the shared anchor required by spend transitions (`shieldedTransfer`,
+   * `unshield`, `shieldedWithdrawal`, `identityCreateFromShieldedPool`).
+   *
+   * Pass the complete note set from {@link getShieldedEncryptedNotes} as `notes`
+   * (the commitment tree leaves) and the notes you want to spend from
+   * {@link recoverNotes} as `recovered`. This keeps the whole spend flow inside
+   * the SDK — no need to construct a commitment tree yourself.
+   *
+   * @param notes {ShieldedEncryptedNote[]} - full on-chain note set (the tree leaves)
+   * @param recovered {RecoveredNoteWASM[]} - the recovered notes to spend
+   *
+   * @return {{ spends: SpendableNoteWASM[], anchor: Uint8Array }}
+   */
+  buildSpendableNotes (notes: ShieldedEncryptedNote[], recovered: RecoveredNoteWASM[]): { spends: SpendableNoteWASM[], anchor: Uint8Array } {
+    // only the leaves we intend to witness need to be marked spendable
+    const spendableIndices = new Set(recovered.map(note => note.index))
+
+    const tree = new CommitmentTreeWASM()
+    notes.forEach((note, index) => tree.append(note.cmx, spendableIndices.has(index)))
+    tree.checkpoint(0)
+
+    const anchor = tree.anchor()
+
+    const spends = recovered.map(recoveredNote => {
+      const merklePath = tree.witness(recoveredNote.index, 0) ?? tree.witness(recoveredNote.index, 1)
+
+      if (merklePath == null) {
+        throw new Error(`Failed to witness recovered note at index ${recoveredNote.index}`)
+      }
+
+      return new SpendableNoteWASM(recoveredNote.note, merklePath)
+    })
+
+    return { spends, anchor }
+  }
+
+  /**
    * Helper function for building and proving shielded (Orchard) transitions.
    * It may be used to create any of 6 shielded transition actions:
    *
@@ -144,6 +220,18 @@ export class ShieldedController {
     type: K,
     params: ShieldedTransitionParamsMap[K]
   ): StateTransitionWASM {
+    // @ts-expect-error a plain string memo is normalized to ShieldedMemoWASM (empty when omitted)
+    params.memo = typeof params.memo === 'string' ? ShieldedMemoWASM.fromString(params.memo) : ShieldedMemoWASM.empty()
+
+    if (type === 'identityCreateFromShieldedPool') {
+      const identityParams = params as IdentityCreateFromShieldedPoolParams
+
+      // @ts-expect-error builder expects IdentityPublicKeyInCreationWASM instances
+      identityParams.publicKeys = identityParams.publicKeys
+        .map(({ id, purpose, securityLevel, keyType, readOnly, data, signature, contractBounds }) =>
+          new IdentityPublicKeyInCreationWASM(id, purpose, securityLevel, keyType, readOnly, data, signature, (contractBounds != null) ? new ContractBoundsWASM(contractBounds.dataContractId, contractBounds.documentType) : undefined))
+    }
+
     return createStateTransition(this.getShieldedBuilder(), type, params)
   }
 }

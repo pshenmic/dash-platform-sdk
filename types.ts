@@ -5,7 +5,6 @@ import {
   DocumentWASM,
   GasFeesPaidByWASM, IdentifierLike,
   IdentifierWASM,
-  IdentityPublicKeyInCreationWASM,
   InputAddressWASM,
   KeyType,
   OrchardAddressWASM,
@@ -15,7 +14,6 @@ import {
   PoolingLike,
   PrivateKeyWASM,
   Purpose, SecurityLevel,
-  ShieldedMemoWASM,
   SpendableNoteWASM,
   TokenEmergencyActionWASM,
   TokenPricingScheduleWASM
@@ -79,7 +77,8 @@ export interface ShieldedSpendParams extends ShieldedTransitionBaseParams {
   coinType: number
   account: number
   anchor: Uint8Array
-  memo: ShieldedMemoWASM
+  /** optional UTF-8 memo string (defaults to an empty memo) */
+  memo?: string
 }
 
 /** Transparent platform addresses -> pool (deposit). */
@@ -90,7 +89,8 @@ export interface ShieldParams extends ShieldedTransitionBaseParams {
   privateKeys: PrivateKeyWASM[]
   feeStrategy: AddressFundsFeeStrategyStepWASM[]
   userFeeIncrease: number
-  memo: ShieldedMemoWASM
+  /** optional UTF-8 memo string (defaults to an empty memo) */
+  memo?: string
   senderOvk?: Uint8Array
 }
 
@@ -100,7 +100,8 @@ export interface ShieldFromAssetLockParams extends ShieldedTransitionBaseParams 
   shieldAmount: bigint
   assetLockProof: AssetLockProofWASM
   privateKey: PrivateKeyWASM
-  memo: ShieldedMemoWASM
+  /** optional UTF-8 memo string (defaults to an empty memo) */
+  memo?: string
   dummyOutputs: number
   senderOvk?: Uint8Array
   surplusOutput?: PlatformAddressLike
@@ -128,7 +129,7 @@ export interface ShieldedTransferParams extends ShieldedSpendParams {
 
 /** Pool -> new identity (spend). */
 export interface IdentityCreateFromShieldedPoolParams extends ShieldedSpendParams {
-  publicKeys: IdentityPublicKeyInCreationWASM[]
+  publicKeys: IdentityPublicKeyInCreation[]
   privateKeys: PrivateKeyWASM[]
   denomination: bigint
   sendToAddressOnCreationFailure: PlatformAddressLike
