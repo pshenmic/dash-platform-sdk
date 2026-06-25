@@ -1,3 +1,4 @@
+import { OrchardAddressWASM } from 'pshenmic-dpp'
 import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 
 let sdk: DashPlatformSDK
@@ -42,6 +43,50 @@ describe('KeyPair', () => {
       const key = sdk.keyPair.deriveIdentityPrivateKey(seedHdKey, 0, 0, 'testnet')
 
       expect(key.privateKey).toEqual(Uint8Array.from([89, 255, 64, 41, 202, 170, 83, 68, 135, 58, 161, 107, 130, 20, 3, 50, 69, 16, 108, 104, 32, 68, 13, 100, 225, 24, 79, 20, 193, 184, 238, 55]))
+    })
+  })
+
+  describe('shielded', () => {
+    const account = 0
+
+    test('should be able to derive a shielded address from seed', () => {
+      const seed = sdk.keyPair.mnemonicToSeed(mnemonic)
+
+      const address = sdk.keyPair.deriveShieldedAddress(seed, 'testnet', account)
+
+      expect(address).toEqual(expect.any(OrchardAddressWASM))
+      expect(address.bytes()).toHaveLength(43)
+      // deterministic for the same seed/network/account
+      expect(address.bytes()).toEqual(sdk.keyPair.deriveShieldedAddress(seed, 'testnet', account).bytes())
+    })
+
+    test('should derive distinct shielded addresses per diversifier index', () => {
+      const seed = sdk.keyPair.mnemonicToSeed(mnemonic)
+
+      const first = sdk.keyPair.deriveShieldedAddress(seed, 'testnet', account, 0)
+      const second = sdk.keyPair.deriveShieldedAddress(seed, 'testnet', account, 1)
+
+      expect(first.bytes()).not.toEqual(second.bytes())
+    })
+
+    test('should derive distinct shielded addresses per network', () => {
+      const seed = sdk.keyPair.mnemonicToSeed(mnemonic)
+
+      const mainnet = sdk.keyPair.deriveShieldedAddress(seed, 'mainnet', account)
+      const testnet = sdk.keyPair.deriveShieldedAddress(seed, 'testnet', account)
+
+      expect(mainnet.bytes()).not.toEqual(testnet.bytes())
+    })
+
+    test('should be able to derive the outgoing viewing key from seed', () => {
+      const seed = sdk.keyPair.mnemonicToSeed(mnemonic)
+
+      const ovk = sdk.keyPair.deriveShieldedOutgoingViewingKey(seed, 'testnet', account)
+
+      expect(ovk).toBeInstanceOf(Uint8Array)
+      expect(ovk).toHaveLength(32)
+      // deterministic for the same seed/network/account
+      expect(ovk).toEqual(sdk.keyPair.deriveShieldedOutgoingViewingKey(seed, 'testnet', account))
     })
   })
 })

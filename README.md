@@ -1,4 +1,4 @@
-# dash-platform-sdk v1.4.0
+# dash-platform-sdk v1.5.0
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pshenmic/dash-platform-sdk/blob/master/LICENSE) ![npm version](https://img.shields.io/npm/v/react.svg?style=flat) ![a](https://github.com/pshenmic/platform-explorer/actions/workflows/build.yml/badge.svg)
 
 
@@ -25,7 +25,7 @@ There is no input validation and error handling implemented yet relying on a hap
 
 ## Versioning
 
-#### v1.5.x (next)
+#### v1.5.x (current)
 React Native support, shielded transitions support
 #### v1.4.x
 Node API support

@@ -4,6 +4,7 @@ import deriveChild from './deriveChild.js'
 import derivePath from './derivePath.js'
 import { Network } from '../../types.js'
 import { p2pkh } from '@scure/btc-signer'
+import { OrchardAddressWASM, orchardOvkFromSeed } from 'pshenmic-dpp'
 
 const DASH_VERSIONS = {
   mainnet: { pubKeyHash: 0x4c, scriptHash: 0x10, bech32: 'dc', wif: 0xcc, private: 0x0488ade4, public: 0x0488b21e },
@@ -96,5 +97,41 @@ export class KeyPairController {
     const P2PKH = p2pkh(publicKey, DASH_VERSIONS[network])
 
     return P2PKH.address
+  }
+
+  /**
+   * Derives a shielded (Orchard) address from a BIP-39 seed via ZIP-32
+   * (m/32'/coinType'/account').
+   *
+   * @param seed {Uint8Array} - BIP-39 seed bytes
+   * @param network {Network} - network (selects the SLIP-44 coin type)
+   * @param account {number} - ZIP-32 account index
+   * @param diversifierIndex {number=} - optional diversifier index
+   *
+   * @returns {OrchardAddressWASM}
+   */
+  deriveShieldedAddress (seed: Uint8Array, network: Network, account: number, diversifierIndex?: number): OrchardAddressWASM {
+    // SLIP-44 coin type: 5 = Dash mainnet, 1 = testnets. Orchard derives via ZIP-32
+    const coinType = network === 'mainnet' ? 5 : 1
+
+    return OrchardAddressWASM.fromSeed(seed, coinType, account, diversifierIndex)
+  }
+
+  /**
+   * Derives the sender's Orchard outgoing viewing key (OVK, 32 bytes) from a
+   * BIP-39 seed via ZIP-32 (m/32'/coinType'/account'). Used to recover the
+   * outgoing notes a wallet sent.
+   *
+   * @param seed {Uint8Array} - BIP-39 seed bytes
+   * @param network {Network} - network (selects the SLIP-44 coin type)
+   * @param account {number} - ZIP-32 account index
+   *
+   * @returns {Uint8Array} 32-byte outgoing viewing key
+   */
+  deriveShieldedOutgoingViewingKey (seed: Uint8Array, network: Network, account: number): Uint8Array {
+    // SLIP-44 coin type: 5 = Dash mainnet, 1 = testnets. Orchard derives via ZIP-32
+    const coinType = network === 'mainnet' ? 5 : 1
+
+    return orchardOvkFromSeed(seed, coinType, account)
   }
 }

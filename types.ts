@@ -1,9 +1,20 @@
 import {
+  AddressFundsFeeStrategyStepWASM,
+  AssetLockProofWASM,
   CoreScriptWASM,
   DocumentWASM,
   GasFeesPaidByWASM, IdentifierLike,
   IdentifierWASM,
-  KeyType, PlatformAddressWASM, Purpose, SecurityLevel,
+  InputAddressWASM,
+  KeyType,
+  OrchardAddressWASM,
+  PlatformAddressLike,
+  PlatformAddressWASM,
+  PlatformVersionWASM,
+  PoolingLike,
+  PrivateKeyWASM,
+  Purpose, SecurityLevel,
+  SpendableNoteWASM,
   TokenEmergencyActionWASM,
   TokenPricingScheduleWASM
 } from 'pshenmic-dpp'
@@ -52,6 +63,91 @@ export interface DocumentTransitionParams {
     gasFeesPaidBy: GasFeesPaidByWASM
   }
 }
+
+export interface ShieldedTransitionBaseParams {
+  /** version of the platform (defaults to the latest supported version) */
+  platformVersion?: PlatformVersionWASM
+}
+
+/** Spend inputs shared by `shieldedWithdrawal`, `unshield`, `shieldedTransfer` and `identityCreateFromShieldedPool`. */
+export interface ShieldedSpendParams extends ShieldedTransitionBaseParams {
+  spends: SpendableNoteWASM[]
+  changeAddress: OrchardAddressWASM
+  seed: Uint8Array
+  coinType: number
+  account: number
+  anchor: Uint8Array
+  /** optional UTF-8 memo string (defaults to an empty memo) */
+  memo?: string
+}
+
+/** Transparent platform addresses -> pool (deposit). */
+export interface ShieldParams extends ShieldedTransitionBaseParams {
+  recipient: OrchardAddressWASM
+  shieldAmount: bigint
+  inputs: InputAddressWASM[]
+  privateKeys: PrivateKeyWASM[]
+  feeStrategy: AddressFundsFeeStrategyStepWASM[]
+  userFeeIncrease: number
+  /** optional UTF-8 memo string (defaults to an empty memo) */
+  memo?: string
+  senderOvk?: Uint8Array
+}
+
+/** Asset lock -> pool (deposit). */
+export interface ShieldFromAssetLockParams extends ShieldedTransitionBaseParams {
+  recipient: OrchardAddressWASM
+  shieldAmount: bigint
+  assetLockProof: AssetLockProofWASM
+  privateKey: PrivateKeyWASM
+  /** optional UTF-8 memo string (defaults to an empty memo) */
+  memo?: string
+  dummyOutputs: number
+  senderOvk?: Uint8Array
+  surplusOutput?: PlatformAddressLike
+}
+
+/** Pool -> core L1 (spend). */
+export interface ShieldedWithdrawalParams extends ShieldedSpendParams {
+  withdrawalAmount: bigint
+  outputScript: CoreScriptWASM
+  coreFeePerByte: number
+  pooling: PoolingLike
+}
+
+/** Pool -> platform identity balance (spend). */
+export interface UnshieldParams extends ShieldedSpendParams {
+  outputAddress: PlatformAddressLike
+  unshieldAmount: bigint
+}
+
+/** Pool -> pool (spend). */
+export interface ShieldedTransferParams extends ShieldedSpendParams {
+  recipient: OrchardAddressWASM
+  transferAmount: bigint
+}
+
+/** Pool -> new identity (spend). */
+export interface IdentityCreateFromShieldedPoolParams extends ShieldedSpendParams {
+  publicKeys: IdentityPublicKeyInCreation[]
+  privateKeys: PrivateKeyWASM[]
+  denomination: bigint
+  sendToAddressOnCreationFailure: PlatformAddressLike
+}
+
+/** Maps each shielded transition type to the params it requires. */
+export interface ShieldedTransitionParamsMap {
+  shield: ShieldParams
+  shieldFromAssetLock: ShieldFromAssetLockParams
+  shieldedWithdrawal: ShieldedWithdrawalParams
+  unshield: UnshieldParams
+  shieldedTransfer: ShieldedTransferParams
+  identityCreateFromShieldedPool: IdentityCreateFromShieldedPoolParams
+}
+
+export type ShieldedTransitionType = keyof ShieldedTransitionParamsMap
+
+export type ShieldedTransitionParams = ShieldedTransitionParamsMap[ShieldedTransitionType]
 
 export interface MasternodeInfo {
   proTxHash: string
@@ -265,4 +361,16 @@ export interface PlatformAddressInfo {
   address: PlatformAddressWASM
   nonce: number
   balance: bigint
+}
+
+export interface ShieldedEncryptedNote {
+  nullifier: Uint8Array
+  cmx: Uint8Array
+  encryptedNote: Uint8Array
+  cvNet: Uint8Array
+}
+
+export interface ShieldedNullifierStatus {
+  nullifier: Uint8Array
+  isSpent: boolean
 }
