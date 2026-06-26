@@ -5,7 +5,14 @@ import {
   IdentifierWASM,
   KeyType, PlatformAddressWASM, Purpose, SecurityLevel,
   TokenEmergencyActionWASM,
-  TokenPricingScheduleWASM
+  TokenPricingScheduleWASM,
+  AddressFundsFeeStrategyStepWASM,
+  AddressWitnessWASM,
+  AssetLockProofWASM,
+  IdentityPublicKeyInCreationWASM,
+  InputAddressWASM,
+  OutputAddressWASM,
+  OutputAddressNullableCreditsWASM
 } from 'pshenmic-dpp'
 
 export {
@@ -26,7 +33,20 @@ export {
   IdentityCreditTransferWASM,
   MasternodeVoteTransitionWASM,
   IdentifierLike,
-  PlatformAddressLike
+  PlatformAddressLike,
+  InputAddressWASM,
+  OutputAddressWASM,
+  OutputAddressNullableCreditsWASM,
+  AddressFundsFeeStrategyStepWASM,
+  AddressWitnessWASM,
+  IdentityPublicKeyInCreationWASM,
+  AssetLockProofWASM,
+  IdentityCreditTransferToAddressesTransitionWASM,
+  IdentityCreateFromAddressesTransitionWASM,
+  IdentityTopUpFromAddressesTransitionWASM,
+  AddressFundsTransferTransitionWASM,
+  AddressFundingFromAssetLockTransitionWASM,
+  AddressCreditWithdrawalTransitionWASM
 } from 'pshenmic-dpp'
 
 export type Network = 'mainnet' | 'testnet'
@@ -265,4 +285,21 @@ export interface PlatformAddressInfo {
   address: PlatformAddressWASM
   nonce: number
   balance: bigint
+}
+
+export interface PlatformAddressTransitionParams {
+  identityId?: IdentifierLike
+  publicKeys?: IdentityPublicKeyInCreationWASM[]
+  inputs?: InputAddressWASM[]
+  outputs?: OutputAddressWASM[] | OutputAddressNullableCreditsWASM[]
+  recipients?: OutputAddressWASM[]
+  output?: OutputAddressWASM
+  feeStrategy?: AddressFundsFeeStrategyStepWASM[]
+  inputWitness?: AddressWitnessWASM[]
+  assetLockProof?: AssetLockProofWASM
+  nonce?: bigint
+  coreFeePerByte?: number
+  pooling?: 'Standard' | 'Never' | 'IfAvailable'
+  outputScript?: CoreScriptWASM
+  userFeeIncrease?: number
 }
