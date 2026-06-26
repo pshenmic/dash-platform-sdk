@@ -16,7 +16,11 @@ import {
   Purpose, SecurityLevel,
   SpendableNoteWASM,
   TokenEmergencyActionWASM,
-  TokenPricingScheduleWASM
+  TokenPricingScheduleWASM,
+  AddressWitnessWASM,
+  IdentityPublicKeyInCreationWASM,
+  OutputAddressWASM,
+  OutputAddressNullableCreditsWASM
 } from 'pshenmic-dpp'
 
 export {
@@ -37,7 +41,20 @@ export {
   IdentityCreditTransferWASM,
   MasternodeVoteTransitionWASM,
   IdentifierLike,
-  PlatformAddressLike
+  PlatformAddressLike,
+  InputAddressWASM,
+  OutputAddressWASM,
+  OutputAddressNullableCreditsWASM,
+  AddressFundsFeeStrategyStepWASM,
+  AddressWitnessWASM,
+  IdentityPublicKeyInCreationWASM,
+  AssetLockProofWASM,
+  IdentityCreditTransferToAddressesTransitionWASM,
+  IdentityCreateFromAddressesTransitionWASM,
+  IdentityTopUpFromAddressesTransitionWASM,
+  AddressFundsTransferTransitionWASM,
+  AddressFundingFromAssetLockTransitionWASM,
+  AddressCreditWithdrawalTransitionWASM
 } from 'pshenmic-dpp'
 
 export type Network = 'mainnet' | 'testnet'
@@ -373,4 +390,21 @@ export interface ShieldedEncryptedNote {
 export interface ShieldedNullifierStatus {
   nullifier: Uint8Array
   isSpent: boolean
+}
+
+export interface PlatformAddressTransitionParams {
+  identityId?: IdentifierLike
+  publicKeys?: IdentityPublicKeyInCreationWASM[]
+  inputs?: InputAddressWASM[]
+  outputs?: OutputAddressWASM[] | OutputAddressNullableCreditsWASM[]
+  recipients?: OutputAddressWASM[]
+  output?: OutputAddressWASM
+  feeStrategy?: AddressFundsFeeStrategyStepWASM[]
+  inputWitness?: AddressWitnessWASM[]
+  assetLockProof?: AssetLockProofWASM
+  nonce?: bigint
+  coreFeePerByte?: number
+  pooling?: 'Standard' | 'Never' | 'IfAvailable'
+  outputScript?: CoreScriptWASM
+  userFeeIncrease?: number
 }
