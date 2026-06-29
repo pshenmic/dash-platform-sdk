@@ -3,7 +3,7 @@ import {
   DocumentWASM,
   GasFeesPaidByWASM, IdentifierLike,
   IdentifierWASM,
-  KeyType, PlatformAddressWASM, Purpose, SecurityLevel,
+  KeyType, PlatformAddressLike, PlatformAddressWASM, Purpose, SecurityLevel,
   TokenEmergencyActionWASM,
   TokenPricingScheduleWASM,
   AddressFundsFeeStrategyStepWASM,
@@ -301,5 +301,70 @@ export interface PlatformAddressTransitionParams {
   coreFeePerByte?: number
   pooling?: 'Standard' | 'Never' | 'IfAvailable'
   outputScript?: CoreScriptWASM
+  userFeeIncrease?: number
+}
+
+/**
+ * The `inputWitness` arrays carried by the address-funded transitions below are produced by the
+ * client application (wallet / mobile / browser extension), which is where the address private keys
+ * live. These convenience builders only assemble the transition - they never sign or hit the network.
+ */
+export interface TransferToAddressParams {
+  identityId: IdentifierLike
+  nonce: bigint
+  /** A single recipient address; combined with `amount` to build a recipient output **/
+  recipient?: PlatformAddressLike
+  amount?: bigint
+  /** Pass explicit recipient outputs instead of `recipient` + `amount` **/
+  recipients?: OutputAddressWASM[]
+  userFeeIncrease?: number
+}
+
+export interface CreateIdentityFromAddressesParams {
+  publicKeys: IdentityPublicKeyInCreationWASM[]
+  inputs: InputAddressWASM[]
+  feeStrategy: AddressFundsFeeStrategyStepWASM[]
+  inputWitness: AddressWitnessWASM[]
+  output?: OutputAddressWASM
+  userFeeIncrease?: number
+}
+
+export interface TopUpFromAddressesParams {
+  identityId: IdentifierLike
+  inputs: InputAddressWASM[]
+  feeStrategy: AddressFundsFeeStrategyStepWASM[]
+  inputWitness: AddressWitnessWASM[]
+  output?: OutputAddressWASM
+  userFeeIncrease?: number
+}
+
+export interface TransferBetweenAddressesParams {
+  inputs: InputAddressWASM[]
+  feeStrategy: AddressFundsFeeStrategyStepWASM[]
+  inputWitness: AddressWitnessWASM[]
+  outputs: OutputAddressWASM[]
+  userFeeIncrease?: number
+}
+
+export interface FundFromAssetLockParams {
+  assetLockProof: AssetLockProofWASM
+  inputs: InputAddressWASM[]
+  feeStrategy: AddressFundsFeeStrategyStepWASM[]
+  inputWitness: AddressWitnessWASM[]
+  outputs: OutputAddressNullableCreditsWASM[]
+  userFeeIncrease?: number
+}
+
+export interface WithdrawalToCoreParams {
+  inputs: InputAddressWASM[]
+  feeStrategy: AddressFundsFeeStrategyStepWASM[]
+  inputWitness: AddressWitnessWASM[]
+  /** A Core (L1) address; converted to a P2PKH `outputScript` **/
+  coreAddress?: string
+  /** Pass an explicit output script instead of `coreAddress` **/
+  outputScript?: CoreScriptWASM
+  coreFeePerByte?: number
+  pooling?: 'Standard' | 'Never' | 'IfAvailable'
+  output?: OutputAddressWASM
   userFeeIncrease?: number
 }
