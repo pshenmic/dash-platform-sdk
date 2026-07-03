@@ -69,6 +69,15 @@ describe('Node', () => {
     expect(epochsInfo.map(epochInfo => epochInfo.number)).toEqual(expectedEpochsNumbers)
   })
 
+  test('should be able to call getFinalizedEpochInfos', async () => {
+    const epochsInfo = await sdk.node.getFinalizedEpochsInfo(17100, true, 17110, false)
+
+    const expectedEpochsNumbers = Array.from({ length: 10 }, (_val, index) => 17100 + index)
+
+    expect(epochsInfo.length).toEqual(10)
+    expect(epochsInfo.map(epochInfo => epochInfo.epochIndex)).toEqual(expectedEpochsNumbers)
+  })
+
   test('should be able to call getTotalCreditsInPlatform', async () => {
     const totalCredits = await sdk.node.totalCredits()
 
