@@ -16,7 +16,7 @@ export interface EpochInfo {
   protocolVersion: 9
 }
 
-export default async function epochs (grpcPool: GRPCConnectionPool, count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
+export default async function epochInfos (grpcPool: GRPCConnectionPool, count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
   const getEpochsInfoRequest = GetEpochsInfoRequest.create({
     version: {
       oneofKind: 'v0',
