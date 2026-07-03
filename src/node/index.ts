@@ -1,7 +1,8 @@
 import getStatus from './status.js'
 import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { NodeStatus } from '../../types.js'
-import getEpochsInfo, { EpochInfo } from './epochs.js'
+import getEpochsInfo, { EpochInfo } from './epochInfos.js'
+import getFinalizedEpochsInfo, {FinalizedEpochInfo} from './finalizedEpochInfos.js'
 import getTotalCredits from './totalCredits.js'
 
 /**
@@ -45,4 +46,15 @@ export class NodeController {
   async getEpochsInfo (count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
     return await getEpochsInfo(this.grpcPool, count, ascending, start)
   }
+
+  /**
+   * Retrieves an finalized info about epochs
+   * Includes information about first block height, time, fee multiplier, number
+   *
+   * @return {Promise<FinalizedEpochInfo[]>}
+   */
+  async getFinalizedEpochsInfo (startEpochIndex: number, startEpochIndexIncluded: boolean, endEpochIndex: number, endEpochIndexIncluded: boolean): Promise<FinalizedEpochInfo[]> {
+    return await getFinalizedEpochsInfo(this.grpcPool, startEpochIndex, startEpochIndexIncluded, endEpochIndex, endEpochIndexIncluded)
+  }
+
 }
