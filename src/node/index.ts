@@ -51,7 +51,7 @@ export class NodeController {
    * Retrieves an finalized info about epochs
    * Includes information about first block height, time, fee multiplier, number
    *
-   * @return {Promise<EpochInfo[]>}
+   * @return {Promise<FinalizedEpochInfo[]>}
    */
   async getFinalizedEpochsInfo (startEpochIndex: number, startEpochIndexIncluded: boolean, endEpochIndex: number, endEpochIndexIncluded: boolean): Promise<FinalizedEpochInfo[]> {
     return await getFinalizedEpochsInfo(this.grpcPool, startEpochIndex, startEpochIndexIncluded, endEpochIndex, endEpochIndexIncluded)
