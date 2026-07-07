@@ -1,6 +1,6 @@
 {
   "name": "dash-platform-sdk",
-  "version": "1.5.0-dev.2",
+  "version": "1.5.0-dev.3",
   "main": "index.js",
   "description": "Lightweight SDK for accessing Dash Platform blockchain",
   "repository": {
@@ -25,7 +25,8 @@
     "@babel/preset-env": "^7.28.0",
     "@babel/preset-typescript": "^7.27.1",
     "@protobuf-ts/plugin": "^2.11.1",
-    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-alias": "^6.0.0",
+    "@rollup/plugin-commonjs": "^29.0.3",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.4",
@@ -59,6 +60,6 @@
     "@scure/bip39": "^2.0.0",
     "@scure/btc-signer": "^2.0.1",
     "cbor-x": "^1.6.0",
-    "pshenmic-dpp": "2.0.0-dev.23"
+    "pshenmic-dpp": "2.0.0-dev.24"
   }
 }
