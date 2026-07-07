@@ -40,11 +40,11 @@ const shieldedTransitionsMap = {
   }
 }
 
-export default function createStateTransition<K extends ShieldedTransitionType> (
+export default async function createStateTransition<K extends ShieldedTransitionType> (
   builder: ShieldedBuilderWASM,
   type: K,
   params: ShieldedTransitionParamsMap[K]
-): StateTransitionWASM {
+): Promise<StateTransitionWASM> {
   const { method: builderMethod, arguments: classArguments, optionalArguments } = shieldedTransitionsMap[type]
 
   if (builderMethod == null) {
@@ -60,7 +60,7 @@ export default function createStateTransition<K extends ShieldedTransitionType> 
 
   const transitionParams = classArguments.concat(optionalArguments).map((classArgument: string) => params[classArgument as keyof ShieldedTransitionParamsMap[K]])
 
-  const result = builderMethod.apply(builder, [...transitionParams, params.platformVersion ?? LATEST_PLATFORM_VERSION])
+  const result = await builderMethod.apply(builder, [...transitionParams, params.platformVersion ?? LATEST_PLATFORM_VERSION])
 
   if (result instanceof StateTransitionWASM) {
     return result

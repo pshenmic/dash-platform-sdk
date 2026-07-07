@@ -68,9 +68,10 @@ function makeSpendableNote(seed: Uint8Array, value: bigint): {
 }
 
 describe('Shielded', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     sdk = new DashPlatformSDK({network: 'testnet'})
-  })
+    await sdk.shielded.init()
+  }, 60000)
 
   test('getShieldedNotesCount', async () => {
     const count = await sdk.shielded.getShieldedNotesCount()
@@ -145,7 +146,7 @@ describe('Shielded', () => {
     expect(recovered).toHaveLength(0)
   })
 
-  test('buildSpendableNotes produces a spend usable by a transition', () => {
+  test('buildSpendableNotes produces a spend usable by a transition', async () => {
     const seed = randomBytes(32)
     const owner = OrchardAddressWASM.fromSeed(seed, COIN_TYPE, ACCOUNT)
 
@@ -167,7 +168,7 @@ describe('Shielded', () => {
     expect(anchor).toBeInstanceOf(Uint8Array)
 
     // the produced spend + anchor must actually prove a spend transition
-    const stateTransition = sdk.shielded.createStateTransition('shieldedTransfer', {
+    const stateTransition = await sdk.shielded.createStateTransition('shieldedTransfer', {
       spends,
       recipient: OrchardAddressWASM.fromSeed(randomBytes(32), COIN_TYPE, ACCOUNT),
       transferAmount: BigInt(1000000),
@@ -182,13 +183,13 @@ describe('Shielded', () => {
   }, 60000)
 
   describe('should be able to create state transition', () => {
-    test('should be able to create a shield transition', () => {
+    test('should be able to create a shield transition', async () => {
       const seed = randomBytes(32)
       const recipient = OrchardAddressWASM.fromSeed(seed, COIN_TYPE, ACCOUNT)
       const privateKey = new PrivateKeyWASM(randomBytes(32), 'testnet')
       const address = platformAddress(privateKey.getPublicKey().hash160())
 
-      const stateTransition = sdk.shielded.createStateTransition('shield', {
+      const stateTransition = await sdk.shielded.createStateTransition('shield', {
         recipient,
         shieldAmount: BigInt(50000000),
         inputs: [new InputAddressWASM(address, 0, BigInt(100000000))],
@@ -201,14 +202,14 @@ describe('Shielded', () => {
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
     }, 60000)
 
-    test('should be able to create a shieldFromAssetLock transition', () => {
+    test('should be able to create a shieldFromAssetLock transition', async () => {
       const seed = randomBytes(32)
       const recipient = OrchardAddressWASM.fromSeed(seed, COIN_TYPE, ACCOUNT)
       const privateKey = PrivateKeyWASM.fromHex('edd04a71bddb31e530f6c2314fd42ada333f6656bb853ece13f0577a8fd30612', 'testnet')
       const txid = '61aede830477254876d435a317241ad46753c4b1350dc991a45ebcf19ab80a11'
       const assetLockProof = AssetLockProofWASM.createChainAssetLockProof(1337, new OutPointWASM(txid, 0))
 
-      const stateTransition = sdk.shielded.createStateTransition('shieldFromAssetLock', {
+      const stateTransition = await sdk.shielded.createStateTransition('shieldFromAssetLock', {
         recipient,
         shieldAmount: BigInt(50000000),
         assetLockProof,
@@ -220,12 +221,12 @@ describe('Shielded', () => {
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
     }, 60000)
 
-    test('should be able to create a shieldedTransfer transition', () => {
+    test('should be able to create a shieldedTransfer transition', async () => {
       const seed = randomBytes(32)
       const {spend, anchor, owner} = makeSpendableNote(seed, BigInt(10000000000))
       const recipient = OrchardAddressWASM.fromSeed(randomBytes(32), COIN_TYPE, ACCOUNT)
 
-      const stateTransition = sdk.shielded.createStateTransition('shieldedTransfer', {
+      const stateTransition = await sdk.shielded.createStateTransition('shieldedTransfer', {
         spends: [spend],
         recipient,
         transferAmount: BigInt(1000000),
@@ -240,11 +241,11 @@ describe('Shielded', () => {
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
     }, 60000)
 
-    test('should be able to create an unshield transition', () => {
+    test('should be able to create an unshield transition', async () => {
       const seed = randomBytes(32)
       const {spend, anchor, owner} = makeSpendableNote(seed, BigInt(10000000000))
 
-      const stateTransition = sdk.shielded.createStateTransition('unshield', {
+      const stateTransition = await sdk.shielded.createStateTransition('unshield', {
         spends: [spend],
         outputAddress: platformAddress(),
         unshieldAmount: BigInt(1000000),
@@ -259,11 +260,11 @@ describe('Shielded', () => {
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
     }, 60000)
 
-    test('should be able to create a shieldedWithdrawal transition', () => {
+    test('should be able to create a shieldedWithdrawal transition', async () => {
       const seed = randomBytes(32)
       const {spend, anchor, owner} = makeSpendableNote(seed, BigInt(10000000000))
 
-      const stateTransition = sdk.shielded.createStateTransition('shieldedWithdrawal', {
+      const stateTransition = await sdk.shielded.createStateTransition('shieldedWithdrawal', {
         spends: [spend],
         withdrawalAmount: BigInt(1000000),
         outputScript: CoreScriptWASM.newP2PKH(randomBytes(20)),
@@ -283,7 +284,7 @@ describe('Shielded', () => {
     // The proving step succeeds, but `IdentityCreateFromShieldedPoolResultWASM.identityId`
     // (read while assembling the transition) rejects the derived id for synthetic notes.
     // A real run needs a funded note and signed keys, so this is covered against a live pool.
-    test('should be able to create an identityCreateFromShieldedPool transition', () => {
+    test('should be able to create an identityCreateFromShieldedPool transition', async () => {
       const seed = randomBytes(32)
       const {spend, anchor, owner} = makeSpendableNote(seed, BigInt(20000000000))
 
@@ -297,7 +298,7 @@ describe('Shielded', () => {
         data: privateKey.getPublicKey().bytes()
       }
 
-      const stateTransition = sdk.shielded.createStateTransition('identityCreateFromShieldedPool', {
+      const stateTransition = await sdk.shielded.createStateTransition('identityCreateFromShieldedPool', {
         publicKeys: [identityPublicKeyInCreation],
         privateKeys: [privateKey],
         denomination: BigInt(10000000000),

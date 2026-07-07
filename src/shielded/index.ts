@@ -38,7 +38,7 @@ export class ShieldedController {
   /** @ignore **/
   shieldedBuilder?: ShieldedBuilderWASM
 
-  constructor (grpcPool: GRPCConnectionPool) {
+  constructor(grpcPool: GRPCConnectionPool) {
     this.grpcPool = grpcPool
   }
 
@@ -46,11 +46,13 @@ export class ShieldedController {
    * Set bindings instance of builder
    * Needed for custom builder load, because ShieldedBuilderWASM inits very slow on old hardware
    */
-  init(builder?: ShieldedBuilderWASM): ShieldedBuilderWASM {
+  async init(builder?: ShieldedBuilderWASM): Promise<ShieldedBuilderWASM> {
     this.shieldedBuilder = builder ?? new ShieldedBuilderWASM()
 
+    await this.shieldedBuilder.init()
+
     return this.shieldedBuilder
-}
+  }
 
   /**
    * Lazily constructs and caches a {ShieldedBuilderWASM}. Construction builds
@@ -58,9 +60,9 @@ export class ShieldedController {
    *
    * @ignore
    */
-  getShieldedBuilder (): ShieldedBuilderWASM {
+  async getShieldedBuilder(): Promise<ShieldedBuilderWASM> {
     if (this.shieldedBuilder == null) {
-      return this.init()
+      return await this.init()
     }
 
     return this.shieldedBuilder
@@ -78,7 +80,7 @@ export class ShieldedController {
    *
    * @return {Promise<ShieldedEncryptedNote[]>}
    */
-  async getShieldedEncryptedNotes (startIndex: bigint, count: number): Promise<ShieldedEncryptedNote[]> {
+  async getShieldedEncryptedNotes(startIndex: bigint, count: number): Promise<ShieldedEncryptedNote[]> {
     return await getShieldedEncryptedNotes(this.grpcPool, startIndex, count)
   }
 
@@ -88,7 +90,7 @@ export class ShieldedController {
    *
    * @return {Promise<Uint8Array[]>}
    */
-  async getShieldedAnchors (): Promise<Uint8Array[]> {
+  async getShieldedAnchors(): Promise<Uint8Array[]> {
     return await getShieldedAnchors(this.grpcPool)
   }
 
@@ -97,7 +99,7 @@ export class ShieldedController {
    *
    * @return {Promise<Uint8Array>}
    */
-  async getMostRecentShieldedAnchor (): Promise<Uint8Array | undefined> {
+  async getMostRecentShieldedAnchor(): Promise<Uint8Array | undefined> {
     return await getMostRecentShieldedAnchor(this.grpcPool)
   }
 
@@ -106,7 +108,7 @@ export class ShieldedController {
    *
    * @return {Promise<bigint>}
    */
-  async getShieldedPoolState (): Promise<bigint | undefined> {
+  async getShieldedPoolState(): Promise<bigint | undefined> {
     return await getShieldedPoolState(this.grpcPool)
   }
 
@@ -116,7 +118,7 @@ export class ShieldedController {
    *
    * @return {Promise<bigint>}
    */
-  async getShieldedNotesCount (): Promise<bigint | undefined> {
+  async getShieldedNotesCount(): Promise<bigint | undefined> {
     return await getShieldedNotesCount(this.grpcPool)
   }
 
@@ -130,7 +132,7 @@ export class ShieldedController {
    *
    * @return {Promise<ShieldedNullifierStatus[]>}
    */
-  async getShieldedNullifiers (nullifiers: Uint8Array[]): Promise<ShieldedNullifierStatus[]> {
+  async getShieldedNullifiers(nullifiers: Uint8Array[]): Promise<ShieldedNullifierStatus[]> {
     return await getShieldedNullifiers(this.grpcPool, nullifiers)
   }
 
@@ -147,7 +149,7 @@ export class ShieldedController {
    *
    * @return {RecoveredNoteWASM[]}
    */
-  recoverNotes (notes: ShieldedEncryptedNote[], seed: Uint8Array, account: number): RecoveredNoteWASM[] {
+  recoverNotes(notes: ShieldedEncryptedNote[], seed: Uint8Array, account: number): RecoveredNoteWASM[] {
     // SLIP-44 coin type: 5 = Dash mainnet, 1 = testnets. Orchard derives via ZIP-32
     const coinType = this.grpcPool.network === 'mainnet' ? 5 : 1
 
@@ -175,7 +177,10 @@ export class ShieldedController {
    *
    * @return {{ spends: SpendableNoteWASM[], anchor: Uint8Array }}
    */
-  buildSpendableNotes (notes: ShieldedEncryptedNote[], recovered: RecoveredNoteWASM[]): { spends: SpendableNoteWASM[], anchor: Uint8Array } {
+  buildSpendableNotes(notes: ShieldedEncryptedNote[], recovered: RecoveredNoteWASM[]): {
+    spends: SpendableNoteWASM[],
+    anchor: Uint8Array
+  } {
     // only the leaves we intend to witness need to be marked spendable
     const spendableIndices = new Set(recovered.map(note => note.index))
 
@@ -195,7 +200,7 @@ export class ShieldedController {
       return new SpendableNoteWASM(recoveredNote.note, merklePath)
     })
 
-    return { spends, anchor }
+    return {spends, anchor}
   }
 
   /**
@@ -216,10 +221,10 @@ export class ShieldedController {
    *
    * @return {StateTransitionWASM}
    */
-  createStateTransition<K extends ShieldedTransitionType> (
+  async createStateTransition<K extends ShieldedTransitionType>(
     type: K,
     params: ShieldedTransitionParamsMap[K]
-  ): StateTransitionWASM {
+  ): Promise<StateTransitionWASM> {
     // @ts-expect-error a plain string memo is normalized to ShieldedMemoWASM (empty when omitted)
     params.memo = typeof params.memo === 'string' ? ShieldedMemoWASM.fromString(params.memo) : ShieldedMemoWASM.empty()
 
@@ -228,10 +233,10 @@ export class ShieldedController {
 
       // @ts-expect-error builder expects IdentityPublicKeyInCreationWASM instances
       identityParams.publicKeys = identityParams.publicKeys
-        .map(({ id, purpose, securityLevel, keyType, readOnly, data, signature, contractBounds }) =>
+        .map(({id, purpose, securityLevel, keyType, readOnly, data, signature, contractBounds}) =>
           new IdentityPublicKeyInCreationWASM(id, purpose, securityLevel, keyType, readOnly, data, signature, (contractBounds != null) ? new ContractBoundsWASM(contractBounds.dataContractId, contractBounds.documentType) : undefined))
     }
 
-    return createStateTransition(this.getShieldedBuilder(), type, params)
+    return await createStateTransition(await this.getShieldedBuilder(), type, params)
   }
 }
