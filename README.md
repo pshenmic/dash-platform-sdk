@@ -118,5 +118,6 @@ The folder `docs/examples` in this repo contains useful example code snippets.
 | [Utils.md](docs/examples/Utils.md) | useful utility functions, like hex/base58 encoding, createVoterIdentifier, createMasternodeIdentifier, validateIdentifier                                                                                           |
 | [KeyPair.md](docs/examples/KeyPair.md) | Mnemonic to Seed, Seed to HD Key, Derive Identity Private Key, Derive Child, Derive Path, P2PKH Address conversion                                                                                                  |
 | [ContestedResources.md](docs/examples/ContestedResources.md) | Contested Resource Vote State Info                                                                                                                                                                                  |
+| [PlatformAddresses.md](docs/examples/PlatformAddresses.md) | Get Address Info, Create State Transition, Convenience builders (Transfer To Address, Create / Top Up Identity From Addresses, Transfer Between Addresses, Fund From Asset Lock, Withdrawal To Core)                |
 
 

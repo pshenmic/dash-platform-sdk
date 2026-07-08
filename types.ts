@@ -16,7 +16,11 @@ import {
   Purpose, SecurityLevel,
   SpendableNoteWASM,
   TokenEmergencyActionWASM,
-  TokenPricingScheduleWASM
+  TokenPricingScheduleWASM,
+  AddressWitnessWASM,
+  IdentityPublicKeyInCreationWASM,
+  OutputAddressWASM,
+  OutputAddressNullableCreditsWASM
 } from 'pshenmic-dpp'
 
 export {
@@ -37,7 +41,20 @@ export {
   IdentityCreditTransferWASM,
   MasternodeVoteTransitionWASM,
   IdentifierLike,
-  PlatformAddressLike
+  PlatformAddressLike,
+  InputAddressWASM,
+  OutputAddressWASM,
+  OutputAddressNullableCreditsWASM,
+  AddressFundsFeeStrategyStepWASM,
+  AddressWitnessWASM,
+  IdentityPublicKeyInCreationWASM,
+  AssetLockProofWASM,
+  IdentityCreditTransferToAddressesTransitionWASM,
+  IdentityCreateFromAddressesTransitionWASM,
+  IdentityTopUpFromAddressesTransitionWASM,
+  AddressFundsTransferTransitionWASM,
+  AddressFundingFromAssetLockTransitionWASM,
+  AddressCreditWithdrawalTransitionWASM
 } from 'pshenmic-dpp'
 
 export type Network = 'mainnet' | 'testnet'
@@ -374,3 +391,70 @@ export interface ShieldedNullifierStatus {
   nullifier: Uint8Array
   isSpent: boolean
 }
+
+/**
+ * Fields shared by the address-funded transitions (the ones spending platform address inputs).
+ *
+ * The `inputWitness` arrays are produced by the client application (wallet / mobile / browser
+ * extension), which is where the address private keys live. The builders only assemble the
+ * transition - they never sign or hit the network.
+ */
+export interface AddressFundsBaseParams {
+  inputs: InputAddressWASM[]
+  feeStrategy: AddressFundsFeeStrategyStepWASM[]
+  inputWitness: AddressWitnessWASM[]
+  userFeeIncrease?: number
+}
+
+/** Identity -> platform addresses (transition type 9). */
+export interface IdentityCreditTransferToAddressesParams {
+  identityId: IdentifierLike
+  recipients: OutputAddressWASM[]
+  nonce: bigint
+  userFeeIncrease?: number
+}
+
+/** Platform addresses -> new identity (transition type 10). */
+export interface IdentityCreateFromAddressesParams extends AddressFundsBaseParams {
+  publicKeys: IdentityPublicKeyInCreationWASM[]
+  output?: OutputAddressWASM
+}
+
+/** Platform addresses -> existing identity (transition type 11). */
+export interface IdentityTopUpFromAddressesParams extends AddressFundsBaseParams {
+  identityId: IdentifierLike
+  output?: OutputAddressWASM
+}
+
+/** Platform addresses -> platform addresses (transition type 12). */
+export interface AddressFundsTransferParams extends AddressFundsBaseParams {
+  outputs: OutputAddressWASM[]
+}
+
+/** Asset lock -> platform addresses (transition type 13). */
+export interface AddressFundingFromAssetLockParams extends AddressFundsBaseParams {
+  assetLockProof: AssetLockProofWASM
+  outputs: OutputAddressNullableCreditsWASM[]
+}
+
+/** Platform addresses -> core L1 (transition type 14). */
+export interface AddressCreditWithdrawalParams extends AddressFundsBaseParams {
+  coreFeePerByte: number
+  pooling: 'Standard' | 'Never' | 'IfAvailable'
+  outputScript: CoreScriptWASM
+  output?: OutputAddressWASM
+}
+
+/** Maps each platform address transition type to the params it requires. */
+export interface PlatformAddressTransitionParamsMap {
+  identityCreditTransferToAddresses: IdentityCreditTransferToAddressesParams
+  identityCreateFromAddresses: IdentityCreateFromAddressesParams
+  identityTopUpFromAddresses: IdentityTopUpFromAddressesParams
+  addressFundsTransfer: AddressFundsTransferParams
+  addressFundingFromAssetLock: AddressFundingFromAssetLockParams
+  addressCreditWithdrawal: AddressCreditWithdrawalParams
+}
+
+export type PlatformAddressTransitionType = keyof PlatformAddressTransitionParamsMap
+
+export type PlatformAddressTransitionParams = PlatformAddressTransitionParamsMap[PlatformAddressTransitionType]
