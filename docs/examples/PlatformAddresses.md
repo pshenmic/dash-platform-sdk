@@ -1,8 +1,8 @@
 # Platform Addresses
 
 Platform addresses hold credits directly on Platform (without an Identity). The SDK exposes read
-queries for address balance/nonce, a low-level `createStateTransition` builder for all six Platform
-Address transitions, and convenience builders on top of it.
+queries for address balance/nonce and a `createStateTransition` builder for all six Platform
+Address transitions.
 
 > **Signing.** Address-funded transitions carry their signature material as constructor input via
 > `inputWitness: AddressWitnessWASM[]`. Witnesses are produced by the client application (wallet,
@@ -60,21 +60,26 @@ const feeStrategy = [AddressFundsFeeStrategyStepWASM.DeductFromInput(1)]
 const inputWitness = [AddressWitnessWASM.P2PKH(signature)]
 ```
 
-## Convenience builders
+## Create State Transition
 
-### Transfer To Address (Identity → addresses)
+`createStateTransition(type, params)` assembles a `StateTransitionWASM` for any of the six Platform
+Address transitions. `type` is one of `identityCreditTransferToAddresses`,
+`identityCreateFromAddresses`, `identityTopUpFromAddresses`, `addressFundsTransfer`,
+`addressFundingFromAssetLock`, `addressCreditWithdrawal`. The builder is generic over the transition
+type (`PlatformAddressTransitionParamsMap`), so in TypeScript each type only accepts its own params.
+Pass the constructor params directly (already-built entities).
 
-Transfer credits from an Identity to one or more Platform addresses. Signed by the Identity key
-after construction, so no `inputWitness` is required.
+### Transfer credits from an Identity to addresses (`identityCreditTransferToAddresses`)
+
+Signed by the Identity key after construction, so no `inputWitness` is required.
 
 ```javascript
 const identityId = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
 const nonce = await sdk.identities.getIdentityNonce(identityId)
 
-const stateTransition = sdk.platformAddresses.transferToAddress({
+const stateTransition = sdk.platformAddresses.createStateTransition('identityCreditTransferToAddresses', {
   identityId,
-  recipient,
-  amount: 50000n,
+  recipients: outputs,
   nonce
 })
 
@@ -84,12 +89,10 @@ await sdk.stateTransitions.broadcast(stateTransition)
 await sdk.stateTransitions.waitForStateTransitionResult(stateTransition)
 ```
 
-### Create Identity From Addresses
-
-Create a new Identity funded from Platform addresses.
+### Create a new Identity from addresses (`identityCreateFromAddresses`)
 
 ```javascript
-const stateTransition = sdk.platformAddresses.createIdentityFromAddresses({
+const stateTransition = sdk.platformAddresses.createStateTransition('identityCreateFromAddresses', {
   publicKeys,
   inputs,
   feeStrategy,
@@ -99,12 +102,10 @@ const stateTransition = sdk.platformAddresses.createIdentityFromAddresses({
 await sdk.stateTransitions.broadcast(stateTransition)
 ```
 
-### Top Up Identity From Addresses
-
-Top up an existing Identity from Platform addresses.
+### Top up an existing Identity from addresses (`identityTopUpFromAddresses`)
 
 ```javascript
-const stateTransition = sdk.platformAddresses.topUpFromAddresses({
+const stateTransition = sdk.platformAddresses.createStateTransition('identityTopUpFromAddresses', {
   identityId: 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv',
   inputs,
   feeStrategy,
@@ -114,12 +115,10 @@ const stateTransition = sdk.platformAddresses.topUpFromAddresses({
 await sdk.stateTransitions.broadcast(stateTransition)
 ```
 
-### Transfer Between Addresses
-
-Transfer credits from one set of Platform addresses to another.
+### Transfer credits between addresses (`addressFundsTransfer`)
 
 ```javascript
-const stateTransition = sdk.platformAddresses.transferBetweenAddresses({
+const stateTransition = sdk.platformAddresses.createStateTransition('addressFundsTransfer', {
   inputs,
   feeStrategy,
   inputWitness,
@@ -129,15 +128,14 @@ const stateTransition = sdk.platformAddresses.transferBetweenAddresses({
 await sdk.stateTransitions.broadcast(stateTransition)
 ```
 
-### Fund From Asset Lock
+### Fund addresses from a Core asset lock (`addressFundingFromAssetLock`)
 
-Fund Platform addresses from a Core asset lock proof. The recipient outputs may omit credits
-(`OutputAddressNullableCreditsWASM`).
+The recipient outputs may omit credits (`OutputAddressNullableCreditsWASM`).
 
 ```javascript
 const outputs = [new OutputAddressNullableCreditsWASM(recipient)]
 
-const stateTransition = sdk.platformAddresses.fundFromAssetLock({
+const stateTransition = sdk.platformAddresses.createStateTransition('addressFundingFromAssetLock', {
   assetLockProof,
   inputs,
   feeStrategy,
@@ -148,38 +146,23 @@ const stateTransition = sdk.platformAddresses.fundFromAssetLock({
 await sdk.stateTransitions.broadcast(stateTransition)
 ```
 
-### Withdrawal To Core
+### Withdraw from addresses to a Core (L1) address (`addressCreditWithdrawal`)
 
-Withdraw from Platform addresses to a Core (L1) address. Pass a `coreAddress` (converted to a P2PKH
-output script for you) or an explicit `outputScript`. `coreFeePerByte` defaults to `1` and `pooling`
-to `'Standard'`.
+Build the `outputScript` from a Core address with `CoreScriptWASM.newP2PKH`.
 
 ```javascript
-const stateTransition = sdk.platformAddresses.withdrawalToCore({
+import { CoreScriptWASM } from 'dash-platform-sdk'
+import { base58 } from '@scure/base'
+
+const outputScript = CoreScriptWASM.newP2PKH(base58.decode('yjHVQ3dj37UJwXFmvMTKR9ZVfoJSc3opTD').slice(1, 21))
+
+const stateTransition = sdk.platformAddresses.createStateTransition('addressCreditWithdrawal', {
   inputs,
   feeStrategy,
-  inputWitness,
-  coreAddress: 'yjHVQ3dj37UJwXFmvMTKR9ZVfoJSc3opTD'
-})
-
-await sdk.stateTransitions.broadcast(stateTransition)
-```
-
-## Low-level: Create State Transition
-
-`createStateTransition(type, params)` is the low-level builder the convenience methods delegate to.
-`type` is one of `identityCreditTransferToAddresses`, `identityCreateFromAddresses`,
-`identityTopUpFromAddresses`, `addressFundsTransfer`, `addressFundingFromAssetLock`,
-`addressCreditWithdrawal`. The builder is generic over the transition type
-(`PlatformAddressTransitionParamsMap`), so in TypeScript each type only accepts its own params.
-Pass the constructor params directly (already-built entities):
-
-```javascript
-const stateTransition = sdk.platformAddresses.createStateTransition('addressFundsTransfer', {
-  inputs,
-  feeStrategy,
-  inputWitness,
-  outputs
+  coreFeePerByte: 1, // Core (L1) fee rate in duffs/byte - use a network fee estimate, not a fixed value
+  pooling: 'Standard', // withdrawal pooling policy: 'Standard' | 'Never' | 'IfAvailable'
+  outputScript,
+  inputWitness
 })
 
 await sdk.stateTransitions.broadcast(stateTransition)

@@ -458,26 +458,3 @@ export interface PlatformAddressTransitionParamsMap {
 export type PlatformAddressTransitionType = keyof PlatformAddressTransitionParamsMap
 
 export type PlatformAddressTransitionParams = PlatformAddressTransitionParamsMap[PlatformAddressTransitionType]
-
-/** Convenience variant of {@link IdentityCreditTransferToAddressesParams} used by `transferToAddress`. */
-export interface TransferToAddressParams {
-  identityId: IdentifierLike
-  nonce: bigint
-  /** A single recipient address; combined with `amount` to build a recipient output **/
-  recipient?: PlatformAddressLike
-  amount?: bigint
-  /** Pass explicit recipient outputs instead of `recipient` + `amount` **/
-  recipients?: OutputAddressWASM[]
-  userFeeIncrease?: number
-}
-
-/** Convenience variant of {@link AddressCreditWithdrawalParams} used by `withdrawalToCore`. */
-export interface WithdrawalToCoreParams extends AddressFundsBaseParams {
-  /** A Core (L1) address; converted to a P2PKH `outputScript` **/
-  coreAddress?: string
-  /** Pass an explicit output script instead of `coreAddress` **/
-  outputScript?: CoreScriptWASM
-  coreFeePerByte?: number
-  pooling?: 'Standard' | 'Never' | 'IfAvailable'
-  output?: OutputAddressWASM
-}
