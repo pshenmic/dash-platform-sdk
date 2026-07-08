@@ -7,15 +7,7 @@ import {
   AddressCreditWithdrawalTransitionWASM,
   StateTransitionWASM
 } from 'pshenmic-dpp'
-import { PlatformAddressTransitionParams } from '../../types.js'
-
-export type PlatformAddressTransitionType =
-  'identityCreditTransferToAddresses' |
-  'identityCreateFromAddresses' |
-  'identityTopUpFromAddresses' |
-  'addressFundsTransfer' |
-  'addressFundingFromAssetLock' |
-  'addressCreditWithdrawal'
+import { PlatformAddressTransitionParamsMap, PlatformAddressTransitionType } from '../../types.js'
 
 const platformAddressTransitionsMap = {
   identityCreditTransferToAddresses: {
@@ -57,9 +49,12 @@ const platformAddressTransitionsMap = {
  * responsibility (they are passed in via the `inputWitness` / `signature` params).
  *
  * @param type {string} type of transition
- * @param params {PlatformAddressTransitionParams} params
+ * @param params {PlatformAddressTransitionParamsMap[K]} params required by that transition type
  */
-export default function createStateTransition (type: PlatformAddressTransitionType, params: PlatformAddressTransitionParams): StateTransitionWASM {
+export default function createStateTransition<K extends PlatformAddressTransitionType> (
+  type: K,
+  params: PlatformAddressTransitionParamsMap[K]
+): StateTransitionWASM {
   const { class: TransitionClass, arguments: classArguments, optionalArguments } = platformAddressTransitionsMap[type] ?? {}
 
   if (TransitionClass == null) {
@@ -67,8 +62,8 @@ export default function createStateTransition (type: PlatformAddressTransitionTy
   }
 
   const [missingArgument] = classArguments
-    .filter((classArgument: string) => params[classArgument] == null &&
-          !(optionalArguments).includes(classArgument))
+    .filter((classArgument: string) => params[classArgument as keyof PlatformAddressTransitionParamsMap[K]] == null &&
+          !optionalArguments.includes(classArgument))
 
   if (missingArgument != null) {
     throw new Error(`Platform address transition param "${missingArgument}" is missing`)
@@ -77,7 +72,9 @@ export default function createStateTransition (type: PlatformAddressTransitionTy
   // userFeeIncrease is a required positional `number` in every WASM constructor,
   // so coerce a missing value to 0 to keep the positional order intact.
   const transitionParams = classArguments.map((classArgument: string) =>
-    classArgument === 'userFeeIncrease' ? (params[classArgument] ?? 0) : params[classArgument])
+    classArgument === 'userFeeIncrease'
+      ? (params[classArgument as keyof PlatformAddressTransitionParamsMap[K]] ?? 0)
+      : params[classArgument as keyof PlatformAddressTransitionParamsMap[K]])
 
   // @ts-expect-error
   const platformAddressTransition = new TransitionClass(...transitionParams)

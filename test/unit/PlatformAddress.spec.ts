@@ -78,6 +78,7 @@ describe('PlatformAddress', () => {
     })
 
     test('should throw when identityCreditTransferToAddresses is missing recipients', () => {
+      // @ts-expect-error testing the runtime missing-param check
       expect(() => sdk.platformAddresses.createStateTransition('identityCreditTransferToAddresses', {
         identityId, nonce
       })).toThrow('Platform address transition param "recipients" is missing')
@@ -92,6 +93,7 @@ describe('PlatformAddress', () => {
     })
 
     test('should throw when identityCreateFromAddresses is missing publicKeys', () => {
+      // @ts-expect-error testing the runtime missing-param check
       expect(() => sdk.platformAddresses.createStateTransition('identityCreateFromAddresses', {
         inputs, feeStrategy, inputWitness
       })).toThrow('Platform address transition param "publicKeys" is missing')
@@ -106,6 +108,7 @@ describe('PlatformAddress', () => {
     })
 
     test('should throw when identityTopUpFromAddresses is missing identityId', () => {
+      // @ts-expect-error testing the runtime missing-param check
       expect(() => sdk.platformAddresses.createStateTransition('identityTopUpFromAddresses', {
         inputs, feeStrategy, inputWitness
       })).toThrow('Platform address transition param "identityId" is missing')
@@ -120,6 +123,7 @@ describe('PlatformAddress', () => {
     })
 
     test('should throw when addressFundsTransfer is missing outputs', () => {
+      // @ts-expect-error testing the runtime missing-param check
       expect(() => sdk.platformAddresses.createStateTransition('addressFundsTransfer', {
         inputs, feeStrategy, inputWitness
       })).toThrow('Platform address transition param "outputs" is missing')
@@ -134,6 +138,7 @@ describe('PlatformAddress', () => {
     })
 
     test('should throw when addressFundingFromAssetLock is missing assetLockProof', () => {
+      // @ts-expect-error testing the runtime missing-param check
       expect(() => sdk.platformAddresses.createStateTransition('addressFundingFromAssetLock', {
         inputs, feeStrategy, inputWitness, outputs: nullableOutputs
       })).toThrow('Platform address transition param "assetLockProof" is missing')
@@ -156,6 +161,7 @@ describe('PlatformAddress', () => {
     })
 
     test('should throw when addressCreditWithdrawal is missing outputScript', () => {
+      // @ts-expect-error testing the runtime missing-param check
       expect(() => sdk.platformAddresses.createStateTransition('addressCreditWithdrawal', {
         inputs, feeStrategy, coreFeePerByte: 1, pooling: 'Standard', inputWitness
       })).toThrow('Platform address transition param "outputScript" is missing')

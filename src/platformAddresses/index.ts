@@ -3,17 +3,18 @@ import { CoreScriptWASM, OutputAddressWASM, PlatformAddressLike, StateTransition
 import { base58 } from '@scure/base'
 import { getAddressInfo } from './getAddressInfo.js'
 import {
-  CreateIdentityFromAddressesParams,
-  FundFromAssetLockParams,
+  AddressFundingFromAssetLockParams,
+  AddressFundsTransferParams,
+  IdentityCreateFromAddressesParams,
+  IdentityTopUpFromAddressesParams,
   PlatformAddressInfo,
-  PlatformAddressTransitionParams,
-  TopUpFromAddressesParams,
-  TransferBetweenAddressesParams,
+  PlatformAddressTransitionParamsMap,
+  PlatformAddressTransitionType,
   TransferToAddressParams,
   WithdrawalToCoreParams
 } from '../../types.js'
 import { getAddressesInfos } from './getAddressesInfos.js'
-import createStateTransition, { PlatformAddressTransitionType } from './createStateTransition.js'
+import createStateTransition from './createStateTransition.js'
 
 export class PlatformAddressesController {
   /** @ignore **/
@@ -56,11 +57,14 @@ export class PlatformAddressesController {
    * @param type {string} type of transition, must be a one of ('identityCreditTransferToAddresses' |
    * 'identityCreateFromAddresses' | 'identityTopUpFromAddresses' | 'addressFundsTransfer' |
    * 'addressFundingFromAssetLock' | 'addressCreditWithdrawal')
-   * @param params {PlatformAddressTransitionParams} params
+   * @param params {PlatformAddressTransitionParamsMap[K]} params required by that transition type
    *
    * @return {StateTransitionWASM}
    */
-  createStateTransition (type: PlatformAddressTransitionType, params: PlatformAddressTransitionParams): StateTransitionWASM {
+  createStateTransition<K extends PlatformAddressTransitionType> (
+    type: K,
+    params: PlatformAddressTransitionParamsMap[K]
+  ): StateTransitionWASM {
     return createStateTransition(type, params)
   }
 
@@ -81,6 +85,7 @@ export class PlatformAddressesController {
 
     return createStateTransition('identityCreditTransferToAddresses', {
       identityId: params.identityId,
+      // @ts-expect-error recipients may be undefined here; the builder's missing-param check reports it
       recipients,
       nonce: params.nonce,
       userFeeIncrease: params.userFeeIncrease
@@ -90,44 +95,44 @@ export class PlatformAddressesController {
   /**
    * Create a new Identity funded from Platform addresses (transition type 10).
    *
-   * @param params {CreateIdentityFromAddressesParams} params
+   * @param params {IdentityCreateFromAddressesParams} params
    *
    * @return {StateTransitionWASM}
    */
-  createIdentityFromAddresses (params: CreateIdentityFromAddressesParams): StateTransitionWASM {
+  createIdentityFromAddresses (params: IdentityCreateFromAddressesParams): StateTransitionWASM {
     return createStateTransition('identityCreateFromAddresses', params)
   }
 
   /**
    * Top up an existing Identity from Platform addresses (transition type 11).
    *
-   * @param params {TopUpFromAddressesParams} params
+   * @param params {IdentityTopUpFromAddressesParams} params
    *
    * @return {StateTransitionWASM}
    */
-  topUpFromAddresses (params: TopUpFromAddressesParams): StateTransitionWASM {
+  topUpFromAddresses (params: IdentityTopUpFromAddressesParams): StateTransitionWASM {
     return createStateTransition('identityTopUpFromAddresses', params)
   }
 
   /**
    * Transfer credits between Platform addresses (transition type 12).
    *
-   * @param params {TransferBetweenAddressesParams} params
+   * @param params {AddressFundsTransferParams} params
    *
    * @return {StateTransitionWASM}
    */
-  transferBetweenAddresses (params: TransferBetweenAddressesParams): StateTransitionWASM {
+  transferBetweenAddresses (params: AddressFundsTransferParams): StateTransitionWASM {
     return createStateTransition('addressFundsTransfer', params)
   }
 
   /**
    * Fund Platform addresses from a Core asset lock (transition type 13).
    *
-   * @param params {FundFromAssetLockParams} params
+   * @param params {AddressFundingFromAssetLockParams} params
    *
    * @return {StateTransitionWASM}
    */
-  fundFromAssetLock (params: FundFromAssetLockParams): StateTransitionWASM {
+  fundFromAssetLock (params: AddressFundingFromAssetLockParams): StateTransitionWASM {
     return createStateTransition('addressFundingFromAssetLock', params)
   }
 
@@ -151,6 +156,7 @@ export class PlatformAddressesController {
       feeStrategy: params.feeStrategy,
       coreFeePerByte: params.coreFeePerByte ?? 1,
       pooling: params.pooling ?? 'Standard',
+      // @ts-expect-error outputScript may be undefined here; the builder's missing-param check reports it
       outputScript,
       inputWitness: params.inputWitness,
       output: params.output,

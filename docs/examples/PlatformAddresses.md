@@ -170,7 +170,9 @@ await sdk.stateTransitions.broadcast(stateTransition)
 `createStateTransition(type, params)` is the low-level builder the convenience methods delegate to.
 `type` is one of `identityCreditTransferToAddresses`, `identityCreateFromAddresses`,
 `identityTopUpFromAddresses`, `addressFundsTransfer`, `addressFundingFromAssetLock`,
-`addressCreditWithdrawal`. Pass the constructor params directly (already-built entities):
+`addressCreditWithdrawal`. The builder is generic over the transition type
+(`PlatformAddressTransitionParamsMap`), so in TypeScript each type only accepts its own params.
+Pass the constructor params directly (already-built entities):
 
 ```javascript
 const stateTransition = sdk.platformAddresses.createStateTransition('addressFundsTransfer', {

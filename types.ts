@@ -392,28 +392,74 @@ export interface ShieldedNullifierStatus {
   isSpent: boolean
 }
 
-export interface PlatformAddressTransitionParams {
-  identityId?: IdentifierLike
-  publicKeys?: IdentityPublicKeyInCreationWASM[]
-  inputs?: InputAddressWASM[]
-  outputs?: OutputAddressWASM[] | OutputAddressNullableCreditsWASM[]
-  recipients?: OutputAddressWASM[]
-  output?: OutputAddressWASM
-  feeStrategy?: AddressFundsFeeStrategyStepWASM[]
-  inputWitness?: AddressWitnessWASM[]
-  assetLockProof?: AssetLockProofWASM
-  nonce?: bigint
-  coreFeePerByte?: number
-  pooling?: 'Standard' | 'Never' | 'IfAvailable'
-  outputScript?: CoreScriptWASM
+/**
+ * Fields shared by the address-funded transitions (the ones spending platform address inputs).
+ *
+ * The `inputWitness` arrays are produced by the client application (wallet / mobile / browser
+ * extension), which is where the address private keys live. The builders only assemble the
+ * transition - they never sign or hit the network.
+ */
+export interface AddressFundsBaseParams {
+  inputs: InputAddressWASM[]
+  feeStrategy: AddressFundsFeeStrategyStepWASM[]
+  inputWitness: AddressWitnessWASM[]
   userFeeIncrease?: number
 }
 
-/**
- * The `inputWitness` arrays carried by the address-funded transitions below are produced by the
- * client application (wallet / mobile / browser extension), which is where the address private keys
- * live. These convenience builders only assemble the transition - they never sign or hit the network.
- */
+/** Identity -> platform addresses (transition type 9). */
+export interface IdentityCreditTransferToAddressesParams {
+  identityId: IdentifierLike
+  recipients: OutputAddressWASM[]
+  nonce: bigint
+  userFeeIncrease?: number
+}
+
+/** Platform addresses -> new identity (transition type 10). */
+export interface IdentityCreateFromAddressesParams extends AddressFundsBaseParams {
+  publicKeys: IdentityPublicKeyInCreationWASM[]
+  output?: OutputAddressWASM
+}
+
+/** Platform addresses -> existing identity (transition type 11). */
+export interface IdentityTopUpFromAddressesParams extends AddressFundsBaseParams {
+  identityId: IdentifierLike
+  output?: OutputAddressWASM
+}
+
+/** Platform addresses -> platform addresses (transition type 12). */
+export interface AddressFundsTransferParams extends AddressFundsBaseParams {
+  outputs: OutputAddressWASM[]
+}
+
+/** Asset lock -> platform addresses (transition type 13). */
+export interface AddressFundingFromAssetLockParams extends AddressFundsBaseParams {
+  assetLockProof: AssetLockProofWASM
+  outputs: OutputAddressNullableCreditsWASM[]
+}
+
+/** Platform addresses -> core L1 (transition type 14). */
+export interface AddressCreditWithdrawalParams extends AddressFundsBaseParams {
+  coreFeePerByte: number
+  pooling: 'Standard' | 'Never' | 'IfAvailable'
+  outputScript: CoreScriptWASM
+  output?: OutputAddressWASM
+}
+
+/** Maps each platform address transition type to the params it requires. */
+export interface PlatformAddressTransitionParamsMap {
+  identityCreditTransferToAddresses: IdentityCreditTransferToAddressesParams
+  identityCreateFromAddresses: IdentityCreateFromAddressesParams
+  identityTopUpFromAddresses: IdentityTopUpFromAddressesParams
+  addressFundsTransfer: AddressFundsTransferParams
+  addressFundingFromAssetLock: AddressFundingFromAssetLockParams
+  addressCreditWithdrawal: AddressCreditWithdrawalParams
+}
+
+export type PlatformAddressTransitionType = keyof PlatformAddressTransitionParamsMap
+
+export type PlatformAddressTransitionParams = PlatformAddressTransitionParamsMap[PlatformAddressTransitionType]
+
+/** Convenience variant of {@link IdentityCreditTransferToAddressesParams} used by `transferToAddress`. */
 export interface TransferToAddressParams {
   identityId: IdentifierLike
   nonce: bigint
@@ -425,45 +471,8 @@ export interface TransferToAddressParams {
   userFeeIncrease?: number
 }
 
-export interface CreateIdentityFromAddressesParams {
-  publicKeys: IdentityPublicKeyInCreationWASM[]
-  inputs: InputAddressWASM[]
-  feeStrategy: AddressFundsFeeStrategyStepWASM[]
-  inputWitness: AddressWitnessWASM[]
-  output?: OutputAddressWASM
-  userFeeIncrease?: number
-}
-
-export interface TopUpFromAddressesParams {
-  identityId: IdentifierLike
-  inputs: InputAddressWASM[]
-  feeStrategy: AddressFundsFeeStrategyStepWASM[]
-  inputWitness: AddressWitnessWASM[]
-  output?: OutputAddressWASM
-  userFeeIncrease?: number
-}
-
-export interface TransferBetweenAddressesParams {
-  inputs: InputAddressWASM[]
-  feeStrategy: AddressFundsFeeStrategyStepWASM[]
-  inputWitness: AddressWitnessWASM[]
-  outputs: OutputAddressWASM[]
-  userFeeIncrease?: number
-}
-
-export interface FundFromAssetLockParams {
-  assetLockProof: AssetLockProofWASM
-  inputs: InputAddressWASM[]
-  feeStrategy: AddressFundsFeeStrategyStepWASM[]
-  inputWitness: AddressWitnessWASM[]
-  outputs: OutputAddressNullableCreditsWASM[]
-  userFeeIncrease?: number
-}
-
-export interface WithdrawalToCoreParams {
-  inputs: InputAddressWASM[]
-  feeStrategy: AddressFundsFeeStrategyStepWASM[]
-  inputWitness: AddressWitnessWASM[]
+/** Convenience variant of {@link AddressCreditWithdrawalParams} used by `withdrawalToCore`. */
+export interface WithdrawalToCoreParams extends AddressFundsBaseParams {
   /** A Core (L1) address; converted to a P2PKH `outputScript` **/
   coreAddress?: string
   /** Pass an explicit output script instead of `coreAddress` **/
@@ -471,5 +480,4 @@ export interface WithdrawalToCoreParams {
   coreFeePerByte?: number
   pooling?: 'Standard' | 'Never' | 'IfAvailable'
   output?: OutputAddressWASM
-  userFeeIncrease?: number
 }
