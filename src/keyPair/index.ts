@@ -4,27 +4,11 @@ import deriveChild from './deriveChild.js'
 import derivePath from './derivePath.js'
 import { Network } from '../../types.js'
 import { p2pkh } from '@scure/btc-signer'
-import { OrchardAddressWASM, orchardOvkFromSeed, PlatformAddressWASM, PublicKeyWASM, PrivateKeyWASM } from 'pshenmic-dpp'
-import hexToBytes from '../utils/hexToBytes.js'
+import { OrchardAddressWASM, orchardOvkFromSeed, PlatformAddressWASM, PrivateKeyWASM } from 'pshenmic-dpp'
 
 const DASH_VERSIONS = {
   mainnet: { pubKeyHash: 0x4c, scriptHash: 0x10, bech32: 'dc', wif: 0xcc, private: 0x0488ade4, public: 0x0488b21e },
   testnet: { pubKeyHash: 0x8c, scriptHash: 0x13, bech32: 'dc', wif: 0xef, private: 0x04358394, public: 0x043587cf }
-}
-
-// DIP-17 transparent platform-address derivation path:
-// m/9'/coinType'/17'/account'/keyClass'/index. keyClass 0 = clear funds.
-const PLATFORM_ADDRESS_FEATURE = 17
-const PLATFORM_ADDRESS_KEY_CLASS_CLEAR_FUNDS = 0
-// PlatformAddressWASM payload variant byte: 0x00 = P2PKH, 0x01 = P2SH.
-const PLATFORM_ADDRESS_P2PKH_VARIANT_BYTE = 0x00
-
-// Encode a transparent platform P2PKH address (DIP-18) from a Hash160 pubkey
-// hash (hex), producing the canonical `variantByte || hash` PlatformAddress.
-const platformAddressFromPublicKeyHash = (pubKeyHashHex: string): PlatformAddressWASM => {
-  const payload = Uint8Array.from([PLATFORM_ADDRESS_P2PKH_VARIANT_BYTE, ...hexToBytes(pubKeyHashHex)])
-
-  return PlatformAddressWASM.fromBytes(payload)
 }
 
 /**
@@ -116,6 +100,22 @@ export class KeyPairController {
   }
 
   /**
+   * Converts a public key to a transparent platform P2PKH address (DIP-18):
+   * the canonical `variantByte || Hash160(pubkey)` PlatformAddress.
+   *
+   * @param publicKey {Uint8Array}
+   * @param network {Network}
+   *
+   * @returns {PlatformAddressWASM}
+   */
+  platformAddress (publicKey: Uint8Array, network: Network): PlatformAddressWASM {
+    const { hash } = p2pkh(publicKey, DASH_VERSIONS[network])
+
+    // variant byte 0x00 = P2PKH
+    return PlatformAddressWASM.fromBytes(Uint8Array.from([0x00, ...hash]))
+  }
+
+  /**
    * Derives a shielded (Orchard) address from a BIP-39 seed via ZIP-32
    * (m/32'/coinType'/account').
    *
@@ -168,7 +168,7 @@ export class KeyPairController {
     const coinType = network === 'mainnet' ? 5 : 1
     const hdKey = this.seedToHdKey(seed, network)
 
-    const accountNode = await this.derivePath(hdKey, `m/9'/${coinType}'/${PLATFORM_ADDRESS_FEATURE}'/${account}'/${PLATFORM_ADDRESS_KEY_CLASS_CLEAR_FUNDS}'`)
+    const accountNode = await this.derivePath(hdKey, `m/9'/${coinType}'/17'/${account}'/0'`)
 
     return accountNode.publicExtendedKey
   }
@@ -188,13 +188,13 @@ export class KeyPairController {
     const coinType = network === 'mainnet' ? 5 : 1
     const hdKey = this.seedToHdKey(seed, network)
 
-    const childNode = await this.derivePath(hdKey, `m/9'/${coinType}'/${PLATFORM_ADDRESS_FEATURE}'/${account}'/${PLATFORM_ADDRESS_KEY_CLASS_CLEAR_FUNDS}'/${index}`)
+    const childNode = await this.derivePath(hdKey, `m/9'/${coinType}'/17'/${account}'/0'/${index}`)
 
     if (childNode.publicKey == null) {
       throw new Error(`Could not derive platform address public key at index ${index}`)
     }
 
-    return platformAddressFromPublicKeyHash(PublicKeyWASM.fromBytes(childNode.publicKey).getPublicKeyHash())
+    return this.platformAddress(childNode.publicKey, network)
   }
 
   /**
@@ -217,7 +217,7 @@ export class KeyPairController {
       throw new Error(`Could not derive platform address public key at index ${index}`)
     }
 
-    return platformAddressFromPublicKeyHash(PublicKeyWASM.fromBytes(childNode.publicKey).getPublicKeyHash())
+    return this.platformAddress(childNode.publicKey, network)
   }
 
   /**
@@ -235,7 +235,7 @@ export class KeyPairController {
   async derivePlatformAddressPrivateKey (seed: Uint8Array, network: Network, account: number, index: number): Promise<PrivateKeyWASM> {
     const coinType = network === 'mainnet' ? 5 : 1
     const hdKey = this.seedToHdKey(seed, network)
-    const path = `m/9'/${coinType}'/${PLATFORM_ADDRESS_FEATURE}'/${account}'/${PLATFORM_ADDRESS_KEY_CLASS_CLEAR_FUNDS}'/${index}`
+    const path = `m/9'/${coinType}'/17'/${account}'/0'/${index}`
 
     const { privateKey } = await this.derivePath(hdKey, path)
 
