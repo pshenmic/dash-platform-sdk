@@ -1,4 +1,4 @@
-import { OrchardAddressWASM } from 'pshenmic-dpp'
+import { OrchardAddressWASM, PlatformAddressWASM } from 'pshenmic-dpp'
 import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 
 let sdk: DashPlatformSDK
@@ -87,6 +87,71 @@ describe('KeyPair', () => {
       expect(ovk).toHaveLength(32)
       // deterministic for the same seed/network/account
       expect(ovk).toEqual(sdk.keyPair.deriveShieldedOutgoingViewingKey(seed, 'testnet', account))
+    })
+  })
+
+  describe('platform addresses', () => {
+    const account = 0
+
+    // Reference values produced by the dash-platform-extension derivation utils
+    // (proven byte-identical to on-chain / desktop-wallet addresses) for the
+    // fixed mnemonic above, testnet, account 0.
+    const expectedXpub = 'tpubDH6WaqMU1YHJMbPG413my6Dx5DwnsuuL6EzbetEZQac6ixmkByzCGgiibue3HQmHX5JGVUm2fBHKGttJpVkx3NrK5Em9br8GyLd1fVGm7ud'
+    const expectedAddresses = [
+      'tdash1kr0xt5wj85ht5u464rfysjrq75rewz9mysjwf59p',
+      'tdash1kqgy7ngm2wf0zsv20k4mc62s5rapw26yeg6em4jq',
+      'tdash1kzlatzl0u06uxrqz8hkc7naz9d2g3v8g7gw83ew3'
+    ]
+
+    test('derives the DIP-17 account xpub matching the reference', async () => {
+      const seed = sdk.keyPair.mnemonicToSeed(mnemonic)
+
+      const xpub = await sdk.keyPair.derivePlatformAccountXpub(seed, 'testnet', account)
+
+      expect(xpub).toEqual(expectedXpub)
+    })
+
+    test('derives seed-based addresses matching the reference', async () => {
+      const seed = sdk.keyPair.mnemonicToSeed(mnemonic)
+
+      for (let index = 0; index < expectedAddresses.length; index++) {
+        const address = await sdk.keyPair.derivePlatformAddress(seed, 'testnet', account, index)
+
+        expect(address).toEqual(expect.any(PlatformAddressWASM))
+        expect(address.isP2PKH()).toBe(true)
+        expect(address.toBech32m('testnet')).toEqual(expectedAddresses[index])
+      }
+    })
+
+    test('xpub-based public derivation reproduces the seed-based addresses', async () => {
+      const seed = sdk.keyPair.mnemonicToSeed(mnemonic)
+      const xpub = await sdk.keyPair.derivePlatformAccountXpub(seed, 'testnet', account)
+
+      for (let index = 0; index < expectedAddresses.length; index++) {
+        const fromXpub = sdk.keyPair.derivePlatformAddressFromXpub(xpub, 'testnet', index)
+
+        expect(fromXpub.toBech32m('testnet')).toEqual(expectedAddresses[index])
+      }
+    })
+
+    test('private key derivation yields the same pubkey hash as the address', async () => {
+      const seed = sdk.keyPair.mnemonicToSeed(mnemonic)
+
+      for (let index = 0; index < expectedAddresses.length; index++) {
+        const privateKey = await sdk.keyPair.derivePlatformAddressPrivateKey(seed, 'testnet', account, index)
+        const address = await sdk.keyPair.derivePlatformAddress(seed, 'testnet', account, index)
+
+        expect(privateKey.getPublicKeyHash()).toEqual(Buffer.from(address.hash()).toString('hex'))
+      }
+    })
+
+    test('derives distinct addresses per network', async () => {
+      const seed = sdk.keyPair.mnemonicToSeed(mnemonic)
+
+      const mainnet = await sdk.keyPair.derivePlatformAddress(seed, 'mainnet', account, 0)
+      const testnet = await sdk.keyPair.derivePlatformAddress(seed, 'testnet', account, 0)
+
+      expect(mainnet.bytes()).not.toEqual(testnet.bytes())
     })
   })
 })
