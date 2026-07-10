@@ -4,7 +4,7 @@ import deriveChild from './deriveChild.js'
 import derivePath from './derivePath.js'
 import { Network } from '../../types.js'
 import { p2pkh } from '@scure/btc-signer'
-import { OrchardAddressWASM, orchardOvkFromSeed } from 'pshenmic-dpp'
+import { OrchardAddressWASM, orchardOvkFromSeed, PlatformAddressWASM, PrivateKeyWASM } from 'pshenmic-dpp'
 
 const DASH_VERSIONS = {
   mainnet: { pubKeyHash: 0x4c, scriptHash: 0x10, bech32: 'dc', wif: 0xcc, private: 0x0488ade4, public: 0x0488b21e },
@@ -100,6 +100,22 @@ export class KeyPairController {
   }
 
   /**
+   * Converts a public key to a transparent platform P2PKH address (DIP-18):
+   * the canonical `variantByte || Hash160(pubkey)` PlatformAddress.
+   *
+   * @param publicKey {Uint8Array}
+   * @param network {Network}
+   *
+   * @returns {PlatformAddressWASM}
+   */
+  platformAddress (publicKey: Uint8Array, network: Network): PlatformAddressWASM {
+    const { hash } = p2pkh(publicKey, DASH_VERSIONS[network])
+
+    // variant byte 0x00 = P2PKH
+    return PlatformAddressWASM.fromBytes(Uint8Array.from([0x00, ...hash]))
+  }
+
+  /**
    * Derives a shielded (Orchard) address from a BIP-39 seed via ZIP-32
    * (m/32'/coinType'/account').
    *
@@ -133,5 +149,100 @@ export class KeyPairController {
     const coinType = network === 'mainnet' ? 5 : 1
 
     return orchardOvkFromSeed(seed, coinType, account)
+  }
+
+  /**
+   * Derives the DIP-17 account-level extended public key (xpub) for the
+   * clear-funds key class: m/9'/coinType'/17'/account'/0'. The seed is only
+   * needed once per account — the returned xpub derives every address index
+   * publicly (see {@link derivePlatformAddressFromXpub}), with no further access
+   * to the seed.
+   *
+   * @param seed {Uint8Array} - BIP-39 seed bytes
+   * @param network {Network} - network (selects the SLIP-44 coin type)
+   * @param account {number} - DIP-17 account index
+   *
+   * @returns {Promise<string>} account-level extended public key
+   */
+  async derivePlatformAccountXpub (seed: Uint8Array, network: Network, account: number): Promise<string> {
+    const coinType = network === 'mainnet' ? 5 : 1
+    const hdKey = this.seedToHdKey(seed, network)
+
+    const accountNode = await this.derivePath(hdKey, `m/9'/${coinType}'/17'/${account}'/0'`)
+
+    return accountNode.publicExtendedKey
+  }
+
+  /**
+   * Derives a transparent platform P2PKH address from a BIP-39 seed via DIP-17
+   * (m/9'/coinType'/17'/account'/0'/index).
+   *
+   * @param seed {Uint8Array} - BIP-39 seed bytes
+   * @param network {Network} - network (selects the SLIP-44 coin type)
+   * @param account {number} - DIP-17 account index
+   * @param index {number} - address index
+   *
+   * @returns {Promise<PlatformAddressWASM>}
+   */
+  async derivePlatformAddress (seed: Uint8Array, network: Network, account: number, index: number): Promise<PlatformAddressWASM> {
+    const coinType = network === 'mainnet' ? 5 : 1
+    const hdKey = this.seedToHdKey(seed, network)
+
+    const childNode = await this.derivePath(hdKey, `m/9'/${coinType}'/17'/${account}'/0'/${index}`)
+
+    if (childNode.publicKey == null) {
+      throw new Error(`Could not derive platform address public key at index ${index}`)
+    }
+
+    return this.platformAddress(childNode.publicKey, network)
+  }
+
+  /**
+   * Derives a transparent platform P2PKH address from an account-level xpub (see
+   * {@link derivePlatformAccountXpub}). The address index is non-hardened, so
+   * public-only derivation reproduces the exact same address as the seed-based
+   * path — no seed required.
+   *
+   * @param xpub {string} - account-level extended public key
+   * @param network {Network} - network (selects the extended-key version bytes)
+   * @param index {number} - address index
+   *
+   * @returns {PlatformAddressWASM}
+   */
+  derivePlatformAddressFromXpub (xpub: string, network: Network, index: number): PlatformAddressWASM {
+    const accountNode = HDKey.fromExtendedKey(xpub, DASH_VERSIONS[network])
+    const childNode = accountNode.deriveChild(index)
+
+    if (childNode.publicKey == null) {
+      throw new Error(`Could not derive platform address public key at index ${index}`)
+    }
+
+    return this.platformAddress(childNode.publicKey, network)
+  }
+
+  /**
+   * Derives the private key for a DIP-17 platform address by its index
+   * (m/9'/coinType'/17'/account'/0'/index). Used to sign a transfer that spends
+   * from that address.
+   *
+   * @param seed {Uint8Array} - BIP-39 seed bytes
+   * @param network {Network} - network (selects the SLIP-44 coin type)
+   * @param account {number} - DIP-17 account index
+   * @param index {number} - address index
+   *
+   * @returns {Promise<PrivateKeyWASM>}
+   */
+  async derivePlatformAddressPrivateKey (seed: Uint8Array, network: Network, account: number, index: number): Promise<PrivateKeyWASM> {
+    const coinType = network === 'mainnet' ? 5 : 1
+    const hdKey = this.seedToHdKey(seed, network)
+    const path = `m/9'/${coinType}'/17'/${account}'/0'/${index}`
+
+    const { privateKey } = await this.derivePath(hdKey, path)
+
+    if (privateKey == null) {
+      throw new Error(`Could not derive platform address key at ${path}`)
+    }
+
+    return PrivateKeyWASM.fromBytes(privateKey, network)
   }
 }
