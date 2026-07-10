@@ -20,7 +20,7 @@ jobs:
           node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
       # Trusted publishing (OIDC) requires npm >= 11.5.1
-      - run: npm install -g npm@latest
+      - run: npm install -g npm@11.18.0
       - run: yarn
       - run: yarn build:grpc
       - run: yarn test
