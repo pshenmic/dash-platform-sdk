@@ -5,6 +5,10 @@ import { verifySignatureDigest } from 'pshenmic-dpp'
 import hexToBytes from './hexToBytes.js'
 
 export default async function verifyTenderdashProof (proof: Proof, metadata: ResponseMetadata, rootHash: Uint8Array, quorumPublicKey: string): Promise<boolean> {
+  if ((new Date().getTime() - new Date(metadata.timeMs).getTime()) > 15 * 60 * 60 * 1000) {
+    throw new Error('Request is stalled (over 15 minutes)')
+  }
+
   const stateId = StateId.create({
     appVersion: String(metadata.protocolVersion),
     coreChainLockedHeight: metadata.coreChainLockedHeight,
