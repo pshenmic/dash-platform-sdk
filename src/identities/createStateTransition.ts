@@ -32,7 +32,7 @@ const identityTransitionsMap = {
   withdrawal: {
     class: IdentityCreditWithdrawalTransitionWASM,
     arguments: ['identityId', 'amount', 'coreFeePerByte', 'pooling', 'identityNonce', 'outputScript'],
-    optionalArguments: ['userFeeIncrease']
+    optionalArguments: ['outputScript', 'userFeeIncrease']
   }
 }
 
@@ -48,7 +48,7 @@ export default function createStateTransition (type: 'create' | 'update' | 'topU
           !(optionalArguments).includes(classArgument))
 
   if (missingArgument != null) {
-    throw new Error(`Token transition param "${missingArgument}" is missing`)
+    throw new Error(`Transition param "${missingArgument}" is missing`)
   }
 
   const transitionParams = classArguments.map((classArgument: string) => params[classArgument])

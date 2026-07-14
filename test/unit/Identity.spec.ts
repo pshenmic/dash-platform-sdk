@@ -326,7 +326,7 @@ describe('Identity', () => {
       const amount = 100000n
       const identityNonce = await sdk.identities.getIdentityNonce(identityId)
 
-      const stateTransition = sdk.identities.createStateTransition('creditTransfer', { identityId, recipientId, amount, identityNonce })
+      const stateTransition = sdk.identities.createStateTransition('withdrawal', { identityId, recipientId, amount, identityNonce })
 
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
     })
