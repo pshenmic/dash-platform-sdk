@@ -20,8 +20,10 @@ import {
   AddressWitnessWASM,
   IdentityPublicKeyInCreationWASM,
   OutputAddressWASM,
-  OutputAddressNullableCreditsWASM
+  OutputAddressNullableCreditsWASM,
+  VerifiedAddressesTrunkState
 } from 'pshenmic-dpp'
+import { ResponseMetadata } from './proto/generated/platform.js'
 
 export {
   CoreScriptWASM,
@@ -378,6 +380,11 @@ export interface PlatformAddressInfo {
   address: PlatformAddressWASM
   nonce: number
   balance: bigint
+}
+
+export interface PlatformAddressesTrunkState {
+  trunk: VerifiedAddressesTrunkState
+  metadata: ResponseMetadata
 }
 
 export interface ShieldedEncryptedNote {
