@@ -37,11 +37,69 @@ describe('PlatformAddress', () => {
     const addresses = [
       'tdash1kzg5azscav69z7m6dfzr9ner0a5vt7pn9ca4sz8d',
       'tdash1kqr3cxhgel75ru0yrhj5eq8j8jt92m5enqrfajxw',
-      'tdash1kq9plfyacx9q26dtaxgwuw9lt78nyu2mzc3xwcxv'
+      'tdash1kzpjkv364ez6yyaqyvxfdgzcdet2h4mumqcjd2yx'
     ]
     const info = await sdk.platformAddresses.getAddressesInfos(addresses)
 
     expect(info).toHaveLength(addresses.length)
+  })
+
+  test('getAddressesTrunkState', async () => {
+    const { trunk, metadata } = await sdk.platformAddresses.getAddressesTrunkState()
+
+    expect(trunk.rootHash).toEqual(expect.any(Uint8Array))
+    expect(trunk.elements.length).toBeGreaterThan(0)
+    expect(trunk.chunkDepths.length).toBeGreaterThan(0)
+    expect(metadata.height).toBeDefined()
+  })
+
+  test('getAddressesBranchState', async () => {
+    const { trunk, metadata } = await sdk.platformAddresses.getAddressesTrunkState()
+
+    // The whole tree fits in the trunk when it is small enough - nothing to descend into
+    if (trunk.leafKeys.length === 0) {
+      return
+    }
+
+    const [leaf] = trunk.leafKeys
+    const depth = trunk.chunkDepths[1] ?? trunk.chunkDepths[0]
+
+    const branch = await sdk.platformAddresses.getAddressesBranchState(leaf.key, depth, BigInt(metadata.height), leaf.hash)
+
+    expect(branch.branchRootHash).toEqual(leaf.hash)
+    expect(branch.elements.length).toBeGreaterThan(0)
+  })
+
+  test('getRecentAddressBalanceChanges', async () => {
+    const blocks = await sdk.platformAddresses.getRecentAddressBalanceChanges(1n)
+
+    expect(Array.isArray(blocks)).toBe(true)
+
+    for (const block of blocks) {
+      expect(block.blockHeight).toEqual(expect.any(BigInt))
+
+      for (const change of block.changes) {
+        expect(change.address).toEqual(expect.any(PlatformAddressWASM))
+        expect(['setCredits', 'addToCredits']).toContain(change.operation)
+        expect(change.credits).toEqual(expect.any(BigInt))
+      }
+    }
+  })
+
+  test('getRecentCompactedAddressBalanceChanges', async () => {
+    const ranges = await sdk.platformAddresses.getRecentCompactedAddressBalanceChanges(1n)
+
+    expect(Array.isArray(ranges)).toBe(true)
+
+    for (const range of ranges) {
+      expect(range.startBlockHeight).toEqual(expect.any(BigInt))
+      expect(range.endBlockHeight).toBeGreaterThanOrEqual(range.startBlockHeight)
+
+      for (const change of range.changes) {
+        expect(change.address).toEqual(expect.any(PlatformAddressWASM))
+        expect(['setCredits', 'addToCreditsOperations']).toContain(change.operation)
+      }
+    }
   })
 
   describe('createStateTransition', () => {
