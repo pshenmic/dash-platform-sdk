@@ -14,6 +14,7 @@ import {
   PoolingLike,
   PrivateKeyWASM,
   Purpose, SecurityLevel,
+  ShieldedOutputWASM,
   SpendableNoteWASM,
   TokenEmergencyActionWASM,
   TokenPricingScheduleWASM,
@@ -146,6 +147,11 @@ export interface ShieldedTransferParams extends ShieldedSpendParams {
   transferAmount: bigint
 }
 
+/** Pool -> pool, several recipients (spend). Each output carries its own memo. */
+export interface ShieldedTransferMultiParams extends Omit<ShieldedSpendParams, 'memo'> {
+  outputs: ShieldedOutputWASM[]
+}
+
 /** Pool -> new identity (spend). */
 export interface IdentityCreateFromShieldedPoolParams extends ShieldedSpendParams {
   publicKeys: IdentityPublicKeyInCreation[]
@@ -161,6 +167,7 @@ export interface ShieldedTransitionParamsMap {
   shieldedWithdrawal: ShieldedWithdrawalParams
   unshield: UnshieldParams
   shieldedTransfer: ShieldedTransferParams
+  shieldedTransferMulti: ShieldedTransferMultiParams
   identityCreateFromShieldedPool: IdentityCreateFromShieldedPoolParams
 }
 

@@ -33,6 +33,11 @@ const shieldedTransitionsMap = {
     arguments: ['spends', 'recipient', 'transferAmount', 'changeAddress', 'seed', 'coinType', 'account', 'anchor', 'memo'],
     optionalArguments: []
   },
+  shieldedTransferMulti: {
+    method: ShieldedBuilderWASM.prototype.shieldedTransferMulti,
+    arguments: ['spends', 'outputs', 'changeAddress', 'seed', 'coinType', 'account', 'anchor'],
+    optionalArguments: []
+  },
   identityCreateFromShieldedPool: {
     method: ShieldedBuilderWASM.prototype.identityCreateFromShieldedPool,
     arguments: ['publicKeys', 'privateKeys', 'denomination', 'sendToAddressOnCreationFailure', 'spends', 'changeAddress', 'seed', 'coinType', 'account', 'anchor', 'memo'],
