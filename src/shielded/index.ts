@@ -205,18 +205,19 @@ export class ShieldedController {
 
   /**
    * Helper function for building and proving shielded (Orchard) transitions.
-   * It may be used to create any of 6 shielded transition actions:
+   * It may be used to create any of 7 shielded transition actions:
    *
    * 1) shield - transparent platform addresses -> pool (deposit)
    * 2) shieldFromAssetLock - asset lock -> pool (deposit)
    * 3) shieldedWithdrawal - pool -> core L1 (spend)
    * 4) unshield - pool -> platform identity balance (spend)
    * 5) shieldedTransfer - pool -> pool (spend)
-   * 6) identityCreateFromShieldedPool - pool -> new identity (spend)
+   * 6) shieldedTransferMulti - pool -> pool, several recipients, each with its own memo (spend)
+   * 7) identityCreateFromShieldedPool - pool -> new identity (spend)
    *
    * Spends require a {SpendableNoteWASM} witnessed against an on-chain anchor.
    *
-   * @param type {string} Type of the shielded transition, must be one of ('shield' | 'shieldFromAssetLock' | 'shieldedWithdrawal' | 'unshield' | 'shieldedTransfer' | 'identityCreateFromShieldedPool')
+   * @param type {string} Type of the shielded transition, must be one of ('shield' | 'shieldFromAssetLock' | 'shieldedWithdrawal' | 'unshield' | 'shieldedTransfer' | 'shieldedTransferMulti' | 'identityCreateFromShieldedPool')
    * @param params {ShieldedTransitionParams} params
    *
    * @return {StateTransitionWASM}
