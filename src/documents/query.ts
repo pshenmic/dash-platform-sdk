@@ -5,7 +5,7 @@ import GRPCConnectionPool from '../grpcConnectionPool.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import { encode } from 'cbor-x'
+import { encode } from 'cbor2'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 
 export default async function query (
