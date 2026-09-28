@@ -1,6 +1,6 @@
 {
   "name": "dash-platform-sdk",
-  "version": "1.5.0-dev.11",
+  "version": "1.5.0",
   "main": "index.js",
   "description": "Lightweight SDK for accessing Dash Platform blockchain",
   "repository": {
@@ -27,7 +27,7 @@
     "@protobuf-ts/plugin": "^2.11.1",
     "@rollup/plugin-alias": "^6.0.0",
     "@rollup/plugin-commonjs": "^29.0.3",
-    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-node-resolve":  "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.4",
     "@types/jest": "^29.5.14",
