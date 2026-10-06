@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetEpochsInfoRequest } from '../../proto/generated/platform.js'
 import { verifyEpochsInfoProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
@@ -16,7 +16,7 @@ export interface EpochInfo {
   protocolVersion: 9
 }
 
-export default async function epochInfos (grpcPool: GRPCConnectionPool, count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
+export default async function epochInfos (grpcPool: GRPCPool, count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
   const getEpochsInfoRequest = GetEpochsInfoRequest.create({
     version: {
       oneofKind: 'v0',

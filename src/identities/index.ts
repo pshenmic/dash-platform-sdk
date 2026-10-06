@@ -4,7 +4,7 @@ import getIdentityNonce from './getIdentityNonce.js'
 import getIdentityBalance from './getIdentityBalance.js'
 import getIdentityByPublicKeyHash from './getIdentityByPublicKeyHash.js'
 import { IdentityTransitionParams } from '../../types.js'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import getIdentityByIdentifier from './getIdentityByIdentifier.js'
 import {
   AssetLockProofWASM,
@@ -28,9 +28,9 @@ import { base58 } from '@scure/base'
  */
 export class IdentitiesController {
   /** @ignore */
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
 
-  constructor (grpcPool: GRPCConnectionPool) {
+  constructor (grpcPool: GRPCPool) {
     this.grpcPool = grpcPool
   }
 

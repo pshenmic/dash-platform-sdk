@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import {GetFinalizedEpochInfosRequest} from '../../proto/generated/platform.js'
 import {IdentifierWASM, verifyFinalizedEpochInfosProof} from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
@@ -25,7 +25,7 @@ export interface FinalizedEpochInfo {
   protocolVersion: number
 }
 
-export default async function getFinalizedEpochsInfo (grpcPool: GRPCConnectionPool, startEpochIndex: number, startEpochIndexIncluded: boolean, endEpochIndex: number, endEpochIndexIncluded: boolean): Promise<FinalizedEpochInfo[]> {
+export default async function getFinalizedEpochsInfo (grpcPool: GRPCPool, startEpochIndex: number, startEpochIndexIncluded: boolean, endEpochIndex: number, endEpochIndexIncluded: boolean): Promise<FinalizedEpochInfo[]> {
   const getEpochsInfoRequest = GetFinalizedEpochInfosRequest.create({
     version: {
       oneofKind: 'v0',

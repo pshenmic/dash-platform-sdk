@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { DocumentWASM, IdentifierLike, IdentifierWASM, PrivateKeyWASM } from 'pshenmic-dpp'
 import searchByName from './searchByName.js'
 import searchByIdentity from './searchByIdentity.js'
@@ -15,9 +15,9 @@ import testNameContested from './testNameContested.js'
  */
 export class NamesController {
   /** @ignore **/
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
 
-  constructor (grpcPool: GRPCConnectionPool) {
+  constructor (grpcPool: GRPCPool) {
     this.grpcPool = grpcPool
   }
 

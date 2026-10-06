@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { verifyAddressesTrunkState } from 'pshenmic-dpp'
 import { GetAddressesTrunkStateRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
@@ -7,7 +7,7 @@ import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { PlatformAddressesTrunkState } from '../../types.js'
 
-export async function getAddressesTrunkState (grpcPool: GRPCConnectionPool): Promise<PlatformAddressesTrunkState> {
+export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<PlatformAddressesTrunkState> {
   const getAddressesTrunkStateRequest = GetAddressesTrunkStateRequest.create({
     version: {
       oneofKind: 'v0',

@@ -1,9 +1,9 @@
 import { NodeStatus } from '../../types.js'
 import { GetStatusRequest } from '../../proto/generated/platform.js'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import bytesToHex from '../utils/bytesToHex.js'
 
-export default async function status (grpcPool: GRPCConnectionPool): Promise<NodeStatus> {
+export default async function status (grpcPool: GRPCPool): Promise<NodeStatus> {
   const getStatusRequest = GetStatusRequest.create({
     version: {
       oneofKind: 'v0',

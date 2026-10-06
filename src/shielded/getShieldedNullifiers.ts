@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedNullifiersRequest } from '../../proto/generated/platform.js'
 import { ShieldedNullifierStatus } from '../../types.js'
 import {verifyShieldedNullifiersProof} from "pshenmic-dpp";
@@ -8,7 +8,7 @@ import bytesToHex from "../utils/bytesToHex.js";
 import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getShieldedNullifiers (
-  grpcPool: GRPCConnectionPool,
+  grpcPool: GRPCPool,
   nullifiers: Uint8Array[]
 ): Promise<ShieldedNullifierStatus[]> {
   const getShieldedNullifiersRequest = GetShieldedNullifiersRequest.create({

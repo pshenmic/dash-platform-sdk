@@ -1,15 +1,27 @@
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
 import { PlatformClient } from '../proto/generated/platform.client.js'
-import getEvonodeList from './utils/getEvonodeList.js'
 import { GetStatusRequest } from '../proto/generated/platform.js'
+import getCurrentQuorumsInfo from './node/getCurrentQuorumsInfo.js'
 import getRandomArrayItem from './utils/getRandomArrayItem.js'
 import { Network } from '../types.js'
+import { fetchWithDetails } from './utils/fetchWithDetails.js'
 
 const GRPC_DEFAULT_POOL_LIMIT = 5
 export type MasternodeList = Record<string, MasternodeInfo>
 export interface GRPCOptions {
-  poolLimit: 5
+  poolLimit?: number
   dapiUrl?: string | string[]
+  /** Custom connection pool, if set, `poolLimit` and `dapiUrl` are ignored **/
+  pool?: GRPCPool
+}
+
+/**
+ * Minimal interface the SDK requires from a GRPC connection pool.
+ * Implement it to supply your own node selection, retries, transport options, etc.
+ */
+export interface GRPCPool {
+  network: Network
+  getClient: (abortController?: AbortController) => PlatformClient
 }
 
 export interface MasternodeInfo {
@@ -46,14 +58,20 @@ const seedNodes = {
   ]
 }
 
-const createClient = (url: string, abortController?: AbortController): PlatformClient => {
+const DAPI_PORTS = {
+  testnet: 1443,
+  mainnet: 443
+}
+
+export const createClient = (url: string, abortController?: AbortController): PlatformClient => {
   return new PlatformClient(new GrpcWebFetchTransport({
     baseUrl: url,
-    abort: abortController?.signal
+    abort: abortController?.signal,
+    fetch: fetchWithDetails
   }))
 }
 
-export default class GRPCConnectionPool {
+export default class GRPCConnectionPool implements GRPCPool {
   dapiUrls: string[]
   network: Network
 
@@ -83,20 +101,16 @@ export default class GRPCConnectionPool {
     }
 
     // Add default seed nodes
-    this.dapiUrls = seedNodes[network]
+    this.dapiUrls = [...seedNodes[network]]
 
-    // retrieve last evonodes list
-    const evonodeList = await getEvonodeList(network)
+    // retrieve evonodes from current validator sets
+    const { validatorSets } = await getCurrentQuorumsInfo(this)
 
     // map it to array of dapiUrls
-    const networkDAPIUrls = Object.entries(evonodeList)
-      .map(([, info]) => info)
-      .filter((info: any) => info.status === 'ENABLED')
-      .map((info: any) => {
-        const [host] = info.address.split(':')
-
-        return `https://${host as string}:${info.platformHTTPPort as number}`
-      })
+    const networkDAPIUrls = [...new Set(validatorSets
+      .flatMap(validatorSet => validatorSet.members)
+      .filter(member => !member.isBanned)
+      .map(member => `https://${member.nodeIp}:${DAPI_PORTS[network]}`))]
 
     // healthcheck nodes
     for (const url of networkDAPIUrls) {

@@ -1,4 +1,4 @@
-import GRPCConnectionPool from './grpcConnectionPool.js'
+import GRPCConnectionPool, { GRPCOptions, GRPCPool } from './grpcConnectionPool.js'
 import { IdentitiesController } from './identities/index.js'
 import { StateTransitionsController } from './stateTransitions/index.js'
 import { DocumentsController } from './documents/index.js'
@@ -14,10 +14,7 @@ import { Network } from '../types.js'
 import { PlatformAddressesController } from './platformAddresses/index.js'
 import { ShieldedController } from './shielded/index.js'
 
-export interface GRPCOptions {
-  poolLimit: 5
-  dapiUrl?: string | string[]
-}
+export type { GRPCOptions, GRPCPool }
 
 export interface SDKOptions {
   network: Network
@@ -32,7 +29,7 @@ export interface SDKOptions {
 export class DashPlatformSDK {
   network: Network
   /** @ignore **/
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
   /** @ignore **/
   options?: SDKOptions
 
@@ -72,9 +69,13 @@ export class DashPlatformSDK {
       this.options.grpc = { dapiUrl: options.dapiUrl }
     }
 
-    this.grpcPool = new GRPCConnectionPool(this.network, this.options?.grpc)
+    const customPool = this.options?.grpc?.pool
 
-    this._initialize(this.grpcPool)
+    if (customPool != null && customPool.network !== this.network) {
+      throw new Error(`Custom GRPC pool network (${customPool.network}) does not match SDK network (${this.network})`)
+    }
+
+    this._initialize(customPool ?? new GRPCConnectionPool(this.network, this.options?.grpc))
   }
 
   /**
@@ -85,7 +86,7 @@ export class DashPlatformSDK {
    * @param grpcPool
    * @param network
    */
-  _initialize (grpcPool: GRPCConnectionPool): void {
+  _initialize (grpcPool: GRPCPool): void {
     this.grpcPool = grpcPool
 
     this.contestedResources = new ContestedResourcesController(grpcPool)
@@ -121,9 +122,30 @@ export class DashPlatformSDK {
       throw new Error('Unknown network, should be mainnet or testnet')
     }
 
+    const customPool = this.options?.grpc?.pool
+
+    if (customPool != null && customPool.network !== network) {
+      throw new Error(`Custom GRPC pool is bound to ${customPool.network}, pass a pool for ${network} with setGRPCPool() instead`)
+    }
+
     this.network = network
 
-    const grpcPool = new GRPCConnectionPool(this.network, this.options?.grpc)
+    this._initialize(customPool ?? new GRPCConnectionPool(this.network, this.options?.grpc))
+  }
+
+  /**
+   * Replaces GRPC connection pool used by the SDK with a custom one.
+   * SDK network is switched to the pool's network
+   *
+   * @param grpcPool {GRPCPool}
+   */
+  setGRPCPool (grpcPool: GRPCPool): void {
+    if (grpcPool.network !== 'testnet' && grpcPool.network !== 'mainnet') {
+      throw new Error('Unknown GRPC pool network, should be mainnet or testnet')
+    }
+
+    this.network = grpcPool.network
+    this.options = { ...(this.options ?? { network: grpcPool.network }), network: grpcPool.network, grpc: { ...this.options?.grpc, pool: grpcPool } }
 
     this._initialize(grpcPool)
   }

@@ -83,4 +83,26 @@ describe('Node', () => {
 
     expect(Number(totalCredits)).toBeGreaterThan(0)
   })
+
+  test('should be able to call getCurrentQuorumsInfo', async () => {
+    const quorumsInfo = await sdk.node.getCurrentQuorumsInfo()
+
+    expect(quorumsInfo.quorumHashes.length).toBeGreaterThan(0)
+    expect(quorumsInfo.currentQuorumHash).toMatch(/^[0-9a-f]{64}$/)
+    expect(quorumsInfo.lastBlockProposer).toMatch(/^[0-9a-f]{64}$/)
+    expect(quorumsInfo.validatorSets.length).toBeGreaterThan(0)
+
+    for (const validatorSet of quorumsInfo.validatorSets) {
+      expect(validatorSet.quorumHash).toMatch(/^[0-9a-f]{64}$/)
+      expect(validatorSet.coreHeight).toBeGreaterThan(0)
+      expect(validatorSet.thresholdPublicKey).toMatch(/^[0-9a-f]{96}$/)
+      expect(validatorSet.members.length).toBeGreaterThan(0)
+
+      for (const member of validatorSet.members) {
+        expect(member.proTxHash).toMatch(/^[0-9a-f]{64}$/)
+        expect(member.nodeIp).toEqual(expect.any(String))
+        expect(member.isBanned).toEqual(expect.any(Boolean))
+      }
+    }
+  })
 })

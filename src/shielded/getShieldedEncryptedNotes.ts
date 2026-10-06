@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedEncryptedNotesRequest } from '../../proto/generated/platform.js'
 import { ShieldedEncryptedNote } from '../../types.js'
 import {verifyShieldedEncryptedNotesProof} from "pshenmic-dpp";
@@ -8,7 +8,7 @@ import bytesToHex from "../utils/bytesToHex.js";
 import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getShieldedEncryptedNotes (
-  grpcPool: GRPCConnectionPool,
+  grpcPool: GRPCPool,
   startIndex: bigint,
   count: number
 ): Promise<ShieldedEncryptedNote[]> {

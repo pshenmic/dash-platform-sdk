@@ -39,6 +39,8 @@ service Platform {
   rpc getTotalCreditsInPlatform(GetTotalCreditsInPlatformRequest)
       returns (GetTotalCreditsInPlatformResponse);
   rpc getStatus(GetStatusRequest) returns (GetStatusResponse);
+  rpc getCurrentQuorumsInfo(GetCurrentQuorumsInfoRequest)
+      returns (GetCurrentQuorumsInfoResponse);
   rpc getIdentityTokenBalances(GetIdentityTokenBalancesRequest)
       returns (GetIdentityTokenBalancesResponse);
   rpc getIdentitiesTokenBalances(GetIdentitiesTokenBalancesRequest)
@@ -644,6 +646,35 @@ message GetTotalCreditsInPlatformResponse {
   oneof version { GetTotalCreditsInPlatformResponseV0 v0 = 1; }
 }
 
+
+message GetCurrentQuorumsInfoRequest {
+  message GetCurrentQuorumsInfoRequestV0 {}
+
+  oneof version { GetCurrentQuorumsInfoRequestV0 v0 = 1; }
+}
+
+message GetCurrentQuorumsInfoResponse {
+  message ValidatorV0 {
+    bytes pro_tx_hash = 1;
+    string node_ip = 2;
+    bool is_banned = 3;
+  }
+  message ValidatorSetV0 {
+    bytes quorum_hash = 1;
+    uint32 core_height = 2;
+    repeated ValidatorV0 members = 3;
+    bytes threshold_public_key = 4;
+  }
+
+  message GetCurrentQuorumsInfoResponseV0 {
+    repeated bytes quorum_hashes = 1;
+    bytes current_quorum_hash = 2;
+    repeated ValidatorSetV0 validator_sets = 3;
+    bytes last_block_proposer = 4;
+    ResponseMetadata metadata = 5;
+  }
+  oneof version { GetCurrentQuorumsInfoResponseV0 v0 = 1; }
+}
 
 message GetStatusRequest {
   message GetStatusRequestV0 {}

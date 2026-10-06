@@ -1,7 +1,7 @@
 import { GetDocumentsRequest } from '../../proto/generated/platform.js'
 import { DocumentWASM, IdentifierLike, IdentifierWASM, verifyDocumentsProof, WhereClause } from 'pshenmic-dpp'
 import { DAPI_DEFAULT_LIMIT, LATEST_PLATFORM_VERSION } from '../constants.js'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
@@ -9,7 +9,7 @@ import { encode } from 'cbor2'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 
 export default async function query (
-  grpcPool: GRPCConnectionPool,
+  grpcPool: GRPCPool,
   dataContractId: IdentifierLike,
   documentTypeName: string,
   where?: WhereClause[],
