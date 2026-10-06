@@ -4,6 +4,7 @@ import { NodeStatus } from '../../types.js'
 import getEpochsInfo, { EpochInfo } from './epochInfos.js'
 import getFinalizedEpochsInfo, {FinalizedEpochInfo} from './finalizedEpochInfos.js'
 import getTotalCredits from './totalCredits.js'
+import getCurrentQuorumsInfo, { CurrentQuorumsInfo } from './getCurrentQuorumsInfo.js'
 
 /**
  * Node controller for requesting information about DAPI node
@@ -55,6 +56,16 @@ export class NodeController {
    */
   async getFinalizedEpochsInfo (startEpochIndex: number, startEpochIndexIncluded: boolean, endEpochIndex: number, endEpochIndexIncluded: boolean): Promise<FinalizedEpochInfo[]> {
     return await getFinalizedEpochsInfo(this.grpcPool, startEpochIndex, startEpochIndexIncluded, endEpochIndex, endEpochIndexIncluded)
+  }
+
+  /**
+   * Retrieves an info about current validator sets (quorums)
+   * Includes quorum hashes, members of validator sets with their IPs and last block proposer
+   *
+   * @return {Promise<CurrentQuorumsInfo>}
+   */
+  async getCurrentQuorumsInfo (): Promise<CurrentQuorumsInfo> {
+    return await getCurrentQuorumsInfo(this.grpcPool)
   }
 
 }

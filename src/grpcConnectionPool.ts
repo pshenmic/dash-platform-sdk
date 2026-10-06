@@ -1,7 +1,7 @@
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
 import { PlatformClient } from '../proto/generated/platform.client.js'
-import getEvonodeList from './utils/getEvonodeList.js'
 import { GetStatusRequest } from '../proto/generated/platform.js'
+import getCurrentQuorumsInfo from './node/getCurrentQuorumsInfo.js'
 import getRandomArrayItem from './utils/getRandomArrayItem.js'
 import { Network } from '../types.js'
 import { fetchWithDetails } from './utils/fetchWithDetails.js'
@@ -58,6 +58,11 @@ const seedNodes = {
   ]
 }
 
+const DAPI_PORTS = {
+  testnet: 1443,
+  mainnet: 443
+}
+
 export const createClient = (url: string, abortController?: AbortController): PlatformClient => {
   return new PlatformClient(new GrpcWebFetchTransport({
     baseUrl: url,
@@ -98,18 +103,14 @@ export default class GRPCConnectionPool implements GRPCPool {
     // Add default seed nodes
     this.dapiUrls = [...seedNodes[network]]
 
-    // retrieve last evonodes list
-    const evonodeList = await getEvonodeList(network)
+    // retrieve evonodes from current validator sets
+    const { validatorSets } = await getCurrentQuorumsInfo(this)
 
     // map it to array of dapiUrls
-    const networkDAPIUrls = Object.entries(evonodeList)
-      .map(([, info]) => info)
-      .filter((info: any) => info.status === 'ENABLED')
-      .map((info: any) => {
-        const [host] = info.address.split(':')
-
-        return `https://${host as string}:${info.platformHTTPPort as number}`
-      })
+    const networkDAPIUrls = [...new Set(validatorSets
+      .flatMap(validatorSet => validatorSet.members)
+      .filter(member => !member.isBanned)
+      .map(member => `https://${member.nodeIp}:${DAPI_PORTS[network]}`))]
 
     // healthcheck nodes
     for (const url of networkDAPIUrls) {
