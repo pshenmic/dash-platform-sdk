@@ -1,5 +1,5 @@
 import getStatus from './status.js'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { NodeStatus } from '../../types.js'
 import getEpochsInfo, { EpochInfo } from './epochInfos.js'
 import getFinalizedEpochsInfo, {FinalizedEpochInfo} from './finalizedEpochInfos.js'
@@ -12,9 +12,9 @@ import getTotalCredits from './totalCredits.js'
  */
 export class NodeController {
   /** @ignore **/
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
 
-  constructor (grpcPool: GRPCConnectionPool) {
+  constructor (grpcPool: GRPCPool) {
     this.grpcPool = grpcPool
   }
 

@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedNotesCountRequest } from '../../proto/generated/platform.js'
 import {verifyShieldedNotesCountProof} from "pshenmic-dpp";
 import {LATEST_PLATFORM_VERSION} from "../constants.js";
@@ -7,7 +7,7 @@ import bytesToHex from "../utils/bytesToHex.js";
 import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getShieldedNotesCount (
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
 ): Promise<bigint | undefined> {
   const getShieldedNotesCountRequest = GetShieldedNotesCountRequest.create({
     version: {

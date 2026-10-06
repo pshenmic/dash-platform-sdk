@@ -8,7 +8,7 @@ import {
   TokenPaymentInfoWASM, WhereClause
 } from 'pshenmic-dpp'
 import createStateTransition from './createStateTransition.js'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import query from './query.js'
 
 /**
@@ -18,9 +18,9 @@ import query from './query.js'
  */
 export class DocumentsController {
   /** @ignore **/
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
 
-  constructor (grpcPool: GRPCConnectionPool) {
+  constructor (grpcPool: GRPCPool) {
     this.grpcPool = grpcPool
   }
 

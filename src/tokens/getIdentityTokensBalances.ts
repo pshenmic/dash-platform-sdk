@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { IdentifierLike, IdentifierWASM, verifyTokensBalancesForIdentityProof } from 'pshenmic-dpp'
 import { GetIdentityTokenBalancesRequest } from '../../proto/generated/platform.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
@@ -11,7 +11,7 @@ export interface IdentityTokenBalances {
   balance?: bigint | undefined
 }
 
-export default async function getIdentityTokensBalances (grpcPool: GRPCConnectionPool, identifier: IdentifierLike, tokenIdentifiers: IdentifierLike[]): Promise<IdentityTokenBalances[]> {
+export default async function getIdentityTokensBalances (grpcPool: GRPCPool, identifier: IdentifierLike, tokenIdentifiers: IdentifierLike[]): Promise<IdentityTokenBalances[]> {
   const id = new IdentifierWASM(identifier)
   const tokenIds = tokenIdentifiers.map(tokenIdentifier => new IdentifierWASM(tokenIdentifier))
 

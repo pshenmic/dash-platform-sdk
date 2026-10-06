@@ -1,12 +1,12 @@
 import { GetIdentityBalanceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyIdentityBalanceProof } from 'pshenmic-dpp'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getIdentityBalance (grpcPool: GRPCConnectionPool, identifier: IdentifierLike): Promise<bigint> {
+export default async function getIdentityBalance (grpcPool: GRPCPool, identifier: IdentifierLike): Promise<bigint> {
   const id = new IdentifierWASM(identifier)
 
   const getIdentityBalanceRequest = GetIdentityBalanceRequest.create({

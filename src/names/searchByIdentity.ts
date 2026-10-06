@@ -1,9 +1,9 @@
 import { DocumentWASM, IdentifierWASM } from 'pshenmic-dpp'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import query from '../documents/query.js'
 
 const DPNS_DATA_CONTRACT_ID = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
-export default async function searchByIdentity (grpcPool: GRPCConnectionPool, identifier: IdentifierWASM): Promise<DocumentWASM[]> {
+export default async function searchByIdentity (grpcPool: GRPCPool, identifier: IdentifierWASM): Promise<DocumentWASM[]> {
   return await query(grpcPool, DPNS_DATA_CONTRACT_ID, 'domain', [['records.identity', '=', identifier.base58()]], [['records.identity', 'asc']])
 }

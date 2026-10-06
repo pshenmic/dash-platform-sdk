@@ -6,7 +6,7 @@ import {
   MasternodeVoteTransitionWASM,
   verifyStateTransitionResult
 } from 'pshenmic-dpp'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import hexToBytes from '../utils/hexToBytes.js'
 import { WaitForStateTransitionResultRequest } from '../../proto/generated/platform.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
@@ -16,7 +16,7 @@ import { base64 } from '@scure/base'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 
-export default async function waitForStateTransitionResult (grpcPool: GRPCConnectionPool, stateTransition: StateTransitionWASM): Promise<void> {
+export default async function waitForStateTransitionResult (grpcPool: GRPCPool, stateTransition: StateTransitionWASM): Promise<void> {
   const txHash = stateTransition.hash(false)
 
   const waitForStateTransitionResultRequest = WaitForStateTransitionResultRequest.create({

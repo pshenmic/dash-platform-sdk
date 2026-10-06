@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { ContestedResourceVoteState, ContestedStateResultType } from '../../types.js'
 import { DataContractWASM } from 'pshenmic-dpp'
 import getContestedResourceVoteState, { StartAtIdentifierInfo } from './getContestedResourceVoteState.js'
@@ -10,9 +10,9 @@ import getContestedResourceVoteState, { StartAtIdentifierInfo } from './getConte
  */
 export class ContestedResourcesController {
   /** @ignore **/
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
 
-  constructor (grpcPool: GRPCConnectionPool) {
+  constructor (grpcPool: GRPCPool) {
     this.grpcPool = grpcPool
   }
 

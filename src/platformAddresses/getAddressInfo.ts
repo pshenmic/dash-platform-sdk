@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import {
   PlatformAddressLike,
   PlatformAddressWASM,
@@ -11,7 +11,7 @@ import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { PlatformAddressInfo } from '../../types.js'
 
-export async function getAddressInfo (grpcPool: GRPCConnectionPool, platformAddress: PlatformAddressLike): Promise<PlatformAddressInfo> {
+export async function getAddressInfo (grpcPool: GRPCPool, platformAddress: PlatformAddressLike): Promise<PlatformAddressInfo> {
   const platformAddressWASM = new PlatformAddressWASM(platformAddress)
 
   const getAddressInfoRequest = GetAddressInfoRequest.create({

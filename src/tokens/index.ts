@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import {
   TokenDirectPurchasePrices,
   TokenTotalSupply,
@@ -27,9 +27,9 @@ import getTokenDirectPurchasePrices from './getTokenDirectPurchasePrices.js'
  */
 export class TokensController {
   /** @ignore **/
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
 
-  constructor (grpcPool: GRPCConnectionPool) {
+  constructor (grpcPool: GRPCPool) {
     this.grpcPool = grpcPool
   }
 

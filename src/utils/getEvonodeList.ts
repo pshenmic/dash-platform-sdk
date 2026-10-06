@@ -1,9 +1,10 @@
 import { MasternodeList, Network } from '../../types.js'
+import { fetchWithDetails } from './fetchWithDetails.js'
 
 export default async function getDAPINodeList (network: Network): Promise<MasternodeList> {
   const url = `https://${network === 'mainnet' ? '' : 'testnet.'}platform-explorer.pshenmic.dev/validators?isActive=true`
 
-  const resp = await fetch(url)
+  const resp = await fetchWithDetails(url)
 
   if (resp.status !== 200) {
     throw new Error('Failed to query Platform Explorer for active validators')

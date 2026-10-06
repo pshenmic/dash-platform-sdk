@@ -1,9 +1,9 @@
 import { BroadcastStateTransitionRequest } from '../../proto/generated/platform.js'
 import { StateTransitionWASM } from 'pshenmic-dpp'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { deserializeConsensusError } from '../utils/deserializeConsensusError.js'
 
-export default async function broadcast (grpcPool: GRPCConnectionPool, stateTransition: StateTransitionWASM): Promise<void> {
+export default async function broadcast (grpcPool: GRPCPool, stateTransition: StateTransitionWASM): Promise<void> {
   try {
     if (stateTransition.signature?.length === 0) {
       throw new Error('State Transition is not signed')

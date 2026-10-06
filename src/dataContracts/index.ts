@@ -5,7 +5,7 @@ import {
   PlatformVersionWASM,
   StateTransitionWASM
 } from 'pshenmic-dpp'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import createDataContract from './create.js'
 import createStateTransition from './createStateTransition.js'
 import { DataContractConfig } from '../../types.js'
@@ -18,9 +18,9 @@ import { DataContractConfig } from '../../types.js'
  */
 export class DataContractsController {
   /** @ignore */
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
 
-  constructor (grpcPool: GRPCConnectionPool) {
+  constructor (grpcPool: GRPCPool) {
     this.grpcPool = grpcPool
   }
 

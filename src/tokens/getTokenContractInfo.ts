@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetTokenContractInfoRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenContractInfoProof } from 'pshenmic-dpp'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
@@ -11,7 +11,7 @@ export interface TokenContractInfo {
   tokenContractPosition: number
 }
 
-export default async function getTokenContractInfo (grpcPool: GRPCConnectionPool, tokenIdentifier: IdentifierLike): Promise<TokenContractInfo> {
+export default async function getTokenContractInfo (grpcPool: GRPCPool, tokenIdentifier: IdentifierLike): Promise<TokenContractInfo> {
   const tokenId = new IdentifierWASM(tokenIdentifier)
 
   const getTokenContractInfoRequest = GetTokenContractInfoRequest.create({

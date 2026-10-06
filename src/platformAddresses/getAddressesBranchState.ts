@@ -1,9 +1,9 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { verifyAddressesBranchState, VerifiedAddressesBranchState } from 'pshenmic-dpp'
 import { GetAddressesBranchStateRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export async function getAddressesBranchState (grpcPool: GRPCConnectionPool, key: Uint8Array, depth: number, checkpointHeight: bigint, expectedRootHash: Uint8Array): Promise<VerifiedAddressesBranchState> {
+export async function getAddressesBranchState (grpcPool: GRPCPool, key: Uint8Array, depth: number, checkpointHeight: bigint, expectedRootHash: Uint8Array): Promise<VerifiedAddressesBranchState> {
   const getAddressesBranchStateRequest = GetAddressesBranchStateRequest.create({
     version: {
       oneofKind: 'v0',

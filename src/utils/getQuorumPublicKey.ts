@@ -1,3 +1,5 @@
+import { fetchWithDetails } from './fetchWithDetails.js'
+
 const cache: {
   [key: string]: string
 } = {}
@@ -11,7 +13,7 @@ export async function getQuorumPublicKey (network: string, quorumType: number, q
 
   const url = `https://${network === 'mainnet' ? '' : 'testnet.'}platform-explorer.pshenmic.dev/quorum/info?quorumType=${quorumType}&quorumHash=${quorumHash}`
 
-  const resp = await fetch(url, {
+  const resp = await fetchWithDetails(url, {
     method: 'GET'
   })
 

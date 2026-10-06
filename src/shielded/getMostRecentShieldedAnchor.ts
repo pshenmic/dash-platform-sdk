@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetMostRecentShieldedAnchorRequest } from '../../proto/generated/platform.js'
 import {verifyMostRecentShieldedAnchorProof} from "pshenmic-dpp";
 import {LATEST_PLATFORM_VERSION} from "../constants.js";
@@ -7,7 +7,7 @@ import bytesToHex from "../utils/bytesToHex.js";
 import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getMostRecentShieldedAnchor (
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
 ): Promise<Uint8Array | undefined> {
   const getMostRecentShieldedAnchorRequest = GetMostRecentShieldedAnchorRequest.create({
     version: {

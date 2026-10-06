@@ -2,7 +2,7 @@ import {
   ContestedResourceVoteState,
   ContestedStateResultType
 } from '../../types.js'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import {
   GetContestedResourceVoteStateRequest,
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_ResultType,
@@ -17,7 +17,7 @@ import { LATEST_PLATFORM_VERSION } from '../constants.js'
 export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 
 export default async function getContestedResourceVoteState (
-  grpcPool: GRPCConnectionPool,
+  grpcPool: GRPCPool,
   contract: DataContractWASM,
   documentTypeName: string,
   indexName: string,

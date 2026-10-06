@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import {
   BlockAddressBalanceChanges,
   CompactedBlockAddressBalanceChanges,
@@ -22,9 +22,9 @@ import createStateTransition from './createStateTransition.js'
 
 export class PlatformAddressesController {
   /** @ignore **/
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
 
-  constructor (grpcPool: GRPCConnectionPool) {
+  constructor (grpcPool: GRPCPool) {
     this.grpcPool = grpcPool
   }
 

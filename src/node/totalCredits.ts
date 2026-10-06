@@ -1,5 +1,5 @@
 import { GetTotalCreditsInPlatformRequest } from '../../proto/generated/platform.js'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import {
   HALVING_INTERVAL,
   LATEST_PLATFORM_VERSION,
@@ -11,7 +11,7 @@ import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 
-export default async function totalCredits (grpcPool: GRPCConnectionPool): Promise<bigint> {
+export default async function totalCredits (grpcPool: GRPCPool): Promise<bigint> {
   const getTotalCreditsInPlatformRequest = GetTotalCreditsInPlatformRequest.create({
     version: {
       oneofKind: 'v0',

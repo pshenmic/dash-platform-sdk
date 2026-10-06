@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetTokenTotalSupplyRequest } from '../../proto/generated/platform.js'
 import { TokenTotalSupply } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenTotalSupplyProof } from 'pshenmic-dpp'
@@ -7,7 +7,7 @@ import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getTokenTotalSupply (grpcPool: GRPCConnectionPool, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
+export default async function getTokenTotalSupply (grpcPool: GRPCPool, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
   const tokenId = new IdentifierWASM(tokenIdentifier)
 
   const getTokenTotalSupplyRequest = GetTokenTotalSupplyRequest.create({

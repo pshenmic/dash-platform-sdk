@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import { verifyRecentCompactedAddressBalanceChanges, CompactedBlockAddressBalanceChanges } from 'pshenmic-dpp'
 import { GetRecentCompactedAddressBalanceChangesRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
@@ -6,7 +6,7 @@ import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 
-export async function getRecentCompactedAddressBalanceChanges (grpcPool: GRPCConnectionPool, startBlockHeight: bigint): Promise<CompactedBlockAddressBalanceChanges[]> {
+export async function getRecentCompactedAddressBalanceChanges (grpcPool: GRPCPool, startBlockHeight: bigint): Promise<CompactedBlockAddressBalanceChanges[]> {
   const getRecentCompactedAddressBalanceChangesRequest = GetRecentCompactedAddressBalanceChangesRequest.create({
     version: {
       oneofKind: 'v0',

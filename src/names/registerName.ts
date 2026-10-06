@@ -1,6 +1,6 @@
 import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js'
 import { IdentityWASM, PrefundedVotingBalanceWASM, PrivateKeyWASM } from 'pshenmic-dpp'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import getRandomBytes from '../utils/getRandomBytes.js'
 import sha256 from '../utils/sha256.js'
 import createDocument from '../documents/create.js'
@@ -11,7 +11,7 @@ import waitForStateTransitionResult from '../stateTransitions/waitForStateTransi
 import testNameContested from './testNameContested.js'
 import { DPNS_DATA_CONTRACT_ID } from '../constants.js'
 
-export default async function registerName (grpcPool: GRPCConnectionPool, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM): Promise<void> {
+export default async function registerName (grpcPool: GRPCPool, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM): Promise<void> {
   const [identityPublicKey] = identity.getPublicKeys().filter(identityPublicKey => identityPublicKey.getPublicKeyHash() === privateKey.getPublicKeyHash())
 
   if (identityPublicKey == null) {

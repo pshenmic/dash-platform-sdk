@@ -1,7 +1,7 @@
 import { StateTransitionWASM } from 'pshenmic-dpp'
 import waitForStateTransitionResult from './waitForStateTransitionResult.js'
 import broadcast from './broadcast.js'
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 
 /**
  * Collection of methods to perform state transitions (transactions) such like broadcast, wait for state transition result
@@ -10,9 +10,9 @@ import GRPCConnectionPool from '../grpcConnectionPool.js'
  */
 export class StateTransitionsController {
   /** @ignore **/
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
 
-  constructor (grpcPool: GRPCConnectionPool) {
+  constructor (grpcPool: GRPCPool) {
     this.grpcPool = grpcPool
   }
 

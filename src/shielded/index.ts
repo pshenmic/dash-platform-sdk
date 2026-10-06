@@ -1,4 +1,4 @@
-import GRPCConnectionPool from '../grpcConnectionPool.js'
+import { GRPCPool } from '../grpcConnectionPool.js'
 import {
   IdentityCreateFromShieldedPoolParams,
   ShieldedEncryptedNote,
@@ -33,12 +33,12 @@ import {
  */
 export class ShieldedController {
   /** @ignore **/
-  grpcPool: GRPCConnectionPool
+  grpcPool: GRPCPool
 
   /** @ignore **/
   shieldedBuilder?: ShieldedBuilderWASM
 
-  constructor(grpcPool: GRPCConnectionPool) {
+  constructor(grpcPool: GRPCPool) {
     this.grpcPool = grpcPool
   }
 
