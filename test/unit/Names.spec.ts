@@ -10,8 +10,9 @@ jest.mock('../../src/utils/sleep')
 let sdk: DashPlatformSDK
 
 describe('DPNS names', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     sdk = new DashPlatformSDK({ network: 'testnet' })
+    await sdk.waitForInit()
 
     // @ts-expect-error
     sleep.mockReturnValue(Promise.resolve())

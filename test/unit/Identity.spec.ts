@@ -9,8 +9,9 @@ import { base58 } from '@scure/base'
 let sdk: DashPlatformSDK
 
 describe('Identity', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     sdk = new DashPlatformSDK({ network: 'testnet' })
+    await sdk.waitForInit()
   })
 
   test('should be able to get identity by identifier', async () => {

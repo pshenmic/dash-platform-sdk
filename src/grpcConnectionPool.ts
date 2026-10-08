@@ -22,6 +22,7 @@ export interface GRPCOptions {
 export interface GRPCPool {
   network: Network
   getClient: (abortController?: AbortController) => PlatformClient
+  waitForInit?: () => Promise<void>
 }
 
 export interface MasternodeInfo {
@@ -78,13 +79,14 @@ export const createClient = (url: string, abortController?: AbortController): Pl
 export default class GRPCConnectionPool implements GRPCPool {
   dapiUrls: string[]
   network: Network
+  initialization: Promise<void>
 
   constructor (network: Network, grpcOptions?: GRPCOptions) {
     const grpcPoolLimit = grpcOptions?.poolLimit ?? GRPC_DEFAULT_POOL_LIMIT
 
     this.network = network
 
-    this._initialize(network, grpcPoolLimit, grpcOptions?.dapiUrl).catch(console.error)
+    this.initialization = this._initialize(network, grpcPoolLimit, grpcOptions?.dapiUrl).catch(console.error)
   }
 
   async _initialize (network: Network, poolLimit: number, dapiUrl?: string | string[]): Promise<void> {
@@ -109,7 +111,7 @@ export default class GRPCConnectionPool implements GRPCPool {
 
     // retrieve evonodes from current validator sets through the first responding seed node,
     // seed nodes that failed to respond are removed from the pool
-    const { validatorSets } = await Promise.any(seedNodes[network].map(async seed => {
+    const seedRequests = seedNodes[network].map(async seed => {
       try {
         return await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed) })
       } catch (e) {
@@ -117,7 +119,9 @@ export default class GRPCConnectionPool implements GRPCPool {
 
         throw e
       }
-    }))
+    })
+
+    const { validatorSets } = await Promise.any(seedRequests)
 
     // map it to array of dapiUrls
     const networkDAPIUrls = [...new Set(validatorSets
@@ -142,6 +146,16 @@ export default class GRPCConnectionPool implements GRPCPool {
       } catch (e) {
       }
     }
+
+    // wait until every seed node responded or failed, so dead ones are removed from the pool
+    await Promise.allSettled(seedRequests)
+  }
+
+  /**
+   * Resolves when the pool initialization (seed nodes check and evonodes discovery) is finished
+   */
+  async waitForInit (): Promise<void> {
+    await this.initialization
   }
 
   getClient (abortController?: AbortController): PlatformClient {

@@ -9,8 +9,9 @@ let config: DataContractConfig
 let schema: object
 
 describe('DataContract', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     sdk = new DashPlatformSDK({ network: 'testnet' })
+    await sdk.waitForInit()
 
     ownerIdentifier = 'GARSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
     identityNonce = BigInt(11)
