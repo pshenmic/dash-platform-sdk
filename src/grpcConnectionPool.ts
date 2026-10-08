@@ -1,7 +1,7 @@
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
 import { PlatformClient } from '../proto/generated/platform.client.js'
 import { GetStatusRequest } from '../proto/generated/platform.js'
-import getCurrentQuorumsInfo, { CurrentQuorumsInfo } from './node/getCurrentQuorumsInfo.js'
+import getCurrentQuorumsInfo from './node/getCurrentQuorumsInfo.js'
 import getRandomArrayItem from './utils/getRandomArrayItem.js'
 import { Network } from '../types.js'
 import { fetchWithDetails } from './utils/fetchWithDetails.js'
@@ -107,25 +107,17 @@ export default class GRPCConnectionPool implements GRPCPool {
     // Add default seed nodes
     this.dapiUrls = [...seedNodes[network]]
 
-    let quorumsInfo: CurrentQuorumsInfo | undefined
-    const aliveSeeds: string[] = []
-
-    for (const seed of seedNodes[network]) {
+    // retrieve evonodes from current validator sets through the first responding seed node,
+    // seed nodes that failed to respond are removed from the pool
+    const { validatorSets } = await Promise.any(seedNodes[network].map(async seed => {
       try {
-        quorumsInfo = await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed) })
-
-        aliveSeeds.push(seed)
+        return await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed) })
       } catch (e) {
+        this.dapiUrls = this.dapiUrls.filter(url => url !== seed)
+
+        throw e
       }
-    }
-
-    if (quorumsInfo == null) {
-      throw new Error('Failed to retrieve current quorums info from seed nodes')
-    }
-
-    this.dapiUrls = aliveSeeds
-
-    const { validatorSets } = quorumsInfo
+    }))
 
     // map it to array of dapiUrls
     const networkDAPIUrls = [...new Set(validatorSets
