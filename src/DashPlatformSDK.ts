@@ -104,6 +104,17 @@ export class DashPlatformSDK {
   }
 
   /**
+   * Waits until GRPC connection pool is initialized
+   * (seed nodes are checked and evonodes are discovered)
+   * SDK can be used without waiting, but requests may be sent to unavailable seed nodes until then
+   *
+   * @return {Promise<void>}
+   */
+  async waitForInit (): Promise<void> {
+    await this.grpcPool.waitForInit?.()
+  }
+
+  /**
    * Get currently used network
    *
    * @return {string}

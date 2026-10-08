@@ -22,6 +22,7 @@ export interface GRPCOptions {
 export interface GRPCPool {
   network: Network
   getClient: (abortController?: AbortController) => PlatformClient
+  waitForInit?: () => Promise<void>
 }
 
 export interface MasternodeInfo {
@@ -46,11 +47,17 @@ export interface MasternodeInfo {
 const seedNodes = {
   testnet: [
     // seed-1.pshenmic.dev
-    'https://158.160.14.115:1443'
+    'https://158.160.14.115:1443',
+    'https://62.84.119.150:1443',
+    // validator
+    'https://68.67.122.26:1443'
   ],
   mainnet: [
     // seed-1.pshenmic.dev
-    'https://158.160.14.115:443'
+    'https://158.160.14.115:443',
+    'https://62.84.119.150:443',
+    // validator
+    'https://95.216.146.18:443',
     // mainnet dcg seeds
     // 'https://158.160.14.115',
     // 'https://3.0.60.103',
@@ -74,13 +81,14 @@ export const createClient = (url: string, abortController?: AbortController): Pl
 export default class GRPCConnectionPool implements GRPCPool {
   dapiUrls: string[]
   network: Network
+  #initialization: Promise<void>
 
   constructor (network: Network, grpcOptions?: GRPCOptions) {
     const grpcPoolLimit = grpcOptions?.poolLimit ?? GRPC_DEFAULT_POOL_LIMIT
 
     this.network = network
 
-    this._initialize(network, grpcPoolLimit, grpcOptions?.dapiUrl).catch(console.error)
+    this.#initialization = this._initialize(network, grpcPoolLimit, grpcOptions?.dapiUrl).catch(console.error)
   }
 
   async _initialize (network: Network, poolLimit: number, dapiUrl?: string | string[]): Promise<void> {
@@ -103,8 +111,19 @@ export default class GRPCConnectionPool implements GRPCPool {
     // Add default seed nodes
     this.dapiUrls = [...seedNodes[network]]
 
-    // retrieve evonodes from current validator sets
-    const { validatorSets } = await getCurrentQuorumsInfo(this)
+    // retrieve evonodes from current validator sets through the first responding seed node,
+    // seed nodes that failed to respond are removed from the pool
+    const seedRequests = seedNodes[network].map(async seed => {
+      try {
+        return await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed) })
+      } catch (e) {
+        this.dapiUrls = this.dapiUrls.filter(url => url !== seed)
+
+        throw e
+      }
+    })
+
+    const { validatorSets } = await Promise.any(seedRequests)
 
     // map it to array of dapiUrls
     const networkDAPIUrls = [...new Set(validatorSets
@@ -129,6 +148,16 @@ export default class GRPCConnectionPool implements GRPCPool {
       } catch (e) {
       }
     }
+
+    // wait until every seed node responded or failed, so dead ones are removed from the pool
+    await Promise.allSettled(seedRequests)
+  }
+
+  /**
+   * Resolves when the pool initialization (seed nodes check and evonodes discovery) is finished
+   */
+  async waitForInit (): Promise<void> {
+    await this.#initialization
   }
 
   getClient (abortController?: AbortController): PlatformClient {

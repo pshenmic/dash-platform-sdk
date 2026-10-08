@@ -21,8 +21,9 @@ import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 let sdk: DashPlatformSDK
 
 describe('PlatformAddress', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     sdk = new DashPlatformSDK({ network: 'testnet' })
+    await sdk.waitForInit()
   })
 
   test('getAddressInfo', async () => {

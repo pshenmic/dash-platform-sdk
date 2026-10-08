@@ -3,8 +3,9 @@ import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 let sdk: DashPlatformSDK
 
 describe('Node', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     sdk = new DashPlatformSDK({ network: 'testnet' })
+    await sdk.waitForInit()
   })
 
   test('should be able to call getStatus', async () => {

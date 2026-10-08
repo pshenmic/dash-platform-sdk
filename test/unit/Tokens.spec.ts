@@ -4,8 +4,9 @@ import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 let sdk: DashPlatformSDK
 
 describe('Tokens', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     sdk = new DashPlatformSDK({ network: 'testnet' })
+    await sdk.waitForInit()
   })
 
   test('should be able to get token total supply', async () => {
