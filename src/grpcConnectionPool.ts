@@ -107,14 +107,14 @@ export default class GRPCConnectionPool implements GRPCPool {
     // Add default seed nodes
     this.dapiUrls = [...seedNodes[network]]
 
-    // retrieve evonodes from current validator sets, trying seed nodes in turn
     let quorumsInfo: CurrentQuorumsInfo | undefined
+    const aliveSeeds: string[] = []
 
     for (const seed of seedNodes[network]) {
       try {
         quorumsInfo = await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed) })
 
-        break
+        aliveSeeds.push(seed)
       } catch (e) {
       }
     }
@@ -122,6 +122,8 @@ export default class GRPCConnectionPool implements GRPCPool {
     if (quorumsInfo == null) {
       throw new Error('Failed to retrieve current quorums info from seed nodes')
     }
+
+    this.dapiUrls = aliveSeeds
 
     const { validatorSets } = quorumsInfo
 
