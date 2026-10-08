@@ -48,14 +48,16 @@ const seedNodes = {
   testnet: [
     // seed-1.pshenmic.dev
     'https://158.160.14.115:1443',
+    'https://62.84.119.150:1443',
     // validator
     'https://68.67.122.26:1443'
   ],
   mainnet: [
     // seed-1.pshenmic.dev
     'https://158.160.14.115:443',
+    'https://62.84.119.150:443',
     // validator
-    'https://95.216.146.18:443'
+    'https://95.216.146.18:443',
     // mainnet dcg seeds
     // 'https://158.160.14.115',
     // 'https://3.0.60.103',
