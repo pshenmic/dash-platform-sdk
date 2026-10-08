@@ -79,14 +79,14 @@ export const createClient = (url: string, abortController?: AbortController): Pl
 export default class GRPCConnectionPool implements GRPCPool {
   dapiUrls: string[]
   network: Network
-  initialization: Promise<void>
+  #initialization: Promise<void>
 
   constructor (network: Network, grpcOptions?: GRPCOptions) {
     const grpcPoolLimit = grpcOptions?.poolLimit ?? GRPC_DEFAULT_POOL_LIMIT
 
     this.network = network
 
-    this.initialization = this._initialize(network, grpcPoolLimit, grpcOptions?.dapiUrl).catch(console.error)
+    this.#initialization = this._initialize(network, grpcPoolLimit, grpcOptions?.dapiUrl).catch(console.error)
   }
 
   async _initialize (network: Network, poolLimit: number, dapiUrl?: string | string[]): Promise<void> {
@@ -155,7 +155,7 @@ export default class GRPCConnectionPool implements GRPCPool {
    * Resolves when the pool initialization (seed nodes check and evonodes discovery) is finished
    */
   async waitForInit (): Promise<void> {
-    await this.initialization
+    await this.#initialization
   }
 
   getClient (abortController?: AbortController): PlatformClient {
