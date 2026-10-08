@@ -1,7 +1,7 @@
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
 import { PlatformClient } from '../proto/generated/platform.client.js'
 import { GetStatusRequest } from '../proto/generated/platform.js'
-import getCurrentQuorumsInfo from './node/getCurrentQuorumsInfo.js'
+import getCurrentQuorumsInfo, { CurrentQuorumsInfo } from './node/getCurrentQuorumsInfo.js'
 import getRandomArrayItem from './utils/getRandomArrayItem.js'
 import { Network } from '../types.js'
 import { fetchWithDetails } from './utils/fetchWithDetails.js'
@@ -107,8 +107,23 @@ export default class GRPCConnectionPool implements GRPCPool {
     // Add default seed nodes
     this.dapiUrls = [...seedNodes[network]]
 
-    // retrieve evonodes from current validator sets
-    const { validatorSets } = await getCurrentQuorumsInfo(this)
+    // retrieve evonodes from current validator sets, trying seed nodes in turn
+    let quorumsInfo: CurrentQuorumsInfo | undefined
+
+    for (const seed of seedNodes[network]) {
+      try {
+        quorumsInfo = await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed) })
+
+        break
+      } catch (e) {
+      }
+    }
+
+    if (quorumsInfo == null) {
+      throw new Error('Failed to retrieve current quorums info from seed nodes')
+    }
+
+    const { validatorSets } = quorumsInfo
 
     // map it to array of dapiUrls
     const networkDAPIUrls = [...new Set(validatorSets
