@@ -7,9 +7,7 @@ import {
   TESTNET_ACTIVATION_HEIGHT
 } from '../constants.js'
 import { verifyTotalCreditsProof } from 'pshenmic-dpp'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import verifyProofSignature from '../utils/verifyProofSignature.js'
 
 export default async function totalCredits (grpcPool: GRPCPool): Promise<bigint> {
   const getTotalCreditsInPlatformRequest = GetTotalCreditsInPlatformRequest.create({
@@ -49,13 +47,7 @@ export default async function totalCredits (grpcPool: GRPCPool): Promise<bigint>
     LATEST_PLATFORM_VERSION
   )
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
+  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
 
   return totalCredits
 }

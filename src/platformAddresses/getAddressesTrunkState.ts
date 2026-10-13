@@ -2,9 +2,7 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { verifyAddressesTrunkState } from 'pshenmic-dpp'
 import { GetAddressesTrunkStateRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import verifyProofSignature from '../utils/verifyProofSignature.js'
 import { PlatformAddressesTrunkState } from '../../types.js'
 
 export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<PlatformAddressesTrunkState> {
@@ -35,13 +33,7 @@ export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<Platf
 
   const trunk = verifyAddressesTrunkState(proof.grovedbProof, LATEST_PLATFORM_VERSION)
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, trunk.rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
+  await verifyProofSignature(grpcPool, proof, metadata, trunk.rootHash)
 
   return { trunk, metadata }
 }

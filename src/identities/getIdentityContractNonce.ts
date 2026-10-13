@@ -1,9 +1,7 @@
 import { GetIdentityContractNonceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyIdentityContractNonceProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import verifyProofSignature from '../utils/verifyProofSignature.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 const IDENTITY_CONTRACT_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
@@ -52,13 +50,7 @@ export default async function getIdentityContractNonce (grpcPool: GRPCPool, iden
     return BigInt(0)
   }
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
+  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
 
   return BigInt(contractNonce) & IDENTITY_CONTRACT_NONCE_VALUE_FILTER
 }

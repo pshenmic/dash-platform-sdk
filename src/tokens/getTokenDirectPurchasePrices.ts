@@ -1,9 +1,7 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { TokenDirectPurchasePrices } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenDirectPurchasePrices } from 'pshenmic-dpp'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import bytesToHex from '../utils/bytesToHex.js'
+import verifyProofSignature from '../utils/verifyProofSignature.js'
 import { GetTokenDirectPurchasePricesRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
@@ -51,13 +49,7 @@ export default async function getTokenDirectPurchasePrices (grpcPool: GRPCPool, 
     throw new Error('Prices not found')
   }
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
+  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
 
   return prices
 }

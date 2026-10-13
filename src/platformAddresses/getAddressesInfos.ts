@@ -3,9 +3,7 @@ import { PlatformAddressLike, PlatformAddressWASM, verifyPlatformAddressesInfos 
 import { PlatformAddressInfo } from '../../types.js'
 import { GetAddressesInfosRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import verifyProofSignature from '../utils/verifyProofSignature.js'
 
 export async function getAddressesInfos (grpcPool: GRPCPool, platformAddresses: PlatformAddressLike[]): Promise<PlatformAddressInfo[]> {
   const platformAddressesWASM = platformAddresses.map(addr => new PlatformAddressWASM(addr))
@@ -45,13 +43,7 @@ export async function getAddressesInfos (grpcPool: GRPCPool, platformAddresses: 
     infos
   } = verifyPlatformAddressesInfos(proof.grovedbProof, platformAddressesWASM, true, LATEST_PLATFORM_VERSION)
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
+  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
 
   return infos
     .map(info => ({

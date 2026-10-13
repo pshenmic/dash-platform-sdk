@@ -2,13 +2,12 @@ import { CanonicalVote, Proof, ResponseMetadata, SignedMsgType, StateId } from '
 import { calculateSignHash } from './calculateSignHash.js'
 import { calculateStateIdHash } from './calculateStateIdHash.js'
 import { verifySignatureDigest } from 'pshenmic-dpp'
-import hexToBytes from './hexToBytes.js'
 
-export default async function verifyTenderdashProof (proof: Proof, metadata: ResponseMetadata, rootHash: Uint8Array, quorumPublicKey: string): Promise<boolean> {
-  if ((new Date().getTime() - new Date(metadata.timeMs).getTime()) > 15 * 60 * 60 * 1000) {
-    throw new Error('Request is stalled (over 15 minutes)')
-  }
-
+/**
+ * Rebuilds Tenderdash precommit of the proof and verifies its BLS signature with given quorum public key.
+ * Does not check response freshness or quorum type, use {verifyProofSignature} for a full check
+ */
+export default async function verifyTenderdashProof (proof: Proof, metadata: ResponseMetadata, rootHash: Uint8Array, quorumPublicKey: Uint8Array): Promise<boolean> {
   const stateId = StateId.create({
     appVersion: String(metadata.protocolVersion),
     coreChainLockedHeight: metadata.coreChainLockedHeight,
@@ -39,5 +38,5 @@ export default async function verifyTenderdashProof (proof: Proof, metadata: Res
 
   const { signature } = proof
 
-  return verifySignatureDigest(Uint8Array.from(signDigest), signature, hexToBytes(quorumPublicKey))
+  return verifySignatureDigest(Uint8Array.from(signDigest), signature, quorumPublicKey)
 }

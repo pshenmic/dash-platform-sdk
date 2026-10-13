@@ -1,9 +1,7 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetTokenContractInfoRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenContractInfoProof } from 'pshenmic-dpp'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import verifyProofSignature from '../utils/verifyProofSignature.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface TokenContractInfo {
@@ -58,13 +56,7 @@ export default async function getTokenContractInfo (grpcPool: GRPCPool, tokenIde
     throw new Error('ContractInfo not found')
   }
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
+  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
 
   return {
     dataContractId: contractInfo.contractId,

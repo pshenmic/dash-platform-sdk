@@ -13,12 +13,15 @@ import { VotingController } from './voting/index.js'
 import { Network } from '../types.js'
 import { PlatformAddressesController } from './platformAddresses/index.js'
 import { ShieldedController } from './shielded/index.js'
+import { bindProofVerificationContext, ProofVerificationContext, ProofVerificationOptions } from './utils/verifyProofSignature.js'
 
-export type { GRPCOptions, GRPCPool }
+export type { GRPCOptions, GRPCPool, ProofVerificationOptions }
 
 export interface SDKOptions {
   network: Network
   grpc?: GRPCOptions
+  /** Proof verification settings, such as custom quorum public key provider **/
+  proofs?: ProofVerificationOptions
   /** @deprecated Use {GRPCOptions} instead, will be removed in next major version **/
   dapiUrl?: string | string[]
 }
@@ -89,6 +92,8 @@ export class DashPlatformSDK {
   _initialize (grpcPool: GRPCPool): void {
     this.grpcPool = grpcPool
 
+    bindProofVerificationContext(grpcPool, new ProofVerificationContext(grpcPool.network, this.options?.proofs))
+
     this.contestedResources = new ContestedResourcesController(grpcPool)
     this.platformAddresses = new PlatformAddressesController(grpcPool)
     this.shielded = new ShieldedController(grpcPool)
@@ -101,6 +106,29 @@ export class DashPlatformSDK {
     this.tokens = new TokensController(grpcPool)
     this.names = new NamesController(grpcPool)
     this.keyPair = new KeyPairController()
+  }
+
+  /**
+   * Get currently used proof verification options
+   *
+   * @return {ProofVerificationOptions | undefined}
+   */
+  getProofOptions (): ProofVerificationOptions | undefined {
+    return this.options?.proofs
+  }
+
+  /**
+   * Replaces proof verification options (quorum key provider, key retry, response age limit)
+   * Omitted fields fall back to defaults, pass `{...sdk.getProofOptions(), ...changes}` to change only some of them.
+   * Cached quorum keys are dropped, so keys obtained from a previous provider are not trusted anymore.
+   * Requests that are already being verified finish with the previous options
+   *
+   * @param proofs {ProofVerificationOptions=} new options, or undefined to restore defaults
+   */
+  setProofOptions (proofs?: ProofVerificationOptions): void {
+    this.options = { ...(this.options ?? { network: this.network }), proofs }
+
+    bindProofVerificationContext(this.grpcPool, new ProofVerificationContext(this.grpcPool.network, proofs))
   }
 
   /**

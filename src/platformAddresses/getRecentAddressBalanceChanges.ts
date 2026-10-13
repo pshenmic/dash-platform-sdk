@@ -2,9 +2,7 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { verifyRecentAddressBalanceChanges, BlockAddressBalanceChanges } from 'pshenmic-dpp'
 import { GetRecentAddressBalanceChangesRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import verifyProofSignature from '../utils/verifyProofSignature.js'
 
 export async function getRecentAddressBalanceChanges (grpcPool: GRPCPool, startHeight: bigint, startHeightExclusive: boolean = false): Promise<BlockAddressBalanceChanges[]> {
   const getRecentAddressBalanceChangesRequest = GetRecentAddressBalanceChangesRequest.create({
@@ -40,13 +38,7 @@ export async function getRecentAddressBalanceChanges (grpcPool: GRPCPool, startH
 
   const { rootHash, blocks } = verifyRecentAddressBalanceChanges(proof.grovedbProof, startHeight, startHeightExclusive, undefined, true, LATEST_PLATFORM_VERSION)
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
+  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
 
   return blocks
 }
