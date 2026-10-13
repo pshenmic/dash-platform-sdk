@@ -1,33 +1,9 @@
 import { DashPlatformSDK } from './src/DashPlatformSDK.js'
 import GRPCConnectionPool, { createClient } from './src/grpcConnectionPool.js'
 import { decodeFetchError, decodeFetchErrorDetails, fetchWithDetails } from './src/utils/fetchWithDetails.js'
-import { platformExplorerQuorumKeyProvider } from './src/utils/platformExplorerQuorumKeyProvider.js'
-import {
-  ProofVerificationError,
-  QuorumKeyUnavailableError,
-  ProofSignatureError,
-  StaleResponseError,
-  UnexpectedQuorumTypeError
-} from './src/utils/proofVerificationErrors.js'
+import { PlatformExplorerQuorumKeyProvider } from './src/quorumKeyProvider.js'
 
 export type { GRPCOptions, GRPCPool } from './src/grpcConnectionPool.js'
-export type {
-  QuorumKeyRequest,
-  QuorumKeyProvider,
-  ProofVerificationOptions
-} from './src/utils/verifyProofSignature.js'
+export type { QuorumKeyProvider } from './src/quorumKeyProvider.js'
 
-export {
-  DashPlatformSDK,
-  GRPCConnectionPool,
-  createClient,
-  decodeFetchError,
-  decodeFetchErrorDetails,
-  fetchWithDetails,
-  platformExplorerQuorumKeyProvider,
-  ProofVerificationError,
-  QuorumKeyUnavailableError,
-  ProofSignatureError,
-  StaleResponseError,
-  UnexpectedQuorumTypeError
-}
+export { DashPlatformSDK, GRPCConnectionPool, PlatformExplorerQuorumKeyProvider, createClient, decodeFetchError, decodeFetchErrorDetails, fetchWithDetails }

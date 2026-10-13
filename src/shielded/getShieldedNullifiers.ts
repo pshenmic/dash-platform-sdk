@@ -3,10 +3,13 @@ import { GetShieldedNullifiersRequest } from '../../proto/generated/platform.js'
 import { ShieldedNullifierStatus } from '../../types.js'
 import {verifyShieldedNullifiersProof} from "pshenmic-dpp";
 import {LATEST_PLATFORM_VERSION} from "../constants.js";
-import verifyProofSignature from "../utils/verifyProofSignature.js";
+import {QuorumKeyProvider} from "../quorumKeyProvider.js";
+import bytesToHex from "../utils/bytesToHex.js";
+import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getShieldedNullifiers (
   grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider,
   nullifiers: Uint8Array[]
 ): Promise<ShieldedNullifierStatus[]> {
   const getShieldedNullifiersRequest = GetShieldedNullifiersRequest.create({
@@ -41,7 +44,13 @@ export default async function getShieldedNullifiers (
 
   const {rootHash, nullifiers: nullifiersStatuses} = verifyShieldedNullifiersProof(proof.grovedbProof, nullifiers, true, LATEST_PLATFORM_VERSION)
 
-  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+  if (!verify) {
+    throw new Error('Failed to verify query')
+  }
 
   return nullifiersStatuses.map(entry => ({
     nullifier: entry.nullifier,

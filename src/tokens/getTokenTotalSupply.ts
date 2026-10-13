@@ -2,10 +2,12 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetTokenTotalSupplyRequest } from '../../proto/generated/platform.js'
 import { TokenTotalSupply } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenTotalSupplyProof } from 'pshenmic-dpp'
-import verifyProofSignature from '../utils/verifyProofSignature.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getTokenTotalSupply (grpcPool: GRPCPool, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
+export default async function getTokenTotalSupply (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
   const tokenId = new IdentifierWASM(tokenIdentifier)
 
   const getTokenTotalSupplyRequest = GetTokenTotalSupplyRequest.create({
@@ -48,7 +50,13 @@ export default async function getTokenTotalSupply (grpcPool: GRPCPool, tokenIden
     LATEST_PLATFORM_VERSION
   )
 
-  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+  if (!verify) {
+    throw new Error('Failed to verify query')
+  }
 
   return {
     tokenId,

@@ -2,11 +2,13 @@ import { GetIdentityByNonUniquePublicKeyHashRequest } from '../../proto/generate
 import { IdentityWASM, verifyIdentifierByNonUniquePublicKeyHashProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import hexToBytes from '../utils/hexToBytes.js'
-import verifyProofSignature from '../utils/verifyProofSignature.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import getIdentityByIdentifier from './getIdentityByIdentifier.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRPCPool, hex: string): Promise<IdentityWASM> {
+export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, hex: string): Promise<IdentityWASM> {
   const getIdentityByNonUniquePublicKeyHashRequest = GetIdentityByNonUniquePublicKeyHashRequest.create({
     version: {
       oneofKind: 'v0',
@@ -50,7 +52,13 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
     throw new Error(`Identity with non unique public key hash ${hex} not found`)
   }
 
-  await verifyProofSignature(grpcPool, proof.grovedbIdentityPublicKeyHashProof, metadata, rootHash)
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.grovedbIdentityPublicKeyHashProof.quorumType, bytesToHex(proof.grovedbIdentityPublicKeyHashProof.quorumHash))
 
-  return await getIdentityByIdentifier(grpcPool, identifier)
+  const verify = await verifyTenderdashProof(proof.grovedbIdentityPublicKeyHashProof, metadata, rootHash, quorumPublicKey)
+
+  if (!verify) {
+    throw new Error('Failed to verify query')
+  }
+
+  return await getIdentityByIdentifier(grpcPool, quorumKeyProvider, identifier)
 }

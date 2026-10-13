@@ -1,7 +1,9 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetEpochsInfoRequest } from '../../proto/generated/platform.js'
 import { verifyEpochsInfoProof } from 'pshenmic-dpp'
-import verifyProofSignature from '../utils/verifyProofSignature.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { UInt32Value } from '../../proto/generated/google/protobuf/wrappers.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
@@ -14,7 +16,7 @@ export interface EpochInfo {
   protocolVersion: 9
 }
 
-export default async function epochInfos (grpcPool: GRPCPool, count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
+export default async function epochInfos (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
   const getEpochsInfoRequest = GetEpochsInfoRequest.create({
     version: {
       oneofKind: 'v0',
@@ -58,7 +60,13 @@ export default async function epochInfos (grpcPool: GRPCPool, count: number, asc
     ascending,
     LATEST_PLATFORM_VERSION
   )
-  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+  if (!verify) {
+    throw new Error('Failed to verify query')
+  }
 
   return epochsInfo.map(info => ({
     number: info.index,

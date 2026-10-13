@@ -1,12 +1,14 @@
 import { GetIdentityNonceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyIdentityNonceProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import verifyProofSignature from '../utils/verifyProofSignature.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 const IDENTITY_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 
-export default async function getIdentityNonce (grpcPool: GRPCPool, identifier: IdentifierLike): Promise<bigint> {
+export default async function getIdentityNonce (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifier: IdentifierLike): Promise<bigint> {
   const id = new IdentifierWASM(identifier)
   const getIdentityNonceRequest = GetIdentityNonceRequest.create({
     version: {
@@ -47,7 +49,13 @@ export default async function getIdentityNonce (grpcPool: GRPCPool, identifier: 
     return BigInt(0)
   }
 
-  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+  if (!verify) {
+    throw new Error('Failed to verify query')
+  }
 
   return BigInt(nonce) & IDENTITY_NONCE_VALUE_FILTER
 }

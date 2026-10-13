@@ -2,10 +2,13 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedNotesCountRequest } from '../../proto/generated/platform.js'
 import {verifyShieldedNotesCountProof} from "pshenmic-dpp";
 import {LATEST_PLATFORM_VERSION} from "../constants.js";
-import verifyProofSignature from "../utils/verifyProofSignature.js";
+import {QuorumKeyProvider} from "../quorumKeyProvider.js";
+import bytesToHex from "../utils/bytesToHex.js";
+import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getShieldedNotesCount (
-  grpcPool: GRPCPool
+  grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider
 ): Promise<bigint | undefined> {
   const getShieldedNotesCountRequest = GetShieldedNotesCountRequest.create({
     version: {
@@ -38,7 +41,13 @@ export default async function getShieldedNotesCount (
 
   const {rootHash, count} = verifyShieldedNotesCountProof(proof.grovedbProof, true, LATEST_PLATFORM_VERSION)
 
-  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+  if (!verify) {
+    throw new Error('Failed to verify query')
+  }
 
   return count
 }

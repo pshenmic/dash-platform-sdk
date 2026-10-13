@@ -13,15 +13,15 @@ import { VotingController } from './voting/index.js'
 import { Network } from '../types.js'
 import { PlatformAddressesController } from './platformAddresses/index.js'
 import { ShieldedController } from './shielded/index.js'
-import { bindProofVerificationContext, ProofVerificationContext, ProofVerificationOptions } from './utils/verifyProofSignature.js'
+import { PlatformExplorerQuorumKeyProvider, QuorumKeyProvider } from './quorumKeyProvider.js'
 
-export type { GRPCOptions, GRPCPool, ProofVerificationOptions }
+export type { GRPCOptions, GRPCPool, QuorumKeyProvider }
 
 export interface SDKOptions {
   network: Network
   grpc?: GRPCOptions
-  /** Proof verification settings, such as custom quorum public key provider **/
-  proofs?: ProofVerificationOptions
+  /** Custom source of quorum public keys for proof verification, Platform Explorer is used if not set **/
+  quorumKeyProvider?: QuorumKeyProvider
   /** @deprecated Use {GRPCOptions} instead, will be removed in next major version **/
   dapiUrl?: string | string[]
 }
@@ -33,6 +33,8 @@ export class DashPlatformSDK {
   network: Network
   /** @ignore **/
   grpcPool: GRPCPool
+  /** @ignore **/
+  quorumKeyProvider: QuorumKeyProvider
   /** @ignore **/
   options?: SDKOptions
 
@@ -90,45 +92,23 @@ export class DashPlatformSDK {
    * @param network
    */
   _initialize (grpcPool: GRPCPool): void {
+    const quorumKeyProvider = this.options?.quorumKeyProvider ?? new PlatformExplorerQuorumKeyProvider(grpcPool.network)
+
     this.grpcPool = grpcPool
+    this.quorumKeyProvider = quorumKeyProvider
 
-    bindProofVerificationContext(grpcPool, new ProofVerificationContext(grpcPool.network, this.options?.proofs))
-
-    this.contestedResources = new ContestedResourcesController(grpcPool)
-    this.platformAddresses = new PlatformAddressesController(grpcPool)
-    this.shielded = new ShieldedController(grpcPool)
-    this.stateTransitions = new StateTransitionsController(grpcPool)
-    this.dataContracts = new DataContractsController(grpcPool)
-    this.identities = new IdentitiesController(grpcPool)
-    this.documents = new DocumentsController(grpcPool)
+    this.contestedResources = new ContestedResourcesController(grpcPool, quorumKeyProvider)
+    this.platformAddresses = new PlatformAddressesController(grpcPool, quorumKeyProvider)
+    this.shielded = new ShieldedController(grpcPool, quorumKeyProvider)
+    this.stateTransitions = new StateTransitionsController(grpcPool, quorumKeyProvider)
+    this.dataContracts = new DataContractsController(grpcPool, quorumKeyProvider)
+    this.identities = new IdentitiesController(grpcPool, quorumKeyProvider)
+    this.documents = new DocumentsController(grpcPool, quorumKeyProvider)
     this.voting = new VotingController()
-    this.node = new NodeController(grpcPool)
-    this.tokens = new TokensController(grpcPool)
-    this.names = new NamesController(grpcPool)
+    this.node = new NodeController(grpcPool, quorumKeyProvider)
+    this.tokens = new TokensController(grpcPool, quorumKeyProvider)
+    this.names = new NamesController(grpcPool, quorumKeyProvider)
     this.keyPair = new KeyPairController()
-  }
-
-  /**
-   * Get currently used proof verification options
-   *
-   * @return {ProofVerificationOptions | undefined}
-   */
-  getProofOptions (): ProofVerificationOptions | undefined {
-    return this.options?.proofs
-  }
-
-  /**
-   * Replaces proof verification options (quorum key provider, key retry, response age limit)
-   * Omitted fields fall back to defaults, pass `{...sdk.getProofOptions(), ...changes}` to change only some of them.
-   * Cached quorum keys are dropped, so keys obtained from a previous provider are not trusted anymore.
-   * Requests that are already being verified finish with the previous options
-   *
-   * @param proofs {ProofVerificationOptions=} new options, or undefined to restore defaults
-   */
-  setProofOptions (proofs?: ProofVerificationOptions): void {
-    this.options = { ...(this.options ?? { network: this.network }), proofs }
-
-    bindProofVerificationContext(this.grpcPool, new ProofVerificationContext(this.grpcPool.network, proofs))
   }
 
   /**
@@ -170,6 +150,18 @@ export class DashPlatformSDK {
     this.network = network
 
     this._initialize(customPool ?? new GRPCConnectionPool(this.network, this.options?.grpc))
+  }
+
+  /**
+   * Replaces source of quorum public keys used for proof verification.
+   * Pass nothing to switch back to Platform Explorer
+   *
+   * @param quorumKeyProvider {QuorumKeyProvider=}
+   */
+  setQuorumKeyProvider (quorumKeyProvider?: QuorumKeyProvider): void {
+    this.options = { ...(this.options ?? { network: this.network }), quorumKeyProvider }
+
+    this._initialize(this.grpcPool)
   }
 
   /**

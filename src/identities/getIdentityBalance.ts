@@ -1,10 +1,12 @@
 import { GetIdentityBalanceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyIdentityBalanceProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import verifyProofSignature from '../utils/verifyProofSignature.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
+import bytesToHex from '../utils/bytesToHex.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getIdentityBalance (grpcPool: GRPCPool, identifier: IdentifierLike): Promise<bigint> {
+export default async function getIdentityBalance (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifier: IdentifierLike): Promise<bigint> {
   const id = new IdentifierWASM(identifier)
 
   const getIdentityBalanceRequest = GetIdentityBalanceRequest.create({
@@ -46,7 +48,13 @@ export default async function getIdentityBalance (grpcPool: GRPCPool, identifier
     throw new Error(`Failed to fetch balance for identifier ${id.base58()}`)
   }
 
-  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+  if (!verify) {
+    throw new Error('Failed to verify query')
+  }
 
   return BigInt(balance)
 }

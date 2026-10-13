@@ -2,12 +2,15 @@ import { GetDocumentsRequest } from '../../proto/generated/platform.js'
 import { DocumentWASM, IdentifierLike, IdentifierWASM, verifyDocumentsProof, WhereClause } from 'pshenmic-dpp'
 import { DAPI_DEFAULT_LIMIT, LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import verifyProofSignature from '../utils/verifyProofSignature.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { encode } from 'cbor2'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 
 export default async function query (
   grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider,
   dataContractId: IdentifierLike,
   documentTypeName: string,
   where?: WhereClause[],
@@ -48,7 +51,7 @@ export default async function query (
 
   })
 
-  const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
+  const dataContract = await getDataContractByIdentifier(grpcPool, quorumKeyProvider, dataContractId)
 
   const { response } = await grpcPool.getClient().getDocuments(getDocumentsRequest)
 
@@ -77,7 +80,13 @@ export default async function query (
     rootHash,
     documents
   } = verifyDocumentsProof(proof.grovedbProof, dataContract, documentTypeName, where, orderBy, limit, startIdentifier?.bytes(), startAtIncluded, BigInt(metadata?.timeMs), LATEST_PLATFORM_VERSION)
-  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+  if (!verify) {
+    throw new Error('Failed to verify query')
+  }
 
   return documents ?? []
 }

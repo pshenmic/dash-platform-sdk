@@ -1,4 +1,5 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { DocumentWASM, IdentifierLike, IdentifierWASM, PrivateKeyWASM } from 'pshenmic-dpp'
 import searchByName from './searchByName.js'
 import searchByIdentity from './searchByIdentity.js'
@@ -16,9 +17,12 @@ import testNameContested from './testNameContested.js'
 export class NamesController {
   /** @ignore **/
   grpcPool: GRPCPool
+  /** @ignore **/
+  quorumKeyProvider: QuorumKeyProvider
 
-  constructor (grpcPool: GRPCPool) {
+  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.grpcPool = grpcPool
+    this.quorumKeyProvider = quorumKeyProvider
   }
 
   /**
@@ -42,7 +46,7 @@ export class NamesController {
       throw new Error(validation)
     }
 
-    return await searchByName(this.grpcPool, name)
+    return await searchByName(this.grpcPool, this.quorumKeyProvider, name)
   }
 
   /**
@@ -69,7 +73,7 @@ export class NamesController {
   }
 
   async searchByIdentity (identifier: IdentifierLike): Promise<DocumentWASM[]> {
-    return await searchByIdentity(this.grpcPool, new IdentifierWASM(identifier))
+    return await searchByIdentity(this.grpcPool, this.quorumKeyProvider, new IdentifierWASM(identifier))
   }
 
   /**
@@ -88,9 +92,9 @@ export class NamesController {
       throw new Error(validation)
     }
 
-    const identity = await getIdentityByIdentifier(this.grpcPool, identityId)
+    const identity = await getIdentityByIdentifier(this.grpcPool, this.quorumKeyProvider, identityId)
 
-    await registerName(this.grpcPool, name, identity, privateKey)
+    await registerName(this.grpcPool, this.quorumKeyProvider, name, identity, privateKey)
   }
 
   /**

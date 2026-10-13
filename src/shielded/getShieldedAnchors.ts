@@ -2,10 +2,13 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedAnchorsRequest } from '../../proto/generated/platform.js'
 import {verifyShieldedAnchorsProof} from "pshenmic-dpp";
 import {LATEST_PLATFORM_VERSION} from "../constants.js";
-import verifyProofSignature from "../utils/verifyProofSignature.js";
+import {QuorumKeyProvider} from "../quorumKeyProvider.js";
+import bytesToHex from "../utils/bytesToHex.js";
+import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getShieldedAnchors (
-  grpcPool: GRPCPool
+  grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider
 ): Promise<Uint8Array[]> {
   const getShieldedAnchorsRequest = GetShieldedAnchorsRequest.create({
     version: {
@@ -38,7 +41,13 @@ export default async function getShieldedAnchors (
 
   const {rootHash, anchors} = verifyShieldedAnchorsProof(proof.grovedbProof, true, LATEST_PLATFORM_VERSION)
 
-  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+  if (!verify) {
+    throw new Error('Failed to verify query')
+  }
 
   return anchors
 }

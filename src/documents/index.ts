@@ -9,6 +9,7 @@ import {
 } from 'pshenmic-dpp'
 import createStateTransition from './createStateTransition.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import query from './query.js'
 
 /**
@@ -19,9 +20,12 @@ import query from './query.js'
 export class DocumentsController {
   /** @ignore **/
   grpcPool: GRPCPool
+  /** @ignore **/
+  quorumKeyProvider: QuorumKeyProvider
 
-  constructor (grpcPool: GRPCPool) {
+  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.grpcPool = grpcPool
+    this.quorumKeyProvider = quorumKeyProvider
   }
 
   /**
@@ -55,7 +59,7 @@ export class DocumentsController {
       throw new Error('You may only set either startAfter or startAt at once')
     }
 
-    return await query(this.grpcPool, new IdentifierWASM(dataContractId), documentType, where, orderBy, limit ?? 100, startAt, startAfter)
+    return await query(this.grpcPool, this.quorumKeyProvider, new IdentifierWASM(dataContractId), documentType, where, orderBy, limit ?? 100, startAt, startAfter)
   }
 
   /**

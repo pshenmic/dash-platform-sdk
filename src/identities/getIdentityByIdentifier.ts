@@ -1,10 +1,12 @@
 import { GetIdentityRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, IdentityWASM, verifyIdentityByIdentifierProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import verifyProofSignature from '../utils/verifyProofSignature.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
+import bytesToHex from '../utils/bytesToHex.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getIdentityByIdentifier (grpcPool: GRPCPool, identifier: IdentifierLike): Promise<IdentityWASM> {
+export default async function getIdentityByIdentifier (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifier: IdentifierLike): Promise<IdentityWASM> {
   const id = new IdentifierWASM(identifier)
   const getIdentityRequest = GetIdentityRequest.create({
     version: {
@@ -45,7 +47,13 @@ export default async function getIdentityByIdentifier (grpcPool: GRPCPool, ident
     throw new Error(`Identity with identifier ${id.base58()} not found`)
   }
 
-  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+  if (!verify) {
+    throw new Error('Failed to verify query')
+  }
 
   return identity
 }

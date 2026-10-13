@@ -1,6 +1,7 @@
 import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js'
 import { IdentityWASM, PrefundedVotingBalanceWASM, PrivateKeyWASM } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import getRandomBytes from '../utils/getRandomBytes.js'
 import sha256 from '../utils/sha256.js'
 import createDocument from '../documents/create.js'
@@ -11,7 +12,7 @@ import waitForStateTransitionResult from '../stateTransitions/waitForStateTransi
 import testNameContested from './testNameContested.js'
 import { DPNS_DATA_CONTRACT_ID } from '../constants.js'
 
-export default async function registerName (grpcPool: GRPCPool, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM): Promise<void> {
+export default async function registerName (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM): Promise<void> {
   const [identityPublicKey] = identity.getPublicKeys().filter(identityPublicKey => identityPublicKey.getPublicKeyHash() === privateKey.getPublicKeyHash())
 
   if (identityPublicKey == null) {
@@ -46,7 +47,7 @@ export default async function registerName (grpcPool: GRPCPool, name: string, id
     saltedDomainHash: Array.from(saltedDomainHash)
   }
 
-  const identityContractNonce = await getIdentityContractNonce(grpcPool, identity.id, DPNS_DATA_CONTRACT_ID)
+  const identityContractNonce = await getIdentityContractNonce(grpcPool, quorumKeyProvider, identity.id, DPNS_DATA_CONTRACT_ID)
 
   document = createDocument(DPNS_DATA_CONTRACT_ID, 'preorder', preorderData, identity.id.base58())
   stateTransition = createStateTransition(document, 'create', { identityContractNonce: identityContractNonce + BigInt(1) })
@@ -55,7 +56,7 @@ export default async function registerName (grpcPool: GRPCPool, name: string, id
   await broadcast(grpcPool, stateTransition)
 
   // wait for state transition confirmation before next broadcast
-  await waitForStateTransitionResult(grpcPool, stateTransition)
+  await waitForStateTransitionResult(grpcPool, quorumKeyProvider, stateTransition)
 
   // 2. Create domain document
   const domainData = {

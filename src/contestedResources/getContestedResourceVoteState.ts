@@ -9,13 +9,16 @@ import {
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 } from '../../proto/generated/platform.js'
 import { DataContractWASM, DocumentWASM, IdentifierWASM, verifyVotePollVoteStateProof } from 'pshenmic-dpp'
-import verifyProofSignature from '../utils/verifyProofSignature.js'
+import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
+import bytesToHex from '../utils/bytesToHex.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 
 export default async function getContestedResourceVoteState (
   grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider,
   contract: DataContractWASM,
   documentTypeName: string,
   indexName: string,
@@ -87,7 +90,13 @@ export default async function getContestedResourceVoteState (
     LATEST_PLATFORM_VERSION
   )
 
-  await verifyProofSignature(grpcPool, proof, metadata, rootHash)
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+  if (!verify) {
+    throw new Error('Failed to verify query')
+  }
 
   const { contenders } = result ?? { contenders: [] }
   const { winner } = result ?? { winner: undefined }
