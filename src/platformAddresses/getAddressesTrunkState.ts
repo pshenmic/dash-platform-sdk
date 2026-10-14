@@ -15,7 +15,7 @@ export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<Platf
     }
   })
 
-  const { response } = await grpcPool.getClient().getAddressesTrunkState(getAddressesTrunkStateRequest)
+  const { response } = await (await grpcPool.getClient()).getAddressesTrunkState(getAddressesTrunkStateRequest)
 
   const { version } = response
 

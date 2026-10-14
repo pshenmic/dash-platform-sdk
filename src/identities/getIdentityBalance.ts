@@ -19,7 +19,7 @@ export default async function getIdentityBalance (grpcPool: GRPCPool, identifier
     }
   })
 
-  const { response } = await grpcPool.getClient().getIdentityBalance(getIdentityBalanceRequest)
+  const { response } = await (await grpcPool.getClient()).getIdentityBalance(getIdentityBalanceRequest)
 
   const { version } = response
 

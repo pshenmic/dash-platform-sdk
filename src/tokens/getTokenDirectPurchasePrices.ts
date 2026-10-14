@@ -20,7 +20,7 @@ export default async function getTokenDirectPurchasePrices (grpcPool: GRPCPool, 
     }
   })
 
-  const { response } = await grpcPool.getClient().getTokenDirectPurchasePrices(request)
+  const { response } = await (await grpcPool.getClient()).getTokenDirectPurchasePrices(request)
 
   const { version } = response
 

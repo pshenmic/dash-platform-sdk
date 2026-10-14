@@ -23,7 +23,7 @@ export default async function getShieldedEncryptedNotes (
     }
   })
 
-  const { response } = await grpcPool.getClient().getShieldedEncryptedNotes(getShieldedEncryptedNotesRequest)
+  const { response } = await (await grpcPool.getClient()).getShieldedEncryptedNotes(getShieldedEncryptedNotesRequest)
 
   const { version } = response
 
