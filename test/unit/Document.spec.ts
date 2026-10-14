@@ -135,6 +135,7 @@ describe('Document', () => {
 
       const stateTransition = sdk.documents.createStateTransition(document, 'create', { identityContractNonce, tokenPaymentInfo })
 
+      console.log(stateTransition.hex())
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
     })
 

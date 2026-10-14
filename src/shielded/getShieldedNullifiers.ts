@@ -21,7 +21,7 @@ export default async function getShieldedNullifiers (
     }
   })
 
-  const { response } = await grpcPool.getClient().getShieldedNullifiers(getShieldedNullifiersRequest)
+  const { response } = await (await grpcPool.getClient()).getShieldedNullifiers(getShieldedNullifiersRequest)
 
   const { version } = response
 

@@ -9,7 +9,6 @@ let contract: DataContractWASM
 describe('Contested Resources', () => {
   beforeAll(async () => {
     sdk = new DashPlatformSDK({ network: 'testnet' })
-    await sdk.waitForInit()
 
     contract = new DataContractWASM(
       '11111111111111111111111111111111',
