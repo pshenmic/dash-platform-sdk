@@ -7,7 +7,7 @@ import { fetchWithDetails } from './utils/fetchWithDetails.js'
 import { LATEST_PLATFORM_VERSION } from './constants.js'
 
 const GRPC_DEFAULT_POOL_LIMIT = 15
-export const GRPC_DEFAULT_CONNECT_RETRIES = 5
+const GRPC_DEFAULT_CONNECT_RETRIES = 5
 
 export interface GRPCOptions {
   poolLimit?: number
