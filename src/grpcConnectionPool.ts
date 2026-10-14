@@ -5,6 +5,7 @@ import getCurrentQuorumsInfo, { CurrentQuorumsInfo } from './node/getCurrentQuor
 import getRandomArrayItem from './utils/getRandomArrayItem.js'
 import { Network } from '../types.js'
 import { fetchWithDetails } from './utils/fetchWithDetails.js'
+import { LATEST_PLATFORM_VERSION } from './constants.js'
 
 const GRPC_DEFAULT_POOL_LIMIT = 5
 
@@ -82,6 +83,8 @@ const DAPI_PORTS = {
 }
 
 const HEALTHCHECK_TIMEOUT_MS = 5000
+// platform produces empty blocks every 3 minutes, so a healthy chain is never older than that
+const HEALTHCHECK_MAX_BLOCK_AGE_MS = 10 * 60 * 1000
 
 export const createClient = (url: string, abortController?: AbortController): PlatformClient => {
   return new PlatformClient(new GrpcWebFetchTransport({
@@ -113,7 +116,32 @@ const isNodeHealthy = async (url: string): Promise<boolean> => {
       return response
     })
 
-    return response.version.oneofKind === 'v0' && response.version.v0.chain != null
+    if (response.version.oneofKind !== 'v0') {
+      return false
+    }
+
+    const { version, chain, time } = response.version.v0
+
+    // node is still syncing
+    if (chain == null || chain.catchingUp) {
+      return false
+    }
+
+    // node runs a protocol version that is not supported by the SDK
+    // (e.g. newer software with incompatible proofs / responses)
+    const protocol = version?.protocol?.drive
+
+    if (protocol == null || protocol.current !== Number(LATEST_PLATFORM_VERSION) || protocol?.latest !== Number(LATEST_PLATFORM_VERSION)) {
+      return false
+    }
+
+    // chain is stalled, last block is too old relative to the node's own clock
+    // (local time is in seconds, block time is in milliseconds)
+    if (time?.block == null || Number(time.local) * 1000 - Number(time.block) > HEALTHCHECK_MAX_BLOCK_AGE_MS) {
+      return false
+    }
+
+    return true
   } catch (e) {
     return false
   }
