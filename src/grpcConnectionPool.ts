@@ -178,68 +178,67 @@ export default class GRPCConnectionPool implements GRPCPool {
   }
 
   async _initialize (network: Network, poolLimit: number, dapiUrl?: string | string[]): Promise<void> {
-    this.#addNode('https://153.80.206.232:1443', 1)
-    // if (typeof dapiUrl === 'string') {
-    //   this.dapiUrls = [dapiUrl]
-    //
-    //   return
-    // }
-    //
-    // if (Array.isArray(dapiUrl)) {
-    //   this.dapiUrls = [...new Set(dapiUrl)]
-    //
-    //   if (this.dapiUrls.length === 0) {
-    //     throw new Error('DAPI URL list is empty')
-    //   }
-    //
-    //   return
-    // }
-    //
-    // if (dapiUrl != null) {
-    //   throw new Error('Unrecognized DAPI URL')
-    // }
-    //
-    // let quorumsInfo: CurrentQuorumsInfo | undefined
-    // const errors: unknown[] = []
-    //
-    // for (const seed of seedNodes[network]) {
-    //   try {
-    //     quorumsInfo = await withTimeout(async abortController =>
-    //       await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed, abortController) }))
-    //
-    //     break
-    //   } catch (e) {
-    //     errors.push(e)
-    //   }
-    // }
-    //
-    // if (quorumsInfo == null) {
-    //   throw new AggregateError(errors, `None of the ${network} seed nodes are available: ${errors.map(String).join('; ')}`)
-    // }
-    //
-    // // map it to array of dapiUrls
-    // const networkDAPIUrls = shuffle([...new Set(quorumsInfo.validatorSets
-    //   .flatMap(validatorSet => validatorSet.members)
-    //   .filter(member => !member.isBanned)
-    //   .map(member => `https://${member.nodeIp}:${DAPI_PORTS[network]}`))])
-    //   .filter(url => !this.dapiUrls.includes(url))
-    //
-    // // healthcheck nodes in parallel batches until the pool is full
-    // for (let i = 0; i < networkDAPIUrls.length && this.dapiUrls.length < poolLimit; i += poolLimit) {
-    //   const batch = networkDAPIUrls.slice(i, i + poolLimit)
-    //
-    //   await Promise.all(batch.map(async url => {
-    //     if (await isNodeHealthy(url)) {
-    //       this.#addNode(url, poolLimit)
-    //     }
-    //   }))
-    // }
-    //
-    // // fail the initialization, so it is retried on the next request
-    // if (this.dapiUrls.length === 0) {
-    //   throw new Error(`None of the ${network} evonodes are available (${networkDAPIUrls.length} checked, ` +
-    //     `nodes must be synced and run protocol version ${Number(LATEST_PLATFORM_VERSION)})`)
-    // }
+    if (typeof dapiUrl === 'string') {
+      this.dapiUrls = [dapiUrl]
+
+      return
+    }
+
+    if (Array.isArray(dapiUrl)) {
+      this.dapiUrls = [...new Set(dapiUrl)]
+
+      if (this.dapiUrls.length === 0) {
+        throw new Error('DAPI URL list is empty')
+      }
+
+      return
+    }
+
+    if (dapiUrl != null) {
+      throw new Error('Unrecognized DAPI URL')
+    }
+
+    let quorumsInfo: CurrentQuorumsInfo | undefined
+    const errors: unknown[] = []
+
+    for (const seed of seedNodes[network]) {
+      try {
+        quorumsInfo = await withTimeout(async abortController =>
+          await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed, abortController) }))
+
+        break
+      } catch (e) {
+        errors.push(e)
+      }
+    }
+
+    if (quorumsInfo == null) {
+      throw new AggregateError(errors, `None of the ${network} seed nodes are available: ${errors.map(String).join('; ')}`)
+    }
+
+    // map it to array of dapiUrls
+    const networkDAPIUrls = shuffle([...new Set(quorumsInfo.validatorSets
+      .flatMap(validatorSet => validatorSet.members)
+      .filter(member => !member.isBanned)
+      .map(member => `https://${member.nodeIp}:${DAPI_PORTS[network]}`))])
+      .filter(url => !this.dapiUrls.includes(url))
+
+    // healthcheck nodes in parallel batches until the pool is full
+    for (let i = 0; i < networkDAPIUrls.length && this.dapiUrls.length < poolLimit; i += poolLimit) {
+      const batch = networkDAPIUrls.slice(i, i + poolLimit)
+
+      await Promise.all(batch.map(async url => {
+        if (await isNodeHealthy(url)) {
+          this.#addNode(url, poolLimit)
+        }
+      }))
+    }
+
+    // fail the initialization, so it is retried on the next request
+    if (this.dapiUrls.length === 0) {
+      throw new Error(`None of the ${network} evonodes are available (${networkDAPIUrls.length} checked, ` +
+        `nodes must be synced and run protocol version ${Number(LATEST_PLATFORM_VERSION)})`)
+    }
   }
 
   /**
