@@ -170,14 +170,6 @@ export default class GRPCConnectionPool implements GRPCPool {
 
     const seeds = seedNodes[network]
 
-    // healthcheck seed nodes in parallel with the quorums info requests,
-    // seed nodes are added to the pool only after they passed the healthcheck
-    const seedHealthchecks = seeds.map(async seed => {
-      if (await isNodeHealthy(seed)) {
-        this.#addNode(seed, poolLimit)
-      }
-    })
-
     // retrieve evonodes from current validator sets through the first responding seed node
     let quorumsInfo: CurrentQuorumsInfo
 
@@ -207,9 +199,6 @@ export default class GRPCConnectionPool implements GRPCPool {
         }
       }))
     }
-
-    // wait until every seed node healthcheck is finished, so all live seeds are added to the pool
-    await Promise.all(seedHealthchecks)
   }
 
   /**
