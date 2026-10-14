@@ -11,7 +11,7 @@ export default async function status (grpcPool: GRPCPool): Promise<NodeStatus> {
     }
   })
 
-  const { response } = await grpcPool.getClient().getStatus(getStatusRequest)
+  const { response } = await (await grpcPool.getClient()).getStatus(getStatusRequest)
 
   const { version } = response
 

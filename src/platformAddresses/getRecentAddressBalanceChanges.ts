@@ -18,7 +18,7 @@ export async function getRecentAddressBalanceChanges (grpcPool: GRPCPool, startH
     }
   })
 
-  const { response } = await grpcPool.getClient().getRecentAddressBalanceChanges(getRecentAddressBalanceChangesRequest)
+  const { response } = await (await grpcPool.getClient()).getRecentAddressBalanceChanges(getRecentAddressBalanceChangesRequest)
 
   const { version } = response
 

@@ -30,7 +30,7 @@ export default async function getCurrentQuorumsInfo (grpcPool: GRPCPool): Promis
     }
   })
 
-  const { response } = await grpcPool.getClient().getCurrentQuorumsInfo(getCurrentQuorumsInfoRequest)
+  const { response } = await (await grpcPool.getClient()).getCurrentQuorumsInfo(getCurrentQuorumsInfoRequest)
 
   const { version } = response
 

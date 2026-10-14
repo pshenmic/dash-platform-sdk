@@ -29,7 +29,7 @@ export default async function epochInfos (grpcPool: GRPCPool, count: number, asc
     }
   })
 
-  const { response } = await grpcPool.getClient().getEpochsInfo(getEpochsInfoRequest)
+  const { response } = await (await grpcPool.getClient()).getEpochsInfo(getEpochsInfoRequest)
 
   const { version } = response
 
