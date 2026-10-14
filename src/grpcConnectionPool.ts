@@ -229,6 +229,12 @@ export default class GRPCConnectionPool implements GRPCPool {
         }
       }))
     }
+
+    // fail the initialization, so it is retried on the next request
+    if (this.dapiUrls.length === 0) {
+      throw new Error(`None of the ${network} evonodes are available (${networkDAPIUrls.length} checked, ` +
+        `nodes must be synced and run protocol version ${Number(LATEST_PLATFORM_VERSION)})`)
+    }
   }
 
   /**
