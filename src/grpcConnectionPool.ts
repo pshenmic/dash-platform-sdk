@@ -123,7 +123,7 @@ const isNodeHealthy = async (url: string): Promise<boolean> => {
     const { version, chain, time } = response.version.v0
 
     // node is still syncing
-    if (chain == null || chain.catchingUp) {
+    if (chain == null || Boolean(chain.catchingUp)) {
       return false
     }
 
