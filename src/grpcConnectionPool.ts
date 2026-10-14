@@ -147,6 +147,8 @@ const isNodeHealthy = async (url: string): Promise<boolean> => {
   }
 }
 
+// Fisher–Yates shuffle
+// Randomly shuffles the elements inside of array, having previously cloned it.
 const shuffle = <T>(array: T[]): T[] => {
   const result = [...array]
 
