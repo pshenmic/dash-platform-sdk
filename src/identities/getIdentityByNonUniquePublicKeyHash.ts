@@ -19,7 +19,7 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
     }
   })
 
-  const { response } = await grpcPool.getClient().getIdentityByNonUniquePublicKeyHash(getIdentityByNonUniquePublicKeyHashRequest)
+  const { response } = await (await grpcPool.getClient()).getIdentityByNonUniquePublicKeyHash(getIdentityByNonUniquePublicKeyHashRequest)
 
   const { version } = response
 

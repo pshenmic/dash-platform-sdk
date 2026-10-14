@@ -11,7 +11,6 @@ let sdk: DashPlatformSDK
 describe('Identity', () => {
   beforeAll(async () => {
     sdk = new DashPlatformSDK({ network: 'testnet' })
-    await sdk.waitForInit()
   })
 
   test('should be able to get identity by identifier', async () => {

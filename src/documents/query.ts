@@ -53,7 +53,7 @@ export default async function query (
 
   const dataContract = await getDataContractByIdentifier(grpcPool, quorumKeyProvider, dataContractId)
 
-  const { response } = await grpcPool.getClient().getDocuments(getDocumentsRequest)
+  const { response } = await (await grpcPool.getClient()).getDocuments(getDocumentsRequest)
 
   const { version } = response
 

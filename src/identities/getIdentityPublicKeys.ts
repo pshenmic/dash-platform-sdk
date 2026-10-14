@@ -36,7 +36,7 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCPool, quorumK
     }
   })
 
-  const { response } = await grpcPool.getClient().getIdentityKeys(getIdentityKeysRequest)
+  const { response } = await (await grpcPool.getClient()).getIdentityKeys(getIdentityKeysRequest)
 
   const { version } = response
 

@@ -26,7 +26,7 @@ export default async function getIdentitiesTokenBalances (grpcPool: GRPCPool, qu
     }
   })
 
-  const { response } = await grpcPool.getClient().getIdentitiesTokenBalances(getIdentitiesTokenBalancesRequest)
+  const { response } = await (await grpcPool.getClient()).getIdentitiesTokenBalances(getIdentitiesTokenBalancesRequest)
 
   const { version } = response
 

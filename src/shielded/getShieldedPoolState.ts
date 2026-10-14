@@ -19,7 +19,7 @@ export default async function getShieldedPoolState (
     }
   })
 
-  const { response } = await grpcPool.getClient().getShieldedPoolState(getShieldedPoolStateRequest)
+  const { response } = await (await grpcPool.getClient()).getShieldedPoolState(getShieldedPoolStateRequest)
 
   const { version } = response
 

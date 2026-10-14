@@ -23,7 +23,7 @@ export default async function getByIdentifier (grpcPool: GRPCPool, quorumKeyProv
     }
   })
 
-  const { response } = await grpcPool.getClient().getDataContract(getDataContractRequest)
+  const { response } = await (await grpcPool.getClient()).getDataContract(getDataContractRequest)
 
   const { version } = response
 

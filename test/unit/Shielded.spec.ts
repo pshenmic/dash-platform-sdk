@@ -70,7 +70,6 @@ function makeSpendableNote(seed: Uint8Array, value: bigint): {
 describe('Shielded', () => {
   beforeAll(async () => {
     sdk = new DashPlatformSDK({network: 'testnet'})
-    await sdk.waitForInit()
     await sdk.shielded.init()
   }, 60000)
 

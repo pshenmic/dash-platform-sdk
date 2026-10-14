@@ -24,7 +24,7 @@ export default async function getTokenContractInfo (grpcPool: GRPCPool, quorumKe
     }
   })
 
-  const { response } = await grpcPool.getClient().getTokenContractInfo(getTokenContractInfoRequest)
+  const { response } = await (await grpcPool.getClient()).getTokenContractInfo(getTokenContractInfoRequest)
 
   const { version } = response
 

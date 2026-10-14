@@ -18,7 +18,7 @@ export default async function getIdentityByIdentifier (grpcPool: GRPCPool, quoru
     }
   })
 
-  const { response } = await grpcPool.getClient().getIdentity(getIdentityRequest)
+  const { response } = await (await grpcPool.getClient()).getIdentity(getIdentityRequest)
 
   const { version } = response
 

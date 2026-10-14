@@ -19,7 +19,7 @@ export default async function totalCredits (grpcPool: GRPCPool, quorumKeyProvide
     }
   })
 
-  const { response } = await grpcPool.getClient().getTotalCreditsInPlatform(getTotalCreditsInPlatformRequest)
+  const { response } = await (await grpcPool.getClient()).getTotalCreditsInPlatform(getTotalCreditsInPlatformRequest)
 
   const { version } = response
 

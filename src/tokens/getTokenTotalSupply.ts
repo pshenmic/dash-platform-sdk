@@ -20,7 +20,7 @@ export default async function getTokenTotalSupply (grpcPool: GRPCPool, quorumKey
     }
   })
 
-  const { response } = await grpcPool.getClient().getTokenTotalSupply(getTokenTotalSupplyRequest)
+  const { response } = await (await grpcPool.getClient()).getTokenTotalSupply(getTokenTotalSupplyRequest)
 
   const { version } = response
 

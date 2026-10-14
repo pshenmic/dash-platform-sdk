@@ -19,7 +19,7 @@ export default async function getShieldedAnchors (
     }
   })
 
-  const { response } = await grpcPool.getClient().getShieldedAnchors(getShieldedAnchorsRequest)
+  const { response } = await (await grpcPool.getClient()).getShieldedAnchors(getShieldedAnchorsRequest)
 
   const { version } = response
 

@@ -24,7 +24,7 @@ export async function getAddressInfo (grpcPool: GRPCPool, quorumKeyProvider: Quo
     }
   })
 
-  const { response } = await grpcPool.getClient().getAddressInfo(getAddressInfoRequest)
+  const { response } = await (await grpcPool.getClient()).getAddressInfo(getAddressInfoRequest)
 
   const { version } = response
 

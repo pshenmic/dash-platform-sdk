@@ -52,7 +52,7 @@ export default async function getContestedResourceVoteState (
     }
   })
 
-  const { response } = await grpcPool.getClient().getContestedResourceVoteState(getContestedResourceVoteStateRequest)
+  const { response } = await (await grpcPool.getClient()).getContestedResourceVoteState(getContestedResourceVoteStateRequest)
 
   const { version } = response
 

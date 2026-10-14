@@ -18,7 +18,7 @@ export default async function getIdentityByPublicKeyHash (grpcPool: GRPCPool, qu
     }
   })
 
-  const { response } = await grpcPool.getClient().getIdentityByPublicKeyHash(getIdentityByPublicKeyHashRequest)
+  const { response } = await (await grpcPool.getClient()).getIdentityByPublicKeyHash(getIdentityByPublicKeyHashRequest)
 
   const { version } = response
 

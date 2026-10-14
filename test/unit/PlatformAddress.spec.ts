@@ -23,7 +23,6 @@ let sdk: DashPlatformSDK
 describe('PlatformAddress', () => {
   beforeAll(async () => {
     sdk = new DashPlatformSDK({ network: 'testnet' })
-    await sdk.waitForInit()
   })
 
   test('getAddressInfo', async () => {

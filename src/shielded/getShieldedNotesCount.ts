@@ -19,7 +19,7 @@ export default async function getShieldedNotesCount (
     }
   })
 
-  const { response } = await grpcPool.getClient().getShieldedNotesCount(getShieldedNotesCountRequest)
+  const { response } = await (await grpcPool.getClient()).getShieldedNotesCount(getShieldedNotesCountRequest)
 
   const { version } = response
 

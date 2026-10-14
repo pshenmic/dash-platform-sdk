@@ -29,7 +29,7 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
     }
   })
 
-  const { response } = await grpcPool.getClient().waitForStateTransitionResult(waitForStateTransitionResultRequest)
+  const { response } = await (await grpcPool.getClient()).waitForStateTransitionResult(waitForStateTransitionResultRequest)
 
   const { version } = response
 

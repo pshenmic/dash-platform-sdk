@@ -11,7 +11,6 @@ let data: object
 describe('Document', () => {
   beforeAll(async () => {
     sdk = new DashPlatformSDK({ network: 'testnet' })
-    await sdk.waitForInit()
     dataContract = '6QMfQTdKpC3Y9uWBcTwXeY3KdzRLDqASUsDnQ4MEc9XC'
     identity = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
     revision = BigInt(1)

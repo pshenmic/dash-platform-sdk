@@ -19,7 +19,7 @@ export default async function getMostRecentShieldedAnchor (
     }
   })
 
-  const { response } = await grpcPool.getClient().getMostRecentShieldedAnchor(getMostRecentShieldedAnchorRequest)
+  const { response } = await (await grpcPool.getClient()).getMostRecentShieldedAnchor(getMostRecentShieldedAnchorRequest)
 
   const { version } = response
 

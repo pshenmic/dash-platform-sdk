@@ -15,7 +15,7 @@ export async function getAddressesBranchState (grpcPool: GRPCPool, key: Uint8Arr
     }
   })
 
-  const { response } = await grpcPool.getClient().getAddressesBranchState(getAddressesBranchStateRequest)
+  const { response } = await (await grpcPool.getClient()).getAddressesBranchState(getAddressesBranchStateRequest)
 
   const { version } = response
 

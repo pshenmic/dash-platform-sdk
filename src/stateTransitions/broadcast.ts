@@ -13,7 +13,7 @@ export default async function broadcast (grpcPool: GRPCPool, stateTransition: St
       stateTransition: stateTransition.bytes()
     })
 
-    await grpcPool.getClient().broadcastStateTransition(broadcastStateTransitionRequest)
+    await (await grpcPool.getClient()).broadcastStateTransition(broadcastStateTransitionRequest)
   } catch (err) {
     const errorBin = err.meta?.['dash-serialized-consensus-error-bin']
 

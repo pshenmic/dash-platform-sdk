@@ -39,7 +39,7 @@ export default async function getFinalizedEpochsInfo (grpcPool: GRPCPool, quorum
     }
   })
 
-  const { response } = await grpcPool.getClient().getFinalizedEpochInfos(getEpochsInfoRequest)
+  const { response } = await (await grpcPool.getClient()).getFinalizedEpochInfos(getEpochsInfoRequest)
 
   const { version } = response
 
