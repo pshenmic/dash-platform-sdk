@@ -50,7 +50,7 @@ const seedNodes = {
     'https://153.80.206.232:1443',
     // DCG seed
     'https://34.209.12.72:1443',
-    // validator
+    // Testnet validator (hp-masternode-26)
     'https://68.67.122.26:1443'
   ],
   mainnet: [
