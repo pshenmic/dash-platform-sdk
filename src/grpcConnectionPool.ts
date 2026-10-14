@@ -2,17 +2,18 @@ import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
 import { PlatformClient } from '../proto/generated/platform.client.js'
 import { GetStatusRequest } from '../proto/generated/platform.js'
 import getCurrentQuorumsInfo, { CurrentQuorumsInfo } from './node/getCurrentQuorumsInfo.js'
-import getRandomArrayItem from './utils/getRandomArrayItem.js'
 import { Network } from '../types.js'
 import { fetchWithDetails } from './utils/fetchWithDetails.js'
 import { LATEST_PLATFORM_VERSION } from './constants.js'
 
 const GRPC_DEFAULT_POOL_LIMIT = 15
+export const GRPC_DEFAULT_CONNECT_RETRIES = 5
 
 export interface GRPCOptions {
   poolLimit?: number
   dapiUrl?: string | string[]
-  /** Custom connection pool, if set, `poolLimit` and `dapiUrl` are ignored **/
+  retries?: number
+  /** Custom connection pool, if set, `poolLimit`, `dapiUrl` and `retries` are ignored **/
   pool?: GRPCPool
 }
 
@@ -86,11 +87,33 @@ const HEALTHCHECK_TIMEOUT_MS = 5000
 // platform produces empty blocks every 3 minutes, so a healthy chain is never older than that
 const HEALTHCHECK_MAX_BLOCK_AGE_MS = 10 * 60 * 1000
 
-export const createClient = (url: string, abortController?: AbortController): PlatformClient => {
+const isAbortError = (error: unknown): boolean => error instanceof Error && error.name === 'AbortError'
+
+// errors raised before the request is sent to the node, so it is always safe to send it to another node
+const CONNECT_ERROR_CODES = ['UND_ERR_CONNECT_TIMEOUT', 'ECONNREFUSED', 'EHOSTUNREACH', 'ENETUNREACH', 'EHOSTDOWN', 'ENETDOWN']
+
+/**
+ * Checks if the error (or one of its causes) means that the connection to the node could not be established
+ */
+const isConnectError = (error: unknown): boolean => {
+  if (!(error instanceof Error)) {
+    return false
+  }
+
+  const { code } = error as { code?: unknown }
+
+  // ECONNRESET is a connect error only if the connection was reset during the TLS handshake,
+  // otherwise it may happen after the request was sent
+  return CONNECT_ERROR_CODES.includes(String(code)) ||
+    (code === 'ECONNRESET' && error.message.includes('before secure TLS connection was established')) ||
+    isConnectError(error.cause)
+}
+
+export const createClient = (url: string, abortController?: AbortController, fetch: typeof globalThis.fetch = fetchWithDetails): PlatformClient => {
   return new PlatformClient(new GrpcWebFetchTransport({
     baseUrl: url,
     abort: abortController?.signal,
-    fetch: fetchWithDetails
+    fetch
   }))
 }
 
@@ -131,7 +154,7 @@ const isNodeHealthy = async (url: string): Promise<boolean> => {
     // (e.g. newer software with incompatible proofs / responses)
     const protocol = version?.protocol?.drive
 
-    if (protocol == null || protocol.current !== Number(LATEST_PLATFORM_VERSION) || protocol?.latest !== Number(LATEST_PLATFORM_VERSION)) {
+    if (protocol == null || protocol.current !== Number(LATEST_PLATFORM_VERSION) || protocol.latest !== Number(LATEST_PLATFORM_VERSION)) {
       return false
     }
 
@@ -165,37 +188,43 @@ export default class GRPCConnectionPool implements GRPCPool {
   network: Network
   #poolLimit: number
   #dapiUrl?: string | string[]
+  #retries: number
+  #nodeIndex = 0
   #initialization?: Promise<void>
 
   constructor (network: Network, grpcOptions?: GRPCOptions) {
+    const retries = grpcOptions?.retries ?? GRPC_DEFAULT_CONNECT_RETRIES
+
+    if (!Number.isInteger(retries) || retries < 0) {
+      throw new Error(`GRPC retries must be a non-negative integer, got ${String(retries)}`)
+    }
+
     this.network = network
     this.#poolLimit = grpcOptions?.poolLimit ?? GRPC_DEFAULT_POOL_LIMIT
     this.#dapiUrl = grpcOptions?.dapiUrl
+    this.#retries = retries
 
     // start initialization in the background, failures are reported on the first request
-    this.#initialization = this._initialize(network, this.#poolLimit, this.#dapiUrl)
+    this.#initialization = this.#initializePool()
     this.#initialization.catch(() => {})
   }
 
-  async _initialize (network: Network, poolLimit: number, dapiUrl?: string | string[]): Promise<void> {
-    if (typeof dapiUrl === 'string') {
-      this.dapiUrls = [dapiUrl]
+  async #initializePool (): Promise<void> {
+    const { network } = this
 
-      return
-    }
+    if (this.#dapiUrl != null) {
+      if (typeof this.#dapiUrl !== 'string' && !Array.isArray(this.#dapiUrl)) {
+        throw new Error('Unrecognized DAPI URL')
+      }
 
-    if (Array.isArray(dapiUrl)) {
-      this.dapiUrls = [...new Set(dapiUrl)]
+      // trailing slash is removed, so the GRPC method path can be appended to the url
+      this.dapiUrls = [...new Set([this.#dapiUrl].flat().map(url => url.replace(/\/+$/, '')))]
 
       if (this.dapiUrls.length === 0) {
         throw new Error('DAPI URL list is empty')
       }
 
       return
-    }
-
-    if (dapiUrl != null) {
-      throw new Error('Unrecognized DAPI URL')
     }
 
     let quorumsInfo: CurrentQuorumsInfo | undefined
@@ -221,41 +250,32 @@ export default class GRPCConnectionPool implements GRPCPool {
       .flatMap(validatorSet => validatorSet.members)
       .filter(member => !member.isBanned)
       .map(member => `https://${member.nodeIp}:${DAPI_PORTS[network]}`))])
-      .filter(url => !this.dapiUrls.includes(url))
 
     // healthcheck nodes in parallel batches until the pool is full
-    for (let i = 0; i < networkDAPIUrls.length && this.dapiUrls.length < poolLimit; i += poolLimit) {
-      const batch = networkDAPIUrls.slice(i, i + poolLimit)
+    const dapiUrls: string[] = []
 
-      await Promise.all(batch.map(async url => {
-        if (await isNodeHealthy(url)) {
-          this.#addNode(url, poolLimit)
-        }
-      }))
+    for (let i = 0; i < networkDAPIUrls.length && dapiUrls.length < this.#poolLimit; i += this.#poolLimit) {
+      const batch = networkDAPIUrls.slice(i, i + this.#poolLimit)
+      const healthy = await Promise.all(batch.map(isNodeHealthy))
+
+      dapiUrls.push(...batch.filter((_, j) => healthy[j]))
     }
 
     // fail the initialization, so it is retried on the next request
-    if (this.dapiUrls.length === 0) {
+    if (dapiUrls.length === 0) {
       throw new Error(`None of the ${network} evonodes are available (${networkDAPIUrls.length} checked, ` +
         `nodes must be synced and run protocol version ${Number(LATEST_PLATFORM_VERSION)})`)
     }
+
+    this.dapiUrls = dapiUrls.slice(0, this.#poolLimit)
   }
 
   /**
-   * Adds a node to the pool, unless it is already there or the pool is full
-   */
-  #addNode (url: string, poolLimit: number): void {
-    if (!this.dapiUrls.includes(url) && this.dapiUrls.length < poolLimit) {
-      this.dapiUrls.push(url)
-    }
-  }
-
-  /**
-   * Waits for the pool initialization and returns a client connected to a random healthy node
+   * Waits for the pool initialization and returns a client connected to the next healthy node (round-robin)
    */
   async getClient (abortController?: AbortController): Promise<PlatformClient> {
     // retry initialization if the previous attempt failed
-    this.#initialization ??= this._initialize(this.network, this.#poolLimit, this.#dapiUrl)
+    this.#initialization ??= this.#initializePool()
 
     const initialization = this.#initialization
 
@@ -270,8 +290,60 @@ export default class GRPCConnectionPool implements GRPCPool {
       throw e
     }
 
-    const dapiUrl = getRandomArrayItem(this.dapiUrls)
+    const dapiUrl = this.#nextNode()
 
-    return createClient(dapiUrl, abortController)
+    if (dapiUrl == null) {
+      throw new Error('DAPI URL list is empty')
+    }
+
+    return createClient(dapiUrl, abortController, this.#createFetchWithRetry(dapiUrl))
+  }
+
+  /**
+   * Returns the next node from the pool in round-robin order, skipping the excluded nodes.
+   * Every request and every retry moves to the next node, so the load is spread evenly
+   */
+  #nextNode (exclude: string[] = []): string | undefined {
+    for (let i = 0; i < this.dapiUrls.length; i++) {
+      // index+1 and drop to 0 when #nodeIndex == this.dapiUrls.length
+      const url = this.dapiUrls[this.#nodeIndex++ % this.dapiUrls.length]
+
+      if (!exclude.includes(url)) {
+        return url
+      }
+    }
+
+    return undefined
+  }
+
+  /**
+   * Creates a fetch for the client of the given node, that retries the request
+   * on other nodes from the pool if it failed with a network error
+   */
+  #createFetchWithRetry (dapiUrl: string): typeof globalThis.fetch {
+    return async (input, init) => {
+      // transport always requests `${dapiUrl}/${service}/${method}`
+      const methodPath = String(input).slice(dapiUrl.length)
+      const triedUrls = [dapiUrl]
+      let nodeUrl = dapiUrl
+
+      for (let retry = 0; ; retry++) {
+        try {
+          return await fetchWithDetails(`${nodeUrl}${methodPath}`, init)
+        } catch (e) {
+          // state transition could already be received by the node,
+          // so broadcast is retried only if the connection was not established
+          const isRetryable = methodPath.includes('broadcast') ? isConnectError(e) : !isAbortError(e)
+          const nextUrl = retry < this.#retries && init?.signal?.aborted !== true && isRetryable ? this.#nextNode(triedUrls) : undefined
+
+          if (nextUrl == null) {
+            throw e
+          }
+
+          triedUrls.push(nextUrl)
+          nodeUrl = nextUrl
+        }
+      }
+    }
   }
 }
