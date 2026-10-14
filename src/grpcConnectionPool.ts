@@ -198,17 +198,21 @@ export default class GRPCConnectionPool implements GRPCPool {
       throw new Error('Unrecognized DAPI URL')
     }
 
-    const seeds = seedNodes[network]
+    let quorumsInfo: CurrentQuorumsInfo | undefined
+    const errors: unknown[] = []
 
-    // retrieve evonodes from current validator sets through the first responding seed node
-    let quorumsInfo: CurrentQuorumsInfo
+    for (const seed of seedNodes[network]) {
+      try {
+        quorumsInfo = await withTimeout(async abortController =>
+          await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed, abortController) }))
 
-    try {
-      quorumsInfo = await Promise.any(seeds.map(async seed => await withTimeout(async abortController =>
-        await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed, abortController) }))))
-    } catch (e) {
-      const errors: unknown[] = e instanceof AggregateError ? e.errors : [e]
+        break
+      } catch (e) {
+        errors.push(e)
+      }
+    }
 
+    if (quorumsInfo == null) {
       throw new AggregateError(errors, `None of the ${network} seed nodes are available: ${errors.map(String).join('; ')}`)
     }
 
