@@ -107,8 +107,11 @@ const withTimeout = async <T>(request: (abortController: AbortController) => Pro
 
 const isNodeHealthy = async (url: string): Promise<boolean> => {
   try {
-    const { response } = await withTimeout(async abortController =>
-      await createClient(url, abortController).getStatus(GetStatusRequest.create({})))
+    const response = await withTimeout(async abortController => {
+      const { response } = await createClient(url, abortController).getStatus(GetStatusRequest.create({}))
+
+      return response
+    })
 
     return response.version.oneofKind === 'v0' && response.version.v0.chain != null
   } catch (e) {
