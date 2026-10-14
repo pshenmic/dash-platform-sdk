@@ -10,7 +10,7 @@ import {
 } from '../../proto/generated/platform.js'
 import { DataContractWASM, DocumentWASM, IdentifierWASM, verifyVotePollVoteStateProof } from 'pshenmic-dpp'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
@@ -18,6 +18,7 @@ export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetCont
 
 export default async function getContestedResourceVoteState (
   grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider,
   contract: DataContractWASM,
   documentTypeName: string,
   indexName: string,
@@ -89,7 +90,7 @@ export default async function getContestedResourceVoteState (
     LATEST_PLATFORM_VERSION
   )
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

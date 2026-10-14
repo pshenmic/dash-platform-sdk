@@ -2,11 +2,11 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { verifyRecentCompactedAddressBalanceChanges, CompactedBlockAddressBalanceChanges } from 'pshenmic-dpp'
 import { GetRecentCompactedAddressBalanceChangesRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 
-export async function getRecentCompactedAddressBalanceChanges (grpcPool: GRPCPool, startBlockHeight: bigint): Promise<CompactedBlockAddressBalanceChanges[]> {
+export async function getRecentCompactedAddressBalanceChanges (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, startBlockHeight: bigint): Promise<CompactedBlockAddressBalanceChanges[]> {
   const getRecentCompactedAddressBalanceChangesRequest = GetRecentCompactedAddressBalanceChangesRequest.create({
     version: {
       oneofKind: 'v0',
@@ -39,7 +39,7 @@ export async function getRecentCompactedAddressBalanceChanges (grpcPool: GRPCPoo
 
   const { rootHash, ranges } = verifyRecentCompactedAddressBalanceChanges(proof.grovedbProof, startBlockHeight, undefined, LATEST_PLATFORM_VERSION)
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

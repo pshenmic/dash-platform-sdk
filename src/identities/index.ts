@@ -5,6 +5,7 @@ import getIdentityBalance from './getIdentityBalance.js'
 import getIdentityByPublicKeyHash from './getIdentityByPublicKeyHash.js'
 import { IdentityTransitionParams } from '../../types.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import getIdentityByIdentifier from './getIdentityByIdentifier.js'
 import {
   AssetLockProofWASM,
@@ -29,9 +30,12 @@ import { base58 } from '@scure/base'
 export class IdentitiesController {
   /** @ignore */
   grpcPool: GRPCPool
+  /** @ignore */
+  quorumKeyProvider: QuorumKeyProvider
 
-  constructor (grpcPool: GRPCPool) {
+  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.grpcPool = grpcPool
+    this.quorumKeyProvider = quorumKeyProvider
   }
 
   /**
@@ -42,7 +46,7 @@ export class IdentitiesController {
    * @return {Promise<bigint>}
    */
   async getIdentityBalance (identifier: IdentifierLike): Promise<bigint> {
-    return await getIdentityBalance(this.grpcPool, identifier)
+    return await getIdentityBalance(this.grpcPool, this.quorumKeyProvider, identifier)
   }
 
   /**
@@ -57,7 +61,7 @@ export class IdentitiesController {
       throw new Error('Public key hash should equal 40')
     }
 
-    return await getIdentityByPublicKeyHash(this.grpcPool, hex)
+    return await getIdentityByPublicKeyHash(this.grpcPool, this.quorumKeyProvider, hex)
   }
 
   /**
@@ -72,7 +76,7 @@ export class IdentitiesController {
       throw new Error('Public key hash should equal 40')
     }
 
-    return await getIdentityByNonUniquePublicKeyHash(this.grpcPool, hex)
+    return await getIdentityByNonUniquePublicKeyHash(this.grpcPool, this.quorumKeyProvider, hex)
   }
 
   /**
@@ -82,7 +86,7 @@ export class IdentitiesController {
    * @return {Promise<IdentityWASM>}
    */
   async getIdentityByIdentifier (identifier: IdentifierLike): Promise<IdentityWASM> {
-    return await getIdentityByIdentifier(this.grpcPool, identifier)
+    return await getIdentityByIdentifier(this.grpcPool, this.quorumKeyProvider, identifier)
   }
 
   /**
@@ -90,7 +94,7 @@ export class IdentitiesController {
    * @param identifier
    */
   async getIdentityNonce (identifier: IdentifierLike): Promise<bigint> {
-    return await getIdentityNonce(this.grpcPool, identifier)
+    return await getIdentityNonce(this.grpcPool, this.quorumKeyProvider, identifier)
   }
 
   /**
@@ -101,7 +105,7 @@ export class IdentitiesController {
    * @return {Promise<bigint>}
    */
   async getIdentityContractNonce (identifier: IdentifierLike, dataContract: IdentifierLike): Promise<bigint> {
-    return await getIdentityContractNonce(this.grpcPool, identifier, dataContract)
+    return await getIdentityContractNonce(this.grpcPool, this.quorumKeyProvider, identifier, dataContract)
   }
 
   /**
@@ -112,7 +116,7 @@ export class IdentitiesController {
    * @return {Promise<IdentityPublicKeyWASM[]>}
    */
   async getIdentityPublicKeys (identifier: IdentifierLike, keyIds?: number[]): Promise<IdentityPublicKeyWASM[]> {
-    return await getIdentityPublicKeys(this.grpcPool, identifier, keyIds)
+    return await getIdentityPublicKeys(this.grpcPool, this.quorumKeyProvider, identifier, keyIds)
   }
 
   /**

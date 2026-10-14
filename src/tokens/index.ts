@@ -1,4 +1,5 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import {
   TokenDirectPurchasePrices,
   TokenTotalSupply,
@@ -28,9 +29,12 @@ import getTokenDirectPurchasePrices from './getTokenDirectPurchasePrices.js'
 export class TokensController {
   /** @ignore **/
   grpcPool: GRPCPool
+  /** @ignore **/
+  quorumKeyProvider: QuorumKeyProvider
 
-  constructor (grpcPool: GRPCPool) {
+  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.grpcPool = grpcPool
+    this.quorumKeyProvider = quorumKeyProvider
   }
 
   /**
@@ -42,7 +46,7 @@ export class TokensController {
    * @return {Promise<IdentitiesTokenBalances>}
    */
   async getIdentitiesTokenBalances (identifiers: IdentifierLike[], tokenIdentifier: IdentifierLike): Promise<IdentitiesTokenBalances[]> {
-    return await getIdentitiesTokenBalances(this.grpcPool, identifiers, tokenIdentifier)
+    return await getIdentitiesTokenBalances(this.grpcPool, this.quorumKeyProvider, identifiers, tokenIdentifier)
   }
 
   /**
@@ -54,7 +58,7 @@ export class TokensController {
    * @return {Promise<IdentityTokenBalances>}
    */
   async getIdentityTokensBalances (identifier: IdentifierLike, tokenIdentifiers: IdentifierLike[]): Promise<IdentityTokenBalances[]> {
-    return await getIdentityTokensBalances(this.grpcPool, identifier, tokenIdentifiers)
+    return await getIdentityTokensBalances(this.grpcPool, this.quorumKeyProvider, identifier, tokenIdentifiers)
   }
 
   /**
@@ -65,7 +69,7 @@ export class TokensController {
    * @return {Promise<TokenContractInfo>}
    */
   async getTokenContractInfo (tokenIdentifier: IdentifierLike): Promise<TokenContractInfo> {
-    return await getTokenContractInfo(this.grpcPool, tokenIdentifier)
+    return await getTokenContractInfo(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
   }
 
   /**
@@ -76,7 +80,7 @@ export class TokensController {
    * @return {Promise<TokenTotalSupply>}
    */
   async getTokenTotalSupply (tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
-    return await getTokenTotalSupply(this.grpcPool, tokenIdentifier)
+    return await getTokenTotalSupply(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
   }
 
   /**
@@ -87,7 +91,7 @@ export class TokensController {
    * @return {Promise<TokenDirectPurchasePrices[]>}
    */
   async getTokensDirectPurchasePrice (tokenIdentifiers: IdentifierLike[]): Promise<TokenDirectPurchasePrices[]> {
-    return await getTokenDirectPurchasePrices(this.grpcPool, tokenIdentifiers)
+    return await getTokenDirectPurchasePrices(this.grpcPool, this.quorumKeyProvider, tokenIdentifiers)
   }
 
   /**
@@ -99,8 +103,8 @@ export class TokensController {
    * @return {TokenBaseTransitionWASM}
    */
   async createBaseTransition (tokenId: IdentifierLike, ownerId: IdentifierLike): Promise<TokenBaseTransitionWASM> {
-    const { dataContractId, tokenContractPosition } = await getTokenContractInfo(this.grpcPool, tokenId)
-    const identityContractNonce = await getIdentityContractNonce(this.grpcPool, ownerId, dataContractId)
+    const { dataContractId, tokenContractPosition } = await getTokenContractInfo(this.grpcPool, this.quorumKeyProvider, tokenId)
+    const identityContractNonce = await getIdentityContractNonce(this.grpcPool, this.quorumKeyProvider, ownerId, dataContractId)
 
     return new TokenBaseTransitionWASM(identityContractNonce + BigInt(1), tokenContractPosition, dataContractId, tokenId, undefined)
   }

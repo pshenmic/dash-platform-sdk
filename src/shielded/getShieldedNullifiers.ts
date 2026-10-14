@@ -3,12 +3,13 @@ import { GetShieldedNullifiersRequest } from '../../proto/generated/platform.js'
 import { ShieldedNullifierStatus } from '../../types.js'
 import {verifyShieldedNullifiersProof} from "pshenmic-dpp";
 import {LATEST_PLATFORM_VERSION} from "../constants.js";
-import {getQuorumPublicKey} from "../utils/getQuorumPublicKey.js";
+import {QuorumKeyProvider} from "../quorumKeyProvider.js";
 import bytesToHex from "../utils/bytesToHex.js";
 import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getShieldedNullifiers (
   grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider,
   nullifiers: Uint8Array[]
 ): Promise<ShieldedNullifierStatus[]> {
   const getShieldedNullifiersRequest = GetShieldedNullifiersRequest.create({
@@ -43,7 +44,7 @@ export default async function getShieldedNullifiers (
 
   const {rootHash, nullifiers: nullifiersStatuses} = verifyShieldedNullifiersProof(proof.grovedbProof, nullifiers, true, LATEST_PLATFORM_VERSION)
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

@@ -6,6 +6,7 @@ import {
   StateTransitionWASM
 } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import createDataContract from './create.js'
 import createStateTransition from './createStateTransition.js'
 import { DataContractConfig } from '../../types.js'
@@ -19,9 +20,12 @@ import { DataContractConfig } from '../../types.js'
 export class DataContractsController {
   /** @ignore */
   grpcPool: GRPCPool
+  /** @ignore */
+  quorumKeyProvider: QuorumKeyProvider
 
-  constructor (grpcPool: GRPCPool) {
+  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.grpcPool = grpcPool
+    this.quorumKeyProvider = quorumKeyProvider
   }
 
   /**
@@ -50,7 +54,7 @@ export class DataContractsController {
    * @return {Promise<DataContractWASM>}
    */
   async getDataContractByIdentifier (identifier: IdentifierLike): Promise<DataContractWASM> {
-    return await getDataContractByIdentifier(this.grpcPool, identifier)
+    return await getDataContractByIdentifier(this.grpcPool, this.quorumKeyProvider, identifier)
   }
 
   /**

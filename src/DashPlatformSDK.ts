@@ -13,12 +13,15 @@ import { VotingController } from './voting/index.js'
 import { Network } from '../types.js'
 import { PlatformAddressesController } from './platformAddresses/index.js'
 import { ShieldedController } from './shielded/index.js'
+import { PlatformExplorerQuorumKeyProvider, QuorumKeyProvider } from './quorumKeyProvider.js'
 
-export type { GRPCOptions, GRPCPool }
+export type { GRPCOptions, GRPCPool, QuorumKeyProvider }
 
 export interface SDKOptions {
   network: Network
   grpc?: GRPCOptions
+  /** Custom source of quorum public keys for proof verification, Platform Explorer is used if not set **/
+  quorumKeyProvider?: QuorumKeyProvider
   /** @deprecated Use {GRPCOptions} instead, will be removed in next major version **/
   dapiUrl?: string | string[]
 }
@@ -30,6 +33,8 @@ export class DashPlatformSDK {
   network: Network
   /** @ignore **/
   grpcPool: GRPCPool
+  /** @ignore **/
+  quorumKeyProvider: QuorumKeyProvider
   /** @ignore **/
   options?: SDKOptions
 
@@ -87,19 +92,22 @@ export class DashPlatformSDK {
    * @param network
    */
   _initialize (grpcPool: GRPCPool): void {
-    this.grpcPool = grpcPool
+    const quorumKeyProvider = this.options?.quorumKeyProvider ?? new PlatformExplorerQuorumKeyProvider(grpcPool.network)
 
-    this.contestedResources = new ContestedResourcesController(grpcPool)
-    this.platformAddresses = new PlatformAddressesController(grpcPool)
-    this.shielded = new ShieldedController(grpcPool)
-    this.stateTransitions = new StateTransitionsController(grpcPool)
-    this.dataContracts = new DataContractsController(grpcPool)
-    this.identities = new IdentitiesController(grpcPool)
-    this.documents = new DocumentsController(grpcPool)
+    this.grpcPool = grpcPool
+    this.quorumKeyProvider = quorumKeyProvider
+
+    this.contestedResources = new ContestedResourcesController(grpcPool, quorumKeyProvider)
+    this.platformAddresses = new PlatformAddressesController(grpcPool, quorumKeyProvider)
+    this.shielded = new ShieldedController(grpcPool, quorumKeyProvider)
+    this.stateTransitions = new StateTransitionsController(grpcPool, quorumKeyProvider)
+    this.dataContracts = new DataContractsController(grpcPool, quorumKeyProvider)
+    this.identities = new IdentitiesController(grpcPool, quorumKeyProvider)
+    this.documents = new DocumentsController(grpcPool, quorumKeyProvider)
     this.voting = new VotingController()
-    this.node = new NodeController(grpcPool)
-    this.tokens = new TokensController(grpcPool)
-    this.names = new NamesController(grpcPool)
+    this.node = new NodeController(grpcPool, quorumKeyProvider)
+    this.tokens = new TokensController(grpcPool, quorumKeyProvider)
+    this.names = new NamesController(grpcPool, quorumKeyProvider)
     this.keyPair = new KeyPairController()
   }
 
@@ -131,6 +139,18 @@ export class DashPlatformSDK {
     this.network = network
 
     this._initialize(customPool ?? new GRPCConnectionPool(this.network, this.options?.grpc))
+  }
+
+  /**
+   * Replaces source of quorum public keys used for proof verification.
+   * Pass nothing to switch back to Platform Explorer
+   *
+   * @param quorumKeyProvider {QuorumKeyProvider=}
+   */
+  setQuorumKeyProvider (quorumKeyProvider?: QuorumKeyProvider): void {
+    this.options = { ...(this.options ?? { network: this.network }), quorumKeyProvider }
+
+    this._initialize(this.grpcPool)
   }
 
   /**

@@ -3,12 +3,13 @@ import { GetShieldedEncryptedNotesRequest } from '../../proto/generated/platform
 import { ShieldedEncryptedNote } from '../../types.js'
 import {verifyShieldedEncryptedNotesProof} from "pshenmic-dpp";
 import { LATEST_PLATFORM_VERSION, SHIELDED_MAX_NOTES_PER_QUERY} from "../constants.js";
-import {getQuorumPublicKey} from "../utils/getQuorumPublicKey.js";
+import {QuorumKeyProvider} from "../quorumKeyProvider.js";
 import bytesToHex from "../utils/bytesToHex.js";
 import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getShieldedEncryptedNotes (
   grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider,
   startIndex: bigint,
   count: number
 ): Promise<ShieldedEncryptedNote[]> {
@@ -45,7 +46,7 @@ export default async function getShieldedEncryptedNotes (
 
   const {rootHash, notes} = verifyShieldedEncryptedNotesProof(proof.grovedbProof, startIndex, count, SHIELDED_MAX_NOTES_PER_QUERY, true, LATEST_PLATFORM_VERSION)
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

@@ -3,11 +3,11 @@ import { PlatformAddressLike, PlatformAddressWASM, verifyPlatformAddressesInfos 
 import { PlatformAddressInfo } from '../../types.js'
 import { GetAddressesInfosRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 
-export async function getAddressesInfos (grpcPool: GRPCPool, platformAddresses: PlatformAddressLike[]): Promise<PlatformAddressInfo[]> {
+export async function getAddressesInfos (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, platformAddresses: PlatformAddressLike[]): Promise<PlatformAddressInfo[]> {
   const platformAddressesWASM = platformAddresses.map(addr => new PlatformAddressWASM(addr))
 
   const getAddressInfoRequest = GetAddressesInfosRequest.create({
@@ -45,7 +45,7 @@ export async function getAddressesInfos (grpcPool: GRPCPool, platformAddresses: 
     infos
   } = verifyPlatformAddressesInfos(proof.grovedbProof, platformAddressesWASM, true, LATEST_PLATFORM_VERSION)
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

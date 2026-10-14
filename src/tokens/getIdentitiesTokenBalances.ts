@@ -1,7 +1,7 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetIdentitiesTokenBalancesRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenBalancesForIdentitiesProof } from 'pshenmic-dpp'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
@@ -11,7 +11,7 @@ export interface IdentitiesTokenBalances {
   balance?: bigint | undefined
 }
 
-export default async function getIdentitiesTokenBalances (grpcPool: GRPCPool, identifiers: IdentifierLike[], tokenIdentifier: IdentifierLike): Promise<IdentitiesTokenBalances[]> {
+export default async function getIdentitiesTokenBalances (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifiers: IdentifierLike[], tokenIdentifier: IdentifierLike): Promise<IdentitiesTokenBalances[]> {
   const ids = identifiers.map(identifier => new IdentifierWASM(identifier))
   const tokenId = new IdentifierWASM(tokenIdentifier)
 
@@ -57,7 +57,7 @@ export default async function getIdentitiesTokenBalances (grpcPool: GRPCPool, id
     LATEST_PLATFORM_VERSION
   )
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

@@ -1,14 +1,14 @@
 import { GetIdentityNonceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyIdentityNonceProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 const IDENTITY_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 
-export default async function getIdentityNonce (grpcPool: GRPCPool, identifier: IdentifierLike): Promise<bigint> {
+export default async function getIdentityNonce (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifier: IdentifierLike): Promise<bigint> {
   const id = new IdentifierWASM(identifier)
   const getIdentityNonceRequest = GetIdentityNonceRequest.create({
     version: {
@@ -49,7 +49,7 @@ export default async function getIdentityNonce (grpcPool: GRPCPool, identifier: 
     return BigInt(0)
   }
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

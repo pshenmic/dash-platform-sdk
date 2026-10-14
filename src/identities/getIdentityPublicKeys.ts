@@ -1,12 +1,12 @@
 import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, IdentityPublicKeyWASM, verifyIdentityKeysByIdentifierProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getIdentityPublicKeys (grpcPool: GRPCPool, identifier: IdentifierLike, keyIds?: number[]): Promise<IdentityPublicKeyWASM[]> {
+export default async function getIdentityPublicKeys (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifier: IdentifierLike, keyIds?: number[]): Promise<IdentityPublicKeyWASM[]> {
   const id = new IdentifierWASM(identifier)
 
   let requestType: KeyRequestType = {
@@ -65,7 +65,7 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCPool, identif
     throw new Error(`Identity with identifier ${id.base58()} not found`)
   }
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

@@ -1,14 +1,14 @@
 import { GetIdentityContractNonceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyIdentityContractNonceProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 const IDENTITY_CONTRACT_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 
-export default async function getIdentityContractNonce (grpcPool: GRPCPool, identity: IdentifierLike, dataContract: IdentifierLike): Promise<bigint> {
+export default async function getIdentityContractNonce (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identity: IdentifierLike, dataContract: IdentifierLike): Promise<bigint> {
   const identityIdentifier = new IdentifierWASM(identity)
   const dataContractIdentifier = new IdentifierWASM(dataContract)
 
@@ -52,7 +52,7 @@ export default async function getIdentityContractNonce (grpcPool: GRPCPool, iden
     return BigInt(0)
   }
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

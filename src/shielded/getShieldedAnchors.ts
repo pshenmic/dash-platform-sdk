@@ -2,12 +2,13 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedAnchorsRequest } from '../../proto/generated/platform.js'
 import {verifyShieldedAnchorsProof} from "pshenmic-dpp";
 import {LATEST_PLATFORM_VERSION} from "../constants.js";
-import {getQuorumPublicKey} from "../utils/getQuorumPublicKey.js";
+import {QuorumKeyProvider} from "../quorumKeyProvider.js";
 import bytesToHex from "../utils/bytesToHex.js";
 import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getShieldedAnchors (
-  grpcPool: GRPCPool
+  grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider
 ): Promise<Uint8Array[]> {
   const getShieldedAnchorsRequest = GetShieldedAnchorsRequest.create({
     version: {
@@ -40,7 +41,7 @@ export default async function getShieldedAnchors (
 
   const {rootHash, anchors} = verifyShieldedAnchorsProof(proof.grovedbProof, true, LATEST_PLATFORM_VERSION)
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

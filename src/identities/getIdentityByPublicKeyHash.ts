@@ -2,12 +2,12 @@ import { GetIdentityByPublicKeyHashRequest } from '../../proto/generated/platfor
 import { IdentityWASM, verifyIdentityByUniqueKeyHashProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import hexToBytes from '../utils/hexToBytes.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getIdentityByPublicKeyHash (grpcPool: GRPCPool, hex: string): Promise<IdentityWASM> {
+export default async function getIdentityByPublicKeyHash (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, hex: string): Promise<IdentityWASM> {
   const getIdentityByPublicKeyHashRequest = GetIdentityByPublicKeyHashRequest.create({
     version: {
       oneofKind: 'v0',
@@ -47,7 +47,7 @@ export default async function getIdentityByPublicKeyHash (grpcPool: GRPCPool, he
     throw new Error(`Identity with public key hash ${hex} not found`)
   }
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

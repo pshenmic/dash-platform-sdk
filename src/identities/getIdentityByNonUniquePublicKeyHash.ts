@@ -2,13 +2,13 @@ import { GetIdentityByNonUniquePublicKeyHashRequest } from '../../proto/generate
 import { IdentityWASM, verifyIdentifierByNonUniquePublicKeyHashProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import hexToBytes from '../utils/hexToBytes.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import getIdentityByIdentifier from './getIdentityByIdentifier.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRPCPool, hex: string): Promise<IdentityWASM> {
+export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, hex: string): Promise<IdentityWASM> {
   const getIdentityByNonUniquePublicKeyHashRequest = GetIdentityByNonUniquePublicKeyHashRequest.create({
     version: {
       oneofKind: 'v0',
@@ -52,7 +52,7 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
     throw new Error(`Identity with non unique public key hash ${hex} not found`)
   }
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.grovedbIdentityPublicKeyHashProof.quorumType, bytesToHex(proof.grovedbIdentityPublicKeyHashProof.quorumHash))
+  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.grovedbIdentityPublicKeyHashProof.quorumType, bytesToHex(proof.grovedbIdentityPublicKeyHashProof.quorumHash))
 
   const verify = await verifyTenderdashProof(proof.grovedbIdentityPublicKeyHashProof, metadata, rootHash, quorumPublicKey)
 
@@ -60,5 +60,5 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
     throw new Error('Failed to verify query')
   }
 
-  return await getIdentityByIdentifier(grpcPool, identifier)
+  return await getIdentityByIdentifier(grpcPool, quorumKeyProvider, identifier)
 }
