@@ -39,22 +39,18 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
     throw new Error('Metadata not found')
   }
 
-  if (proof.grovedbIdentityPublicKeyHashProof == null) {
-    throw new Error('GroveDB proof not found for identity by non unique public key request')
-  }
-
   const {
     rootHash,
     identifier
-  } = verifyIdentifierByNonUniquePublicKeyHashProof(proof.grovedbIdentityPublicKeyHashProof.grovedbProof, false, hexToBytes(hex), undefined, LATEST_PLATFORM_VERSION)
+  } = verifyIdentifierByNonUniquePublicKeyHashProof(proof.grovedbProof, true, hexToBytes(hex), undefined, LATEST_PLATFORM_VERSION)
 
   if (identifier == null) {
     throw new Error(`Identity with non unique public key hash ${hex} not found`)
   }
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.grovedbIdentityPublicKeyHashProof.quorumType, bytesToHex(proof.grovedbIdentityPublicKeyHashProof.quorumHash))
+  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = await verifyTenderdashProof(proof.grovedbIdentityPublicKeyHashProof, metadata, rootHash, quorumPublicKey)
+  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
     throw new Error('Failed to verify query')

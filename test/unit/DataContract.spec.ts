@@ -87,7 +87,8 @@ describe('DataContract', () => {
     )
 
     expect(dataContract).toEqual(expect.any(DataContractWASM))
-    expect(dataContract.getConfig()).toEqual(config)
+    // platform v14 upgrades the contract config to format version 2
+    expect(dataContract.getConfig()).toEqual({ ...config, $formatVersion: '2' })
   })
 
   test('should be able to create data contract create transition', async () => {

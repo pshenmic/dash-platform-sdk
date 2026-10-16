@@ -24,7 +24,8 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
       oneofKind: 'v0',
       v0: {
         stateTransitionHash: hexToBytes(txHash),
-        prove: true
+        prove: true,
+        requestUserBalance: false
       }
     }
   })
