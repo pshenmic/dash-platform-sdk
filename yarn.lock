@@ -1005,11 +1005,6 @@
   resolved "https://registry.npmjs.org/@csstools/css-tokenizer/-/css-tokenizer-3.0.4.tgz"
   integrity sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==
 
-"@cto.af/wtf8@0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@cto.af/wtf8/-/wtf8-0.0.5.tgz#968ab98ca2036c7d104e95b449e782dbf0c4a80f"
-  integrity sha512-LfUFi+Vv4eDzj+XAtR89e3wwjXA/NZjUSwU5NhwbBrLecxPaBYFy3exCuc1j+D4UZeOVdqlsl8G7LmOt18V0tg==
-
 "@emnapi/core@1.9.0":
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/@emnapi/core/-/core-1.9.0.tgz#4a54213b208fcf288cce25076c74e0f7613e6100"
@@ -2549,13 +2544,6 @@ case-anything@^2.1.13:
   version "2.1.13"
   resolved "https://registry.npmjs.org/case-anything/-/case-anything-2.1.13.tgz"
   integrity sha512-zlOQ80VrQ2Ue+ymH5OuM/DlDq64mEm+B9UTdHULv5osUMD6HalNTblf2b1u/m6QecjsnOkBpqVZ+XPwIVsy7Ng==
-
-cbor2@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/cbor2/-/cbor2-2.3.0.tgz#678b39143cada217121307643cf6f28be2c72960"
-  integrity sha512-76WB3hq8BoaGkMkBVJ27fW5LJU+qqDLEpgRNCG/SYKhODWXpVPOTD4UcUto3IEzYLA52nsvbhb0wabhHDn3qXg==
-  dependencies:
-    "@cto.af/wtf8" "0.0.5"
 
 chalk@^4.0.0, chalk@^4.1.2:
   version "4.1.2"
@@ -5197,10 +5185,10 @@ protoc@^32.1.0:
   resolved "https://registry.npmjs.org/protoc/-/protoc-32.1.0.tgz"
   integrity sha512-yICJJCGHJLM9ao5W2V4CGp1d7xuBsdHzgVDw6L8mdDtoIcqzN3arNPOm9Jx4Ufp5vfhQfJGkNUDo6mm/SLPdXw==
 
-pshenmic-dpp@2.0.1-dev.1:
-  version "2.0.1-dev.1"
-  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-2.0.1-dev.1.tgz#9ab7f7bd81beab5db367af447a504a3035bc543e"
-  integrity sha512-Tq4m66fcYEy3k8Yo1+0J/DQB3Z0H1mfSXxzJ3/4ioGuXEzRCOq0N8s7iDIAQHBUEiDm9rtM7qNvwPOcWxeSraw==
+pshenmic-dpp@2.0.1-dev.2:
+  version "2.0.1-dev.2"
+  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-2.0.1-dev.2.tgz#8db115ae23ea163c59e289268865adc47aa8e9ed"
+  integrity sha512-g6UKjFhL+87k8NjAZNn89UfAnxlqNJ61mtD1N6SW541DsvqH2KXhrLODn4iqKf5ZGZHs/zOLHnO1b4N033JoCQ==
   dependencies:
     "@emnapi/core" "1.9.0"
     "@emnapi/runtime" "1.9.0"
