@@ -1,19 +1,23 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedNotesCountRequest } from '../../proto/generated/platform.js'
-import {verifyShieldedNotesCountProof} from "pshenmic-dpp";
+import { IdentifierLike, IdentifierWASM, verifyShieldedNotesCountProof } from 'pshenmic-dpp'
 import {LATEST_PLATFORM_VERSION} from "../constants.js";
 import {getQuorumPublicKey} from "../utils/getQuorumPublicKey.js";
 import bytesToHex from "../utils/bytesToHex.js";
 import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getShieldedNotesCount (
-  grpcPool: GRPCPool
+  grpcPool: GRPCPool,
+  tokenIdentifier?: IdentifierLike
 ): Promise<bigint | undefined> {
+  const tokenId = tokenIdentifier != null ? new IdentifierWASM(tokenIdentifier) : undefined
+
   const getShieldedNotesCountRequest = GetShieldedNotesCountRequest.create({
     version: {
       oneofKind: 'v0',
       v0: {
-        prove: true
+        prove: true,
+        tokenId: tokenId?.bytes()
       }
     }
   })
@@ -38,7 +42,7 @@ export default async function getShieldedNotesCount (
     throw new Error('Metadata not found')
   }
 
-  const {rootHash, count} = verifyShieldedNotesCountProof(proof.grovedbProof, true, LATEST_PLATFORM_VERSION)
+  const {rootHash, count} = verifyShieldedNotesCountProof(proof.grovedbProof, true, LATEST_PLATFORM_VERSION, tokenId)
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
