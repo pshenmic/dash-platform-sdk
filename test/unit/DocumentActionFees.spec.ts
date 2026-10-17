@@ -94,7 +94,7 @@ describe('Document action fees', () => {
   })
 
   test('should be able to create a transition with an agreement', () => {
-    const document = sdk.documents.create(fixedContract.id, 'note', { message: 'hello' }, owner)
+    const document = sdk.documents.create(fixedContract.id, 'note', { message: 'hello' }, owner, 1n)
     const feeMultiplier = new AgreedFeeMultiplierWASM(1000n, 0)
     const actionFeeAgreement = DocumentActionFeeAgreementWASM.forDocumentTypeAction(fixedContract, 'note', 'Create', feeMultiplier)
 
@@ -104,7 +104,7 @@ describe('Document action fees', () => {
   })
 
   test('should be able to create a transition with an agreement as a plain object', () => {
-    const document = sdk.documents.create(multipliedContract.id, 'note', { message: 'hello' }, owner)
+    const document = sdk.documents.create(multipliedContract.id, 'note', { message: 'hello' }, owner, 1n)
 
     const stateTransition = sdk.documents.createStateTransition(document, 'create', {
       identityContractNonce: 1n,

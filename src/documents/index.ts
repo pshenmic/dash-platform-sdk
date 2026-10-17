@@ -44,12 +44,13 @@ export class DocumentsController {
    * @param documentType {string}  Document type as string
    * @param data {object} Data as JSON object
    * @param owner {IdentifierLike} Identifier of the document's owner
+   * @param identityContractNonce {bigint} Identity contract nonce of the transition that will create the document, used for document id generation
    * @param revision {bigint=} revision (optional)
    *
    * @return {DataContractWASM}
    */
-  create (dataContractId: IdentifierLike, documentType: string, data: object, owner: IdentifierLike, revision?: bigint): DocumentWASM {
-    return createDocument(new IdentifierWASM(dataContractId), documentType, data, new IdentifierWASM(owner), revision)
+  create (dataContractId: IdentifierLike, documentType: string, data: object, owner: IdentifierLike, identityContractNonce: bigint, revision?: bigint): DocumentWASM {
+    return createDocument(new IdentifierWASM(dataContractId), documentType, data, new IdentifierWASM(owner), identityContractNonce, revision)
   }
 
   /**
