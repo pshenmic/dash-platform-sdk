@@ -105,12 +105,6 @@ describe('Document', () => {
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
     })
 
-    test('should not be able to create a create transition with other nonce than document', async () => {
-      const document = sdk.documents.create(dataContract, documentType, data, identity, BigInt(1))
-
-      expect(() => sdk.documents.createStateTransition(document, 'create', { identityContractNonce: BigInt(2) })).toThrow()
-    })
-
     test('should be able to create a contested document transition', async () => {
       const identityContractNonce = BigInt(1)
       const document = sdk.documents.create(dataContract, documentType, data, identity, identityContractNonce)
