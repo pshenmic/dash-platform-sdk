@@ -10,42 +10,42 @@ import {
   DocumentWASM,
   StateTransitionWASM
 } from 'pshenmic-dpp'
-import { DocumentTransitionParams } from '../../types.js'
+import { DocumentTransitionParams, DocumentTransitionType } from '../../types.js'
 
 const documentTransitionsMap = {
   create: {
     class: DocumentCreateTransitionWASM,
     arguments: ['identityContractNonce'],
-    optionalArguments: ['prefundedVotingBalance', 'tokenPaymentInfo']
+    optionalArguments: ['prefundedVotingBalance', 'tokenPaymentInfo', 'actionFeeAgreement']
   },
   replace: {
     class: DocumentReplaceTransitionWASM,
     arguments: ['identityContractNonce'],
-    optionalArguments: ['tokenPaymentInfo']
+    optionalArguments: ['tokenPaymentInfo', 'actionFeeAgreement']
   },
   delete: {
     class: DocumentDeleteTransitionWASM,
     arguments: ['identityContractNonce'],
-    optionalArguments: ['tokenPaymentInfo']
+    optionalArguments: ['tokenPaymentInfo', 'actionFeeAgreement']
   },
   updatePrice: {
     class: DocumentUpdatePriceTransitionWASM,
     arguments: ['identityContractNonce', 'price'],
-    optionalArguments: ['tokenPaymentInfo']
+    optionalArguments: ['tokenPaymentInfo', 'actionFeeAgreement']
   },
   transfer: {
     class: DocumentTransferTransitionWASM,
     arguments: ['identityContractNonce', 'recipientId'],
-    optionalArguments: ['tokenPaymentInfo']
+    optionalArguments: ['tokenPaymentInfo', 'actionFeeAgreement']
   },
   purchase: {
     class: DocumentPurchaseTransitionWASM,
     arguments: ['identityContractNonce', 'amount'],
-    optionalArguments: ['tokenPaymentInfo']
+    optionalArguments: ['tokenPaymentInfo', 'actionFeeAgreement']
   }
 }
 
-export default function createStateTransition (document: DocumentWASM, type: 'create' | 'replace' | 'delete' | 'updatePrice' | 'transfer' | 'purchase', params: DocumentTransitionParams): StateTransitionWASM {
+export default function createStateTransition (document: DocumentWASM, type: DocumentTransitionType, params: DocumentTransitionParams): StateTransitionWASM {
   const { class: TransitionClass, arguments: classArguments, optionalArguments } = documentTransitionsMap[type]
 
   if (TransitionClass == null) {

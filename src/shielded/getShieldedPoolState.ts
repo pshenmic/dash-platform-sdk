@@ -3,17 +3,21 @@ import { GetShieldedPoolStateRequest } from '../../proto/generated/platform.js'
 import {getQuorumPublicKey} from "../utils/getQuorumPublicKey.js";
 import bytesToHex from "../utils/bytesToHex.js";
 import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
-import {verifyShieldedPoolStateProof} from "pshenmic-dpp";
+import { IdentifierLike, IdentifierWASM, verifyShieldedPoolStateProof } from 'pshenmic-dpp'
 import {LATEST_PLATFORM_VERSION} from "../constants.js";
 
 export default async function getShieldedPoolState (
-  grpcPool: GRPCPool
+  grpcPool: GRPCPool,
+  tokenIdentifier?: IdentifierLike
 ): Promise<bigint | undefined> {
+  const tokenId = tokenIdentifier != null ? new IdentifierWASM(tokenIdentifier) : undefined
+
   const getShieldedPoolStateRequest = GetShieldedPoolStateRequest.create({
     version: {
       oneofKind: 'v0',
       v0: {
-        prove: true
+        prove: true,
+        tokenId: tokenId?.bytes()
       }
     }
   })
@@ -38,7 +42,7 @@ export default async function getShieldedPoolState (
     throw new Error('Metadata not found')
   }
 
-  const {rootHash, totalBalance} = verifyShieldedPoolStateProof(proof.grovedbProof, true, LATEST_PLATFORM_VERSION)
+  const {rootHash, totalBalance} = verifyShieldedPoolStateProof(proof.grovedbProof, true, LATEST_PLATFORM_VERSION, tokenId)
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 

@@ -16,7 +16,7 @@ import { base64 } from '@scure/base'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 
-export default async function waitForStateTransitionResult (grpcPool: GRPCPool, stateTransition: StateTransitionWASM): Promise<void> {
+export default async function waitForStateTransitionResult (grpcPool: GRPCPool, stateTransition: StateTransitionWASM): Promise<bigint | undefined> {
   const txHash = stateTransition.hash(false)
 
   const waitForStateTransitionResultRequest = WaitForStateTransitionResultRequest.create({
@@ -24,7 +24,8 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
       oneofKind: 'v0',
       v0: {
         stateTransitionHash: hexToBytes(txHash),
-        prove: true
+        prove: true,
+        requestUserBalance: false
       }
     }
   })
@@ -80,7 +81,8 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
 
     const {
       rootHash,
-      result
+      result,
+      ownerBalance
     } = verifyStateTransitionResult(proof.grovedbProof, stateTransition, blockInfo, knownContracts, LATEST_PLATFORM_VERSION)
 
     if (result == null) {
@@ -94,6 +96,8 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
     if (!verify) {
       throw new Error('Failed to verify wait for state transition result query')
     }
+
+    return ownerBalance
   } else if (v0.result.oneofKind === 'error') {
     const { code, message, data } = v0.result.error
     throw new Error(`State transition ${txHash} failed to execute with code ${String(code)}, message: ${String(message)}, data: ${base64.encode(data)}`)
