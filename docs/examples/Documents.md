@@ -17,8 +17,10 @@ const data = {
   }
 }
 const revision = BigInt(1) // optional, defaults to 1
+// identity contract nonce of the transition that will create the document, used to generate the document id
+const identityContractNonce = await sdk.identities.getIdentityContractNonce(ownerId, dataContractId) + 1n
 
-const document = await sdk.documents.create(dataContractId, documentType, data, ownerId, revision)
+const document = await sdk.documents.create(dataContractId, documentType, data, ownerId, identityContractNonce, revision)
 
 console.log(document)
 ```
@@ -29,8 +31,8 @@ Creates a DocumentWASM instance with a prefunded voting balance for contested DP
 
 ```javascript
 // ...
-const document = sdk.documents.create(dataContract, documentType, data, identity)
-const identityContractNonce = await sdk.identities.getIdentityContractNonce(identity, dataContract)
+const identityContractNonce = await sdk.identities.getIdentityContractNonce(identity, dataContract) + 1n
+const document = sdk.documents.create(dataContract, documentType, data, identity, identityContractNonce)
 
 // 0.2 Dash typically
 const contestedFee = BigInt(20000000000)
@@ -49,8 +51,8 @@ The token cost fee can be charged from either ContractOwner or Document Owner an
 
 ```javascript
 // ...
-const document = sdk.documents.create(dataContract, documentType, data, identity)
 const identityContractNonce = BigInt(1)
+const document = sdk.documents.create(dataContract, documentType, data, identity, identityContractNonce)
 
 const tokenPaymentInfo = {
   tokenContractId: '6hVQW16jyvZyGSQk2YVty4ND6bgFXozizYWnPt753uW5',

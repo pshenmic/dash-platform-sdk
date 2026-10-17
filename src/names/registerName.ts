@@ -48,7 +48,7 @@ export default async function registerName (grpcPool: GRPCPool, name: string, id
 
   const identityContractNonce = await getIdentityContractNonce(grpcPool, identity.id, DPNS_DATA_CONTRACT_ID)
 
-  document = createDocument(DPNS_DATA_CONTRACT_ID, 'preorder', preorderData, identity.id.base58())
+  document = createDocument(DPNS_DATA_CONTRACT_ID, 'preorder', preorderData, identity.id.base58(), identityContractNonce + BigInt(1))
   stateTransition = createStateTransition(document, 'create', { identityContractNonce: identityContractNonce + BigInt(1) })
   await stateTransition.sign(privateKey, identityPublicKey)
 
@@ -72,7 +72,7 @@ export default async function registerName (grpcPool: GRPCPool, name: string, id
     }
   }
 
-  document = createDocument(DPNS_DATA_CONTRACT_ID, 'domain', domainData, identity.id.base58())
+  document = createDocument(DPNS_DATA_CONTRACT_ID, 'domain', domainData, identity.id.base58(), identityContractNonce + BigInt(2))
   stateTransition = createStateTransition(document, 'create', {
     identityContractNonce: identityContractNonce + BigInt(2),
     // @ts-expect-error

@@ -5,6 +5,7 @@ export default function createDocument (
   documentType: string,
   data: object,
   owner: IdentifierLike,
+  identityContractNonce: bigint,
   revision?: bigint,
   documentId?: IdentifierLike
 ): DocumentWASM {
@@ -15,6 +16,7 @@ export default function createDocument (
     dataContractId,
     owner,
     documentId,
-    owner
+    owner,
+    identityContractNonce
   )
 }
