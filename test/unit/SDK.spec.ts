@@ -45,8 +45,6 @@ describe('DashPlatformSDK', () => {
 
     customSdk.setQuorumKeyProvider(quorumKeyProvider)
 
-    await customSdk.waitForInit()
-
     const balance = await customSdk.identities.getIdentityBalance(identifier)
 
     expect(balance).toEqual(expect.any(BigInt))
