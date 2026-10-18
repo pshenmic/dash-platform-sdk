@@ -34,11 +34,15 @@ export class StateTransitionsController {
   /**
    * Waits for a given state transition to finalize in the network (usually 1-3 sec)
    *
+   * Returns the owner's credit balance after the transition executed, if the proof
+   * carries it (protocol v14+ owned, fee-paying transitions: document and token batches,
+   * contract create and update, identity update), otherwise undefined
+   *
    * @param stateTransition {StateTransitionWASM}
    *
-   * @return {Promise<void>}
+   * @return {Promise<bigint | undefined>}
    */
-  async waitForStateTransitionResult (stateTransition: StateTransitionWASM): Promise<void> {
+  async waitForStateTransitionResult (stateTransition: StateTransitionWASM): Promise<bigint | undefined> {
     return await waitForStateTransitionResult(this.grpcPool, this.quorumKeyProvider, stateTransition)
   }
 }

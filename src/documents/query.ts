@@ -1,12 +1,9 @@
-import { GetDocumentsRequest } from '../../proto/generated/platform.js'
 import { DocumentWASM, IdentifierLike, IdentifierWASM, verifyDocumentsProof, WhereClause } from 'pshenmic-dpp'
 import { DAPI_DEFAULT_LIMIT, LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import { encode } from 'cbor2'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
+import { getDocumentsV1Proof, toOrderClauses, toStart, toWhereClauses, verifyDocumentsV1Signature } from './v1.js'
 
 export default async function query (
   grpcPool: GRPCPool,
@@ -19,74 +16,28 @@ export default async function query (
   startAt?: IdentifierWASM,
   startAfter?: IdentifierWASM
 ): Promise<DocumentWASM[]> {
-  let start
-
-  if (startAt != null) {
-    start = {
-      oneofKind: 'startAt',
-      startAt: startAt.bytes()
-    }
-  }
-
-  if (startAfter != null) {
-    start = {
-      oneofKind: 'startAfter',
-      startAfter: startAfter.bytes()
-    }
-  }
-
-  const getDocumentsRequest = GetDocumentsRequest.create({
-    version: {
-      oneofKind: 'v0',
-      v0: {
-        dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
-        documentType: documentTypeName,
-        where: encode(where),
-        orderBy: encode(orderBy),
-        limit: limit ?? DAPI_DEFAULT_LIMIT,
-        start,
-        prove: true
-      }
-    }
-
-  })
-
   const dataContract = await getDataContractByIdentifier(grpcPool, quorumKeyProvider, dataContractId)
 
-  const { response } = await (await grpcPool.getClient()).getDocuments(getDocumentsRequest)
-
-  const { version } = response
-
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
-
-  const { v0 } = version
-
-  if (v0.result.oneofKind !== 'proof') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-  }
-
-  const { result: { proof }, metadata } = v0
-
-  if (metadata == null) {
-    throw new Error('Metadata not found')
-  }
-
-  const startAtIncluded = startAt != null
   const startIdentifier = startAt ?? startAfter
+  const startAtIncluded = startAt != null
+
+  const { proof, metadata } = await getDocumentsV1Proof(grpcPool, {
+    dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
+    documentType: documentTypeName,
+    whereClauses: toWhereClauses(where),
+    orderBy: toOrderClauses(orderBy),
+    limit: limit ?? DAPI_DEFAULT_LIMIT,
+    start: toStart(startIdentifier, startAtIncluded)
+  })
+
+  const metadataTimeMs = BigInt(metadata.timeMs)
 
   const {
     rootHash,
     documents
-  } = verifyDocumentsProof(proof.grovedbProof, dataContract, documentTypeName, where, orderBy, limit, startIdentifier?.bytes(), startAtIncluded, BigInt(metadata?.timeMs), LATEST_PLATFORM_VERSION)
-  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
+  } = verifyDocumentsProof(proof.grovedbProof, dataContract, documentTypeName, where, orderBy, limit, startIdentifier?.bytes(), startAtIncluded, metadataTimeMs, LATEST_PLATFORM_VERSION, metadataTimeMs)
 
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
+  await verifyDocumentsV1Signature(quorumKeyProvider, proof, metadata, rootHash)
 
   return documents ?? []
 }

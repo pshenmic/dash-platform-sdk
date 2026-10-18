@@ -17,8 +17,10 @@ const data = {
   }
 }
 const revision = BigInt(1) // optional, defaults to 1
+// identity contract nonce of the transition that will create the document, used to generate the document id
+const identityContractNonce = await sdk.identities.getIdentityContractNonce(ownerId, dataContractId) + 1n
 
-const document = await sdk.documents.create(dataContractId, documentType, data, ownerId, revision)
+const document = await sdk.documents.create(dataContractId, documentType, data, ownerId, identityContractNonce, revision)
 
 console.log(document)
 ```
@@ -29,8 +31,8 @@ Creates a DocumentWASM instance with a prefunded voting balance for contested DP
 
 ```javascript
 // ...
-const document = sdk.documents.create(dataContract, documentType, data, identity)
-const identityContractNonce = await sdk.identities.getIdentityContractNonce(identity, dataContract)
+const identityContractNonce = await sdk.identities.getIdentityContractNonce(identity, dataContract) + 1n
+const document = sdk.documents.create(dataContract, documentType, data, identity, identityContractNonce)
 
 // 0.2 Dash typically
 const contestedFee = BigInt(20000000000)
@@ -49,8 +51,8 @@ The token cost fee can be charged from either ContractOwner or Document Owner an
 
 ```javascript
 // ...
-const document = sdk.documents.create(dataContract, documentType, data, identity)
 const identityContractNonce = BigInt(1)
+const document = sdk.documents.create(dataContract, documentType, data, identity, identityContractNonce)
 
 const tokenPaymentInfo = {
   tokenContractId: '6hVQW16jyvZyGSQk2YVty4ND6bgFXozizYWnPt753uW5',
@@ -61,6 +63,32 @@ const tokenPaymentInfo = {
 }
 
 const stateTransition = sdk.documents.createStateTransition(document, 'create', { identityContractNonce, tokenPaymentInfo })
+```
+
+## Agree to Document Action Fees
+
+A document type may charge credits for an action to the contract owner and moderators (`actionFees` in its schema).
+A transition on such a type must carry an agreement naming the fee its signer saw declared, otherwise the network refuses it.
+The network also refuses it when the declared fee changed since. For a fee priced by the epoch fee multiplier, the agreement names
+the multiplier of the current epoch and how much it may grow before the transition executes
+
+```javascript
+// reads the contract and the fee multiplier of the current epoch, undefined when the action charges no fee
+const increaseTolerancePercent = 10
+const actionFeeAgreement = await sdk.documents.getActionFeeAgreement(dataContractId, documentType, 'create', increaseTolerancePercent)
+
+const stateTransition = sdk.documents.createStateTransition(document, 'create', { identityContractNonce, actionFeeAgreement })
+```
+
+Or as a plain object:
+
+```javascript
+const actionFeeAgreement = {
+  owner: BigInt(10000000),
+  moderators: BigInt(0),
+  // omit for a fixed fee
+  feeMultiplier: { knownPermille: BigInt(1000), increaseTolerancePercent: 10 }
+}
 ```
 
 ## Query Documents
@@ -89,6 +117,80 @@ const documents = await sdk.documents.query(
 )
 
 console.log(documents)
+```
+
+Besides the classic operators, where clauses support `contains` and `containsAny` on typed arrays,
+and window selections on `timeRange` / `integerRange` indexes:
+
+```javascript
+const where = [
+  ['tags', 'contains', 'dash'],
+  ['$createdAt', 'inTimeRange', 'newest'], // or 'oldest', a window start in ms, or { selector, startMs, grid }
+  ['height', 'inIntegerRange', { start: 100, grid: { range: 10, step: 10 } }]
+]
+```
+
+## Count, Sum and Average Documents
+
+Aggregates need a `countable` / `rangeCountable` (or summable) index covering the where clause.
+Without `groupBy` the result has one entry with the total, with `groupBy` one entry per group
+
+```javascript
+const query = {
+  documentTypeName: 'payment',
+  where: [['status', 'in', ['PAID', 'REFUNDED']]],
+  groupBy: ['status']
+}
+
+const { mode, entries } = await sdk.documents.count(dataContractId, query)
+const sums = await sdk.documents.sum(dataContractId, query, 'amount')
+// average entries carry count and sum, the average is sum / count
+const averages = await sdk.documents.average(dataContractId, query, 'amount')
+
+console.log(entries) // [{ inKey, key, count }]
+```
+
+## Ranked (Top-K) and Having Queries
+
+Groups ranked by an aggregate. Order by the aggregated field, or by `$count` for count
+
+```javascript
+const { skipped, entries } = await sdk.documents.ranked(dataContractId, {
+  documentTypeName: 'payment',
+  select: { function: 'count' },
+  groupBy: ['merchant'],
+  orderBy: [['$count', 'desc']],
+  limit: 10,
+  offset: 0
+})
+
+const groups = await sdk.documents.having(dataContractId, {
+  documentTypeName: 'payment',
+  select: { function: 'sum', field: 'amount' },
+  groupBy: ['merchant'],
+  having: [{ function: 'sum', field: 'amount', operator: '>=', value: 1000 }]
+})
+```
+
+## Chained and Composite Queries
+
+```javascript
+// documents of `review`, then the `product` documents their `productId` refers to
+const { innerDocuments, outerDocuments, missingOuterIds, removedOuterDocuments } = await sdk.documents.chained(
+  dataContractId,
+  { documentTypeName: 'review', limit: 10 },
+  'productId',
+  'product'
+)
+
+// a page plus up to 10 sub-queries bound to values of the page or an earlier sub-query
+const { pageDocuments, subResults } = await sdk.documents.composite(
+  dataContractId,
+  { documentTypeName: 'product', limit: 10 },
+  [
+    { documentTypeName: 'review', kind: 'count', binding: { source: 'page', sourceProperty: '$id', field: 'productId' } }
+  ]
+)
 ```
 
 ## Document State Transitions

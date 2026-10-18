@@ -36,14 +36,17 @@ describe('Node', () => {
     expect(status.network?.peersCount).toEqual(expect.any(Number))
     expect(status.network?.listening).toEqual(expect.any(Boolean))
 
-    expect(status.stateSync?.totalSyncedTime).toEqual(expect.any(String))
-    expect(status.stateSync?.remainingTime).toEqual(expect.any(String))
-    expect(status.stateSync?.totalSnapshots).toEqual(expect.any(Number))
-    expect(status.stateSync?.chunkProcessAvgTime).toEqual(expect.any(String))
-    expect(status.stateSync?.snapshotHeight).toEqual(expect.any(String))
-    expect(status.stateSync?.snapshotChunksCount).toEqual(expect.any(String))
-    expect(status.stateSync?.backfilledBlocks).toEqual(expect.any(String))
-    expect(status.stateSync?.backfillBlocksTotal).toEqual(expect.any(String))
+    // rs-dapi (v5) returns state sync info only if tenderdash reports non-zero state sync counters
+    if (status.stateSync != null) {
+      expect(status.stateSync.totalSyncedTime).toEqual(expect.any(String))
+      expect(status.stateSync.remainingTime).toEqual(expect.any(String))
+      expect(status.stateSync.totalSnapshots).toEqual(expect.any(Number))
+      expect(status.stateSync.chunkProcessAvgTime).toEqual(expect.any(String))
+      expect(status.stateSync.snapshotHeight).toEqual(expect.any(String))
+      expect(status.stateSync.snapshotChunksCount).toEqual(expect.any(String))
+      expect(status.stateSync.backfilledBlocks).toEqual(expect.any(String))
+      expect(status.stateSync.backfillBlocksTotal).toEqual(expect.any(String))
+    }
 
     expect(status.time?.local).toEqual(expect.any(String))
     expect(status.time?.block).toEqual(expect.any(String))

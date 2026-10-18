@@ -1,7 +1,7 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedEncryptedNotesRequest } from '../../proto/generated/platform.js'
 import { ShieldedEncryptedNote } from '../../types.js'
-import {verifyShieldedEncryptedNotesProof} from "pshenmic-dpp";
+import { IdentifierLike, IdentifierWASM, verifyShieldedEncryptedNotesProof } from 'pshenmic-dpp'
 import { LATEST_PLATFORM_VERSION, SHIELDED_MAX_NOTES_PER_QUERY} from "../constants.js";
 import {QuorumKeyProvider} from "../quorumKeyProvider.js";
 import bytesToHex from "../utils/bytesToHex.js";
@@ -11,15 +11,19 @@ export default async function getShieldedEncryptedNotes (
   grpcPool: GRPCPool,
   quorumKeyProvider: QuorumKeyProvider,
   startIndex: bigint,
-  count: number
+  count: number,
+  tokenIdentifier?: IdentifierLike
 ): Promise<ShieldedEncryptedNote[]> {
+  const tokenId = tokenIdentifier != null ? new IdentifierWASM(tokenIdentifier) : undefined
+
   const getShieldedEncryptedNotesRequest = GetShieldedEncryptedNotesRequest.create({
     version: {
       oneofKind: 'v0',
       v0: {
         startIndex: startIndex.toString(),
         count,
-        prove: true
+        prove: true,
+        tokenId: tokenId?.bytes()
       }
     }
   })
@@ -44,7 +48,7 @@ export default async function getShieldedEncryptedNotes (
     throw new Error('Metadata not found')
   }
 
-  const {rootHash, notes} = verifyShieldedEncryptedNotesProof(proof.grovedbProof, startIndex, count, SHIELDED_MAX_NOTES_PER_QUERY, true, LATEST_PLATFORM_VERSION)
+  const {rootHash, notes} = verifyShieldedEncryptedNotesProof(proof.grovedbProof, startIndex, count, SHIELDED_MAX_NOTES_PER_QUERY, true, LATEST_PLATFORM_VERSION, tokenId)
 
   const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
