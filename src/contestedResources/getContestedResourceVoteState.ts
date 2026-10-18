@@ -10,6 +10,9 @@ import {
 } from '../../proto/generated/platform.js'
 import { DataContractWASM, DocumentWASM, IdentifierWASM, verifyVotePollVoteStateProof } from 'pshenmic-dpp'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
+import withProofRetry from '../utils/withProofRetry.js'
+import ProofError from '../utils/ProofError.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
@@ -51,77 +54,80 @@ export default async function getContestedResourceVoteState (
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getContestedResourceVoteState(getContestedResourceVoteStateRequest)
+  return await withProofRetry(grpcPool, async client => {
+    const { response } = await client.getContestedResourceVoteState(getContestedResourceVoteStateRequest)
 
-  const { version } = response
+    const { version } = response
 
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
+    if (version.oneofKind !== 'v0') {
+      throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
+    }
 
-  const { v0 } = version
+    const { v0 } = version
 
-  if (v0.result.oneofKind !== 'proof') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-  }
+    if (v0.result.oneofKind !== 'proof') {
+      throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+    }
 
-  const { result: { proof }, metadata } = v0
+    const { result: { proof }, metadata } = v0
 
-  if (metadata == null) {
-    throw new Error('Metadata not found')
-  }
+    if (metadata == null) {
+      throw new Error('Metadata not found')
+    }
 
-  const {
-    rootHash,
-    result
-  } = verifyVotePollVoteStateProof(
-    proof.grovedbProof,
-    contract,
-    documentTypeName,
-    indexName,
-    indexValues,
-    // same enums
-    // @ts-expect-error
-    resultType,
-    allowIncludeLockedAndAbstainingVoteTally,
-    count,
-    startAtIdentifierInfo,
-    LATEST_PLATFORM_VERSION
-  )
+    const {
+      rootHash,
+      result
+    } = verifyGroveDBProof(
+      verifyVotePollVoteStateProof,
+      proof.grovedbProof,
+      contract,
+      documentTypeName,
+      indexName,
+      indexValues,
+      // same enums
+      // @ts-expect-error
+      resultType,
+      allowIncludeLockedAndAbstainingVoteTally,
+      count,
+      startAtIdentifierInfo,
+      LATEST_PLATFORM_VERSION
+    )
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+    const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+    const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
+    if (!verify) {
+      throw new ProofError('Failed to verify query')
+    }
 
-  const { contenders } = result ?? { contenders: [] }
-  const { winner } = result ?? { winner: undefined }
+    const { contenders } = result ?? { contenders: [] }
+    const { winner } = result ?? { winner: undefined }
 
-  if (contenders.length === 0) {
-    throw new Error('Vote state not found')
-  }
+    if (contenders.length === 0) {
+      throw new Error('Vote state not found')
+    }
 
-  return {
-    contenders: contenders.map(contender => ({
-      identifier: contender.identityId,
-      document: contender.serializedDocument != null ? DocumentWASM.fromBytes(contender.serializedDocument, contract, documentTypeName, LATEST_PLATFORM_VERSION) : undefined,
-      voteTally: contender.voteTally
-    })),
-    abstainVoteTally: result?.abstainingVoteTally ?? 0,
-    lockVoteTally: result?.lockedVoteTally ?? 0,
-    skipped: result?.skipped === 1,
-    finishedVoteInfo: (winner != null)
-      ? {
-          type: winner.type,
-          wonByIdentityId: 'identityId' in winner && winner.identityId != null ? new IdentifierWASM(winner.identityId) : undefined,
-          finishedAtBlockHeight: winner.blockInfo.height,
-          finishedAtCoreBlockHeight: winner.blockInfo.coreHeight,
-          finishedAtBlockTimeMs: winner.blockInfo.timeMs,
-          finishedAtEpoch: winner.blockInfo.epoch
-        }
-      : undefined
-  }
+    return {
+      contenders: contenders.map(contender => ({
+        identifier: contender.identityId,
+        document: contender.serializedDocument != null ? DocumentWASM.fromBytes(contender.serializedDocument, contract, documentTypeName, LATEST_PLATFORM_VERSION) : undefined,
+        voteTally: contender.voteTally
+      })),
+      abstainVoteTally: result?.abstainingVoteTally ?? 0,
+      lockVoteTally: result?.lockedVoteTally ?? 0,
+      skipped: result?.skipped === 1,
+      finishedVoteInfo: (winner != null)
+        ? {
+            type: winner.type,
+            wonByIdentityId: 'identityId' in winner && winner.identityId != null ? new IdentifierWASM(winner.identityId) : undefined,
+            finishedAtBlockHeight: winner.blockInfo.height,
+            finishedAtCoreBlockHeight: winner.blockInfo.coreHeight,
+            finishedAtBlockTimeMs: winner.blockInfo.timeMs,
+            finishedAtEpoch: winner.blockInfo.epoch
+          }
+        : undefined
+    }
+  })
 }

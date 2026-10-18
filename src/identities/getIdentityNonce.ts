@@ -4,6 +4,9 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
+import withProofRetry from '../utils/withProofRetry.js'
+import ProofError from '../utils/ProofError.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 const IDENTITY_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
@@ -20,42 +23,44 @@ export default async function getIdentityNonce (grpcPool: GRPCPool, identifier: 
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getIdentityNonce(getIdentityNonceRequest)
+  return await withProofRetry(grpcPool, async client => {
+    const { response } = await client.getIdentityNonce(getIdentityNonceRequest)
 
-  const { version } = response
+    const { version } = response
 
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
+    if (version.oneofKind !== 'v0') {
+      throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
+    }
 
-  const { v0 } = version
+    const { v0 } = version
 
-  if (v0.result.oneofKind !== 'proof') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-  }
+    if (v0.result.oneofKind !== 'proof') {
+      throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+    }
 
-  const { result: { proof }, metadata } = v0
+    const { result: { proof }, metadata } = v0
 
-  if (metadata == null) {
-    throw new Error('Metadata not found')
-  }
+    if (metadata == null) {
+      throw new Error('Metadata not found')
+    }
 
-  const {
-    rootHash,
-    nonce
-  } = verifyIdentityNonceProof(proof.grovedbProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
+    const {
+      rootHash,
+      nonce
+    } = verifyGroveDBProof(verifyIdentityNonceProof, proof.grovedbProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
 
-  if (nonce == null) {
-    return BigInt(0)
-  }
+    if (nonce == null) {
+      return BigInt(0)
+    }
 
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+    const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+    const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
+    if (!verify) {
+      throw new ProofError('Failed to verify query')
+    }
 
-  return BigInt(nonce) & IDENTITY_NONCE_VALUE_FILTER
+    return BigInt(nonce) & IDENTITY_NONCE_VALUE_FILTER
+  })
 }

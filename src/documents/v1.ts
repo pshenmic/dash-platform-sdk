@@ -27,10 +27,12 @@ import {
   TimeRangeSelection,
   WhereClause
 } from 'pshenmic-dpp'
+import { PlatformClient } from '../../proto/generated/platform.client.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import ProofError from '../utils/ProofError.js'
 
 type DocumentFieldValue = GetDocumentsRequest_DocumentFieldValue
 
@@ -262,10 +264,10 @@ export function toStart (startAt?: IdentifierLike | null, startAtIncluded?: bool
 }
 
 /**
- * Sends a v1 getDocuments request with a proof and returns the proof with the response metadata
+ * Sends a v1 getDocuments request with a proof to the node of the client and returns the proof with the response metadata
  */
 export async function getDocumentsV1Proof (
-  grpcPool: GRPCPool,
+  client: PlatformClient,
   v1: Partial<GetDocumentsRequest_GetDocumentsRequestV1>
 ): Promise<{ proof: Proof, metadata: ResponseMetadata }> {
   const getDocumentsRequest = GetDocumentsRequest.create({
@@ -275,7 +277,7 @@ export async function getDocumentsV1Proof (
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getDocuments(getDocumentsRequest)
+  const { response } = await client.getDocuments(getDocumentsRequest)
 
   const { version } = response
 
@@ -305,6 +307,6 @@ export async function verifyDocumentsV1Signature (grpcPool: GRPCPool, proof: Pro
   const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 
   if (!verify) {
-    throw new Error('Failed to verify query')
+    throw new ProofError('Failed to verify query')
   }
 }

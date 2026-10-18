@@ -2,6 +2,8 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { verifyAddressesBranchState, VerifiedAddressesBranchState } from 'pshenmic-dpp'
 import { GetAddressesBranchStateRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
+import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
+import withProofRetry from '../utils/withProofRetry.js'
 
 export async function getAddressesBranchState (grpcPool: GRPCPool, key: Uint8Array, depth: number, checkpointHeight: bigint, expectedRootHash: Uint8Array): Promise<VerifiedAddressesBranchState> {
   const getAddressesBranchStateRequest = GetAddressesBranchStateRequest.create({
@@ -15,13 +17,15 @@ export async function getAddressesBranchState (grpcPool: GRPCPool, key: Uint8Arr
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getAddressesBranchState(getAddressesBranchStateRequest)
+  return await withProofRetry(grpcPool, async client => {
+    const { response } = await client.getAddressesBranchState(getAddressesBranchStateRequest)
 
-  const { version } = response
+    const { version } = response
 
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
+    if (version.oneofKind !== 'v0') {
+      throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
+    }
 
-  return verifyAddressesBranchState(version.v0.merkProof, key, depth, expectedRootHash, LATEST_PLATFORM_VERSION)
+    return verifyGroveDBProof(verifyAddressesBranchState, version.v0.merkProof, key, depth, expectedRootHash, LATEST_PLATFORM_VERSION)
+  })
 }

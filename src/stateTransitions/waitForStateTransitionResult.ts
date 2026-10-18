@@ -12,6 +12,9 @@ import { WaitForStateTransitionResultRequest } from '../../proto/generated/platf
 import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
 import bytesToHex from '../utils/bytesToHex.js'
 import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
+import withProofRetry from '../utils/withProofRetry.js'
+import ProofError from '../utils/ProofError.js'
 import { base64 } from '@scure/base'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
@@ -30,78 +33,80 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).waitForStateTransitionResult(waitForStateTransitionResultRequest)
+  return await withProofRetry(grpcPool, async client => {
+    const { response } = await client.waitForStateTransitionResult(waitForStateTransitionResultRequest)
 
-  const { version } = response
+    const { version } = response
 
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
-
-  const { v0 } = version
-
-  if (v0.result.oneofKind !== 'proof' && v0.result.oneofKind !== 'error') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-  }
-
-  if (v0.result.oneofKind === 'proof') {
-    const { result: { proof }, metadata } = v0
-
-    if (metadata == null) {
-      throw new Error('Metadata not found')
+    if (version.oneofKind !== 'v0') {
+      throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
     }
 
-    const { timeMs, height, coreChainLockedHeight, epoch } = metadata
+    const { v0 } = version
 
-    const knownContracts: DataContractWASM[] = []
-
-    if (stateTransition.getActionType() === 'BATCH') {
-      const batchTransition = BatchTransitionWASM.fromStateTransition(stateTransition)
-      const [transition] = batchTransition.transitions
-
-      const dataContract = await getDataContractByIdentifier(grpcPool, transition.dataContractId)
-
-      knownContracts.push(dataContract)
+    if (v0.result.oneofKind !== 'proof' && v0.result.oneofKind !== 'error') {
+      throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
     }
 
-    if (stateTransition.getActionType() === 'MASTERNODE_VOTE') {
-      const masternodeVote = MasternodeVoteTransitionWASM.fromStateTransition(stateTransition)
+    if (v0.result.oneofKind === 'proof') {
+      const { result: { proof }, metadata } = v0
 
-      const dataContract = await getDataContractByIdentifier(grpcPool, masternodeVote.vote.votePoll.contractId)
+      if (metadata == null) {
+        throw new Error('Metadata not found')
+      }
 
-      knownContracts.push(dataContract)
+      const { timeMs, height, coreChainLockedHeight, epoch } = metadata
+
+      const knownContracts: DataContractWASM[] = []
+
+      if (stateTransition.getActionType() === 'BATCH') {
+        const batchTransition = BatchTransitionWASM.fromStateTransition(stateTransition)
+        const [transition] = batchTransition.transitions
+
+        const dataContract = await getDataContractByIdentifier(grpcPool, transition.dataContractId)
+
+        knownContracts.push(dataContract)
+      }
+
+      if (stateTransition.getActionType() === 'MASTERNODE_VOTE') {
+        const masternodeVote = MasternodeVoteTransitionWASM.fromStateTransition(stateTransition)
+
+        const dataContract = await getDataContractByIdentifier(grpcPool, masternodeVote.vote.votePoll.contractId)
+
+        knownContracts.push(dataContract)
+      }
+
+      const blockInfo: BlockInfo = {
+        timeMs: BigInt(timeMs),
+        height: BigInt(height),
+        coreHeight: coreChainLockedHeight,
+        epoch
+      }
+
+      const {
+        rootHash,
+        result,
+        ownerBalance
+      } = verifyGroveDBProof(verifyStateTransitionResult, proof.grovedbProof, stateTransition, blockInfo, knownContracts, LATEST_PLATFORM_VERSION)
+
+      if (result == null) {
+        throw new Error('State transition result was null')
+      }
+
+      const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+
+      const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
+
+      if (!verify) {
+        throw new ProofError('Failed to verify wait for state transition result query')
+      }
+
+      return ownerBalance
+    } else if (v0.result.oneofKind === 'error') {
+      const { code, message, data } = v0.result.error
+      throw new Error(`State transition ${txHash} failed to execute with code ${String(code)}, message: ${String(message)}, data: ${base64.encode(data)}`)
+    } else {
+      throw new Error('Unexpected oneOfKind returned for waitForStateTransitionResult')
     }
-
-    const blockInfo: BlockInfo = {
-      timeMs: BigInt(timeMs),
-      height: BigInt(height),
-      coreHeight: coreChainLockedHeight,
-      epoch
-    }
-
-    const {
-      rootHash,
-      result,
-      ownerBalance
-    } = verifyStateTransitionResult(proof.grovedbProof, stateTransition, blockInfo, knownContracts, LATEST_PLATFORM_VERSION)
-
-    if (result == null) {
-      throw new Error('State transition result was null')
-    }
-
-    const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-    const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-    if (!verify) {
-      throw new Error('Failed to verify wait for state transition result query')
-    }
-
-    return ownerBalance
-  } else if (v0.result.oneofKind === 'error') {
-    const { code, message, data } = v0.result.error
-    throw new Error(`State transition ${txHash} failed to execute with code ${String(code)}, message: ${String(message)}, data: ${base64.encode(data)}`)
-  } else {
-    throw new Error('Unexpected oneOfKind returned for waitForStateTransitionResult')
-  }
+  })
 }

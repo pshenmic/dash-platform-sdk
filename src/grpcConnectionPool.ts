@@ -5,9 +5,13 @@ import getCurrentQuorumsInfo, { CurrentQuorumsInfo } from './node/getCurrentQuor
 import { Network } from '../types.js'
 import { fetchWithDetails } from './utils/fetchWithDetails.js'
 import { LATEST_PLATFORM_VERSION } from './constants.js'
+import sleep from './utils/sleep.js'
 
 const GRPC_DEFAULT_POOL_LIMIT = 15
 const GRPC_DEFAULT_CONNECT_RETRIES = 5
+// first ban lasts 60 seconds, every next ban without a successful request in between lasts e times longer
+const NODE_BASE_BAN_PERIOD_MS = 60 * 1000
+const RETRY_DELAY_MS = 10
 
 export interface GRPCOptions {
   poolLimit?: number
@@ -24,6 +28,12 @@ export interface GRPCOptions {
 export interface GRPCPool {
   network: Network
   getClient: (abortController?: AbortController) => PlatformClient | Promise<PlatformClient>
+  /** How many times a request is retried on another node, if not set, the SDK default is used **/
+  retries?: number
+  /** Temporarily excludes the node that served the request of the client from node selection, e.g. after an invalid proof **/
+  banNode?: (client: PlatformClient) => void
+  /** Lifts the ban of the node that served the request of the client, e.g. after its response was verified **/
+  unbanNode?: (client: PlatformClient) => void
 }
 
 export interface MasternodeInfo {
@@ -188,9 +198,13 @@ export default class GRPCConnectionPool implements GRPCPool {
   network: Network
   #poolLimit: number
   #dapiUrl?: string | string[]
-  #retries: number
+  readonly retries: number
   #nodeIndex = 0
   #initialization?: Promise<void>
+  // ban state of nodes that failed with a retryable error, banned nodes are skipped on node selection
+  #bans = new Map<string, { bannedTimes: number, bannedUntil: number }>()
+  // node that served (or is serving) the request of the client
+  #clientNodes = new WeakMap<PlatformClient, string>()
 
   constructor (network: Network, grpcOptions?: GRPCOptions) {
     const retries = grpcOptions?.retries ?? GRPC_DEFAULT_CONNECT_RETRIES
@@ -202,7 +216,7 @@ export default class GRPCConnectionPool implements GRPCPool {
     this.network = network
     this.#poolLimit = grpcOptions?.poolLimit ?? GRPC_DEFAULT_POOL_LIMIT
     this.#dapiUrl = grpcOptions?.dapiUrl
-    this.#retries = retries
+    this.retries = retries
 
     // start initialization in the background, failures are reported on the first request
     this.#initialization = this.#initializePool()
@@ -290,17 +304,69 @@ export default class GRPCConnectionPool implements GRPCPool {
       throw e
     }
 
-    const dapiUrl = this.#nextNode()
-
-    if (dapiUrl == null) {
+    if (this.dapiUrls.length === 0) {
       throw new Error('DAPI URL list is empty')
     }
 
-    return createClient(dapiUrl, abortController, this.#createFetchWithRetry(dapiUrl))
+    const dapiUrl = this.#nextNode()
+
+    if (dapiUrl == null) {
+      throw new Error(`All ${this.dapiUrls.length} DAPI nodes are temporarily banned, no available nodes to send the request to`)
+    }
+
+    const client: PlatformClient = createClient(dapiUrl, abortController, this.#createFetchWithRetry(dapiUrl, url => this.#clientNodes.set(client, url)))
+
+    this.#clientNodes.set(client, dapiUrl)
+
+    return client
   }
 
   /**
-   * Returns the next node from the pool in round-robin order, skipping the excluded nodes.
+   * Bans the node that served the request of the client, e.g. when it returned an invalid proof.
+   * The first ban lasts 60 seconds, every next ban lasts e times longer, until the node is unbanned
+   */
+  banNode (client: PlatformClient): void {
+    const url = this.#clientNodes.get(client)
+
+    if (url != null) {
+      this.#ban(url)
+    }
+  }
+
+  /**
+   * Unbans the node that served the request of the client and resets its ban period,
+   * should be called once the response of the node was successfully verified
+   */
+  unbanNode (client: PlatformClient): void {
+    const url = this.#clientNodes.get(client)
+
+    if (url != null) {
+      this.#bans.delete(url)
+    }
+  }
+
+  #ban (url: string): void {
+    // a single node is never banned, otherwise the pool would have no nodes to send requests to
+    if (this.dapiUrls.length <= 1) {
+      return
+    }
+
+    const bannedTimes = this.#bans.get(url)?.bannedTimes ?? 0
+
+    this.#bans.set(url, {
+      bannedTimes: bannedTimes + 1,
+      bannedUntil: Date.now() + NODE_BASE_BAN_PERIOD_MS * Math.exp(bannedTimes)
+    })
+  }
+
+  #isBanned (url: string): boolean {
+    const ban = this.#bans.get(url)
+
+    return ban != null && ban.bannedUntil > Date.now()
+  }
+
+  /**
+   * Returns the next node from the pool in round-robin order, skipping the excluded and banned nodes.
    * Every request and every retry moves to the next node, so the load is spread evenly
    */
   #nextNode (exclude: string[] = []): string | undefined {
@@ -308,7 +374,7 @@ export default class GRPCConnectionPool implements GRPCPool {
       // index+1 and drop to 0 when #nodeIndex == this.dapiUrls.length
       const url = this.dapiUrls[this.#nodeIndex++ % this.dapiUrls.length]
 
-      if (!exclude.includes(url)) {
+      if (!exclude.includes(url) && !this.#isBanned(url)) {
         return url
       }
     }
@@ -318,9 +384,10 @@ export default class GRPCConnectionPool implements GRPCPool {
 
   /**
    * Creates a fetch for the client of the given node, that retries the request
-   * on other nodes from the pool if it failed with a network error
+   * on other nodes from the pool if it failed with a network error.
+   * The failed node is banned, `onNodeChange` is called with the node the request is retried on
    */
-  #createFetchWithRetry (dapiUrl: string): typeof globalThis.fetch {
+  #createFetchWithRetry (dapiUrl: string, onNodeChange: (url: string) => void): typeof globalThis.fetch {
     return async (input, init) => {
       // transport always requests `${dapiUrl}/${service}/${method}`
       const methodPath = String(input).slice(dapiUrl.length)
@@ -334,7 +401,20 @@ export default class GRPCConnectionPool implements GRPCPool {
           // state transition could already be received by the node,
           // so broadcast is retried only if the connection was not established
           const isRetryable = methodPath.includes('broadcast') ? isConnectError(e) : !isAbortError(e)
-          const nextUrl = retry < this.#retries && init?.signal?.aborted !== true && isRetryable ? this.#nextNode(triedUrls) : undefined
+
+          if (!isRetryable || init?.signal?.aborted === true) {
+            throw e
+          }
+
+          this.#ban(nodeUrl)
+
+          if (retry >= this.retries) {
+            throw e
+          }
+
+          await sleep(RETRY_DELAY_MS)
+
+          const nextUrl = init?.signal?.aborted !== true ? this.#nextNode(triedUrls) : undefined
 
           if (nextUrl == null) {
             throw e
@@ -342,6 +422,7 @@ export default class GRPCConnectionPool implements GRPCPool {
 
           triedUrls.push(nextUrl)
           nodeUrl = nextUrl
+          onNodeChange(nextUrl)
         }
       }
     }
