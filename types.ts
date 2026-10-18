@@ -2,6 +2,7 @@ import {
   AddressFundsFeeStrategyStepWASM,
   AssetLockProofWASM,
   CoreScriptWASM,
+  DocumentActionFeeAgreementWASM,
   DocumentWASM,
   GasFeesPaidByWASM, IdentifierLike,
   IdentifierWASM,
@@ -66,6 +67,26 @@ export { DashPlatformSDK } from './src/DashPlatformSDK.js'
 
 export type MasternodeList = Record<string, MasternodeInfo>
 
+export type DocumentTransitionType = 'create' | 'replace' | 'delete' | 'updatePrice' | 'transfer' | 'purchase'
+
+/**
+ * The action fee a document transition agrees to pay to the contract fee pots (protocol v14).
+ * Required when the document type declares `actionFees` for the action, ignored otherwise
+ */
+export interface DocumentActionFeeAgreement {
+  /** owner part the document type declares for the action, in credits */
+  owner: bigint
+  /** moderators part the document type declares for the action, in credits */
+  moderators: bigint
+  /** set when the fee is priced by the epoch fee multiplier, omit for a fixed fee */
+  feeMultiplier?: {
+    /** fee multiplier of the current epoch, in permille */
+    knownPermille: bigint
+    /** how far above the known multiplier the executing epoch's one may be, in percent */
+    increaseTolerancePercent: number
+  }
+}
+
 export interface DocumentTransitionParams {
   identityContractNonce: bigint
   amount?: bigint
@@ -82,6 +103,7 @@ export interface DocumentTransitionParams {
     maximumTokenCost?: bigint
     gasFeesPaidBy: GasFeesPaidByWASM
   }
+  actionFeeAgreement?: DocumentActionFeeAgreement | DocumentActionFeeAgreementWASM
 }
 
 export interface ShieldedTransitionBaseParams {

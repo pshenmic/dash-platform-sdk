@@ -1,7 +1,7 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedNullifiersRequest } from '../../proto/generated/platform.js'
 import { ShieldedNullifierStatus } from '../../types.js'
-import {verifyShieldedNullifiersProof} from "pshenmic-dpp";
+import { IdentifierLike, IdentifierWASM, verifyShieldedNullifiersProof } from 'pshenmic-dpp'
 import {LATEST_PLATFORM_VERSION} from "../constants.js";
 import {getQuorumPublicKey} from "../utils/getQuorumPublicKey.js";
 import bytesToHex from "../utils/bytesToHex.js";
@@ -9,14 +9,18 @@ import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getShieldedNullifiers (
   grpcPool: GRPCPool,
-  nullifiers: Uint8Array[]
+  nullifiers: Uint8Array[],
+  tokenIdentifier?: IdentifierLike
 ): Promise<ShieldedNullifierStatus[]> {
+  const tokenId = tokenIdentifier != null ? new IdentifierWASM(tokenIdentifier) : undefined
+
   const getShieldedNullifiersRequest = GetShieldedNullifiersRequest.create({
     version: {
       oneofKind: 'v0',
       v0: {
         nullifiers,
-        prove: true
+        prove: true,
+        tokenId: tokenId?.bytes()
       }
     }
   })
@@ -41,7 +45,7 @@ export default async function getShieldedNullifiers (
     throw new Error('Metadata not found')
   }
 
-  const {rootHash, nullifiers: nullifiersStatuses} = verifyShieldedNullifiersProof(proof.grovedbProof, nullifiers, true, LATEST_PLATFORM_VERSION)
+  const {rootHash, nullifiers: nullifiersStatuses} = verifyShieldedNullifiersProof(proof.grovedbProof, nullifiers, true, LATEST_PLATFORM_VERSION, tokenId)
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 

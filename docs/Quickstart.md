@@ -50,17 +50,17 @@ const ownerId = '9VSMojGcwpFHeWnAZzYxJipFt1t3mb34BWtHt8csizQS'
 const documentType = 'note'
 const revision = BigInt(1)
 
-const identityContractNonce = await sdk.identities.getIdentityContractNonce(ownerId, dataContractId) // nonce
+const identityContractNonce = await sdk.identities.getIdentityContractNonce(ownerId, dataContractId) // last used nonce
 
 const data = {
     "message": "Hello world!",
 }
 
-// Create DocumentWASM instance
-const document = await sdk.documents.create(dataContractId, documentType, data, ownerId, revision)
+// Create DocumentWASM instance, the nonce of the transition is used to generate the document id
+const document = await sdk.documents.create(dataContractId, documentType, data, ownerId, identityContractNonce + 1n, revision)
 
-// Turn it into StateTransitionWASM
-const stateTransition = sdk.documents.createStateTransition(document, 'create', { identityContractNonce })
+// Turn it into StateTransitionWASM, the nonce must be the same as the one passed to the document
+const stateTransition = sdk.documents.createStateTransition(document, 'create', { identityContractNonce: identityContractNonce + 1n })
 
 // Broadcast transaction
 await sdk.stateTransitions.broadcast(stateTransition)

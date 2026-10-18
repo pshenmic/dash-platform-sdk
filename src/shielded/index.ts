@@ -16,6 +16,7 @@ import createStateTransition from './createStateTransition.js'
 import {
   CommitmentTreeWASM,
   ContractBoundsWASM,
+  IdentifierLike,
   IdentityPublicKeyInCreationWASM,
   recoverNotes,
   RecoveredNoteWASM,
@@ -77,49 +78,58 @@ export class ShieldedController {
    *
    * @param startIndex {bigint} - index of the first note to fetch
    * @param count {number} - amount of notes to fetch
+   * @param tokenIdentifier {IdentifierLike=} - token id to query the token shielded pool instead of the credits pool
    *
    * @return {Promise<ShieldedEncryptedNote[]>}
    */
-  async getShieldedEncryptedNotes(startIndex: bigint, count: number): Promise<ShieldedEncryptedNote[]> {
-    return await getShieldedEncryptedNotes(this.grpcPool, startIndex, count)
+  async getShieldedEncryptedNotes(startIndex: bigint, count: number, tokenIdentifier?: IdentifierLike): Promise<ShieldedEncryptedNote[]> {
+    return await getShieldedEncryptedNotes(this.grpcPool, startIndex, count, tokenIdentifier)
   }
 
   /**
    * Retrieves the set of valid anchors (note commitment tree roots) currently
    * accepted by the shielded pool.
    *
+   * @param tokenIdentifier {IdentifierLike=} - token id to query the token shielded pool instead of the credits pool
+   *
    * @return {Promise<Uint8Array[]>}
    */
-  async getShieldedAnchors(): Promise<Uint8Array[]> {
-    return await getShieldedAnchors(this.grpcPool)
+  async getShieldedAnchors(tokenIdentifier?: IdentifierLike): Promise<Uint8Array[]> {
+    return await getShieldedAnchors(this.grpcPool, tokenIdentifier)
   }
 
   /**
    * Retrieves the most recent anchor (note commitment tree root) of the shielded pool.
    *
+   * @param tokenIdentifier {IdentifierLike=} - token id to query the token shielded pool instead of the credits pool
+   *
    * @return {Promise<Uint8Array>}
    */
-  async getMostRecentShieldedAnchor(): Promise<Uint8Array | undefined> {
-    return await getMostRecentShieldedAnchor(this.grpcPool)
+  async getMostRecentShieldedAnchor(tokenIdentifier?: IdentifierLike): Promise<Uint8Array | undefined> {
+    return await getMostRecentShieldedAnchor(this.grpcPool, tokenIdentifier)
   }
 
   /**
    * Retrieves the total balance currently held in the shielded pool.
    *
+   * @param tokenIdentifier {IdentifierLike=} - token id to query the token shielded pool instead of the credits pool
+   *
    * @return {Promise<bigint>}
    */
-  async getShieldedPoolState(): Promise<bigint | undefined> {
-    return await getShieldedPoolState(this.grpcPool)
+  async getShieldedPoolState(tokenIdentifier?: IdentifierLike): Promise<bigint | undefined> {
+    return await getShieldedPoolState(this.grpcPool, tokenIdentifier)
   }
 
   /**
    * Retrieves the total count of notes (leaves) in the shielded notes
    * commitment tree. Useful as a denominator for shielded sync progress.
    *
+   * @param tokenIdentifier {IdentifierLike=} - token id to query the token shielded pool instead of the credits pool
+   *
    * @return {Promise<bigint>}
    */
-  async getShieldedNotesCount(): Promise<bigint | undefined> {
-    return await getShieldedNotesCount(this.grpcPool)
+  async getShieldedNotesCount(tokenIdentifier?: IdentifierLike): Promise<bigint | undefined> {
+    return await getShieldedNotesCount(this.grpcPool, tokenIdentifier)
   }
 
   /**
@@ -129,11 +139,12 @@ export class ShieldedController {
    * it has already been spent.
    *
    * @param nullifiers {Uint8Array[]} - nullifiers to check
+   * @param tokenIdentifier {IdentifierLike=} - token id to query the token shielded pool instead of the credits pool
    *
    * @return {Promise<ShieldedNullifierStatus[]>}
    */
-  async getShieldedNullifiers(nullifiers: Uint8Array[]): Promise<ShieldedNullifierStatus[]> {
-    return await getShieldedNullifiers(this.grpcPool, nullifiers)
+  async getShieldedNullifiers(nullifiers: Uint8Array[], tokenIdentifier?: IdentifierLike): Promise<ShieldedNullifierStatus[]> {
+    return await getShieldedNullifiers(this.grpcPool, nullifiers, tokenIdentifier)
   }
 
   /**

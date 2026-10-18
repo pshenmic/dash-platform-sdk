@@ -1,19 +1,23 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetMostRecentShieldedAnchorRequest } from '../../proto/generated/platform.js'
-import {verifyMostRecentShieldedAnchorProof} from "pshenmic-dpp";
+import { IdentifierLike, IdentifierWASM, verifyMostRecentShieldedAnchorProof } from 'pshenmic-dpp'
 import {LATEST_PLATFORM_VERSION} from "../constants.js";
 import {getQuorumPublicKey} from "../utils/getQuorumPublicKey.js";
 import bytesToHex from "../utils/bytesToHex.js";
 import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
 
 export default async function getMostRecentShieldedAnchor (
-  grpcPool: GRPCPool
+  grpcPool: GRPCPool,
+  tokenIdentifier?: IdentifierLike
 ): Promise<Uint8Array | undefined> {
+  const tokenId = tokenIdentifier != null ? new IdentifierWASM(tokenIdentifier) : undefined
+
   const getMostRecentShieldedAnchorRequest = GetMostRecentShieldedAnchorRequest.create({
     version: {
       oneofKind: 'v0',
       v0: {
-        prove: true
+        prove: true,
+        tokenId: tokenId?.bytes()
       }
     }
   })
@@ -38,7 +42,7 @@ export default async function getMostRecentShieldedAnchor (
     throw new Error('Metadata not found')
   }
 
-  const {rootHash, anchor} = verifyMostRecentShieldedAnchorProof(proof.grovedbProof, true, LATEST_PLATFORM_VERSION)
+  const {rootHash, anchor} = verifyMostRecentShieldedAnchorProof(proof.grovedbProof, true, LATEST_PLATFORM_VERSION, tokenId)
 
   const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
 
