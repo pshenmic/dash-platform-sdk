@@ -1,12 +1,8 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { IdentifierLike, IdentifierWASM, verifyTokensBalancesForIdentityProof } from 'pshenmic-dpp'
 import { GetIdentityTokenBalancesRequest } from '../../proto/generated/platform.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import withProofRetry from '../utils/withProofRetry.js'
-import ProofError from '../utils/ProofError.js'
+import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface IdentityTokenBalances {
@@ -29,51 +25,30 @@ export default async function getIdentityTokensBalances (grpcPool: GRPCPool, ide
     }
   })
 
-  return await withProofRetry(grpcPool, async client => {
-    const { response } = await client.getIdentityTokenBalances(getIdentityTokenBalancesRequest)
+  return await QueryExecutor.build(grpcPool)
+    .addGrpcRequest(client => client.getIdentityTokenBalances(getIdentityTokenBalancesRequest))
+    .addProof(response => {
+      const { proof, metadata } = getResponseProof(response)
 
-    const { version } = response
+      const {
+        rootHash,
+        balances
+      } = verifyGroveDBProof(
+        verifyTokensBalancesForIdentityProof,
+        proof.grovedbProof,
+        tokenIds,
+        id,
+        true,
+        LATEST_PLATFORM_VERSION
+      )
 
-    if (version.oneofKind !== 'v0') {
-      throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-    }
+      const result = balances
+        .map(({ id, balance }) => ({
+          tokenId: new IdentifierWASM(id),
+          balance
+        }))
 
-    const { v0 } = version
-
-    if (v0.result.oneofKind !== 'proof') {
-      throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-    }
-
-    const { result: { proof }, metadata } = v0
-
-    if (metadata == null) {
-      throw new Error('Metadata not found')
-    }
-
-    const {
-      rootHash,
-      balances
-    } = verifyGroveDBProof(
-      verifyTokensBalancesForIdentityProof,
-      proof.grovedbProof,
-      tokenIds,
-      id,
-      true,
-      LATEST_PLATFORM_VERSION
-    )
-
-    const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-    const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-    if (!verify) {
-      throw new ProofError('Failed to verify query')
-    }
-
-    return balances
-      .map(({ id, balance }) => ({
-        tokenId: new IdentifierWASM(id),
-        balance
-      }))
-  })
+      return { result, rootHash, proof, metadata }
+    })
+    .execute()
 }

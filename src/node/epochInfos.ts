@@ -1,12 +1,8 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetEpochsInfoRequest } from '../../proto/generated/platform.js'
 import { verifyEpochsInfoProof } from 'pshenmic-dpp'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import withProofRetry from '../utils/withProofRetry.js'
-import ProofError from '../utils/ProofError.js'
+import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
 import { UInt32Value } from '../../proto/generated/google/protobuf/wrappers.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
@@ -32,54 +28,34 @@ export default async function epochInfos (grpcPool: GRPCPool, count: number, asc
     }
   })
 
-  return await withProofRetry(grpcPool, async client => {
-    const { response } = await client.getEpochsInfo(getEpochsInfoRequest)
+  return await QueryExecutor.build(grpcPool)
+    .addGrpcRequest(client => client.getEpochsInfo(getEpochsInfoRequest))
+    .addProof(response => {
+      const { proof, metadata } = getResponseProof(response)
 
-    const { version } = response
+      const {
+        rootHash,
+        epochsInfo
+      } = verifyGroveDBProof(
+        verifyEpochsInfoProof,
+        proof.grovedbProof,
+        metadata.epoch,
+        start,
+        count,
+        ascending,
+        LATEST_PLATFORM_VERSION
+      )
 
-    if (version.oneofKind !== 'v0') {
-      throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-    }
+      const result = epochsInfo.map(info => ({
+        number: info.index,
+        firstBlockHeight: info.firstBlockHeight,
+        firstCoreBlockHeight: info.firstCoreBlockHeight,
+        startTime: info.firstBlockTime,
+        feeMultiplier: info.feeMultiplierPermille,
+        protocolVersion: info.protocolVersion
+      })) as unknown as EpochInfo[]
 
-    const { v0 } = version
-
-    if (v0.result.oneofKind !== 'proof') {
-      throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-    }
-
-    const { result: { proof }, metadata } = v0
-
-    if (metadata == null) {
-      throw new Error('Metadata not found')
-    }
-
-    const {
-      rootHash,
-      epochsInfo
-    } = verifyGroveDBProof(
-      verifyEpochsInfoProof,
-      proof.grovedbProof,
-      metadata.epoch,
-      start,
-      count,
-      ascending,
-      LATEST_PLATFORM_VERSION
-    )
-    const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-    const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-    if (!verify) {
-      throw new ProofError('Failed to verify query')
-    }
-
-    return epochsInfo.map(info => ({
-      number: info.index,
-      firstBlockHeight: info.firstBlockHeight,
-      firstCoreBlockHeight: info.firstCoreBlockHeight,
-      startTime: info.firstBlockTime,
-      feeMultiplier: info.feeMultiplierPermille,
-      protocolVersion: info.protocolVersion
-    })) as unknown as EpochInfo[]
-  })
+      return { result, rootHash, proof, metadata }
+    })
+    .execute()
 }

@@ -9,12 +9,8 @@ import {
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 } from '../../proto/generated/platform.js'
 import { DataContractWASM, DocumentWASM, IdentifierWASM, verifyVotePollVoteStateProof } from 'pshenmic-dpp'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import withProofRetry from '../utils/withProofRetry.js'
-import ProofError from '../utils/ProofError.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
+import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
@@ -54,80 +50,59 @@ export default async function getContestedResourceVoteState (
     }
   })
 
-  return await withProofRetry(grpcPool, async client => {
-    const { response } = await client.getContestedResourceVoteState(getContestedResourceVoteStateRequest)
+  return await QueryExecutor.build(grpcPool)
+    .addGrpcRequest(client => client.getContestedResourceVoteState(getContestedResourceVoteStateRequest))
+    .addProof(response => {
+      const { proof, metadata } = getResponseProof(response)
 
-    const { version } = response
+      const {
+        rootHash,
+        result: voteState
+      } = verifyGroveDBProof(
+        verifyVotePollVoteStateProof,
+        proof.grovedbProof,
+        contract,
+        documentTypeName,
+        indexName,
+        indexValues,
+        // same enums
+        // @ts-expect-error
+        resultType,
+        allowIncludeLockedAndAbstainingVoteTally,
+        count,
+        startAtIdentifierInfo,
+        LATEST_PLATFORM_VERSION
+      )
 
-    if (version.oneofKind !== 'v0') {
-      throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-    }
+      const { contenders } = voteState ?? { contenders: [] }
+      const { winner } = voteState ?? { winner: undefined }
 
-    const { v0 } = version
+      if (contenders.length === 0) {
+        throw new Error('Vote state not found')
+      }
 
-    if (v0.result.oneofKind !== 'proof') {
-      throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-    }
+      const result = {
+        contenders: contenders.map(contender => ({
+          identifier: contender.identityId,
+          document: contender.serializedDocument != null ? DocumentWASM.fromBytes(contender.serializedDocument, contract, documentTypeName, LATEST_PLATFORM_VERSION) : undefined,
+          voteTally: contender.voteTally
+        })),
+        abstainVoteTally: voteState?.abstainingVoteTally ?? 0,
+        lockVoteTally: voteState?.lockedVoteTally ?? 0,
+        skipped: voteState?.skipped === 1,
+        finishedVoteInfo: (winner != null)
+          ? {
+              type: winner.type,
+              wonByIdentityId: 'identityId' in winner && winner.identityId != null ? new IdentifierWASM(winner.identityId) : undefined,
+              finishedAtBlockHeight: winner.blockInfo.height,
+              finishedAtCoreBlockHeight: winner.blockInfo.coreHeight,
+              finishedAtBlockTimeMs: winner.blockInfo.timeMs,
+              finishedAtEpoch: winner.blockInfo.epoch
+            }
+          : undefined
+      }
 
-    const { result: { proof }, metadata } = v0
-
-    if (metadata == null) {
-      throw new Error('Metadata not found')
-    }
-
-    const {
-      rootHash,
-      result
-    } = verifyGroveDBProof(
-      verifyVotePollVoteStateProof,
-      proof.grovedbProof,
-      contract,
-      documentTypeName,
-      indexName,
-      indexValues,
-      // same enums
-      // @ts-expect-error
-      resultType,
-      allowIncludeLockedAndAbstainingVoteTally,
-      count,
-      startAtIdentifierInfo,
-      LATEST_PLATFORM_VERSION
-    )
-
-    const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-    const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-    if (!verify) {
-      throw new ProofError('Failed to verify query')
-    }
-
-    const { contenders } = result ?? { contenders: [] }
-    const { winner } = result ?? { winner: undefined }
-
-    if (contenders.length === 0) {
-      throw new Error('Vote state not found')
-    }
-
-    return {
-      contenders: contenders.map(contender => ({
-        identifier: contender.identityId,
-        document: contender.serializedDocument != null ? DocumentWASM.fromBytes(contender.serializedDocument, contract, documentTypeName, LATEST_PLATFORM_VERSION) : undefined,
-        voteTally: contender.voteTally
-      })),
-      abstainVoteTally: result?.abstainingVoteTally ?? 0,
-      lockVoteTally: result?.lockedVoteTally ?? 0,
-      skipped: result?.skipped === 1,
-      finishedVoteInfo: (winner != null)
-        ? {
-            type: winner.type,
-            wonByIdentityId: 'identityId' in winner && winner.identityId != null ? new IdentifierWASM(winner.identityId) : undefined,
-            finishedAtBlockHeight: winner.blockInfo.height,
-            finishedAtCoreBlockHeight: winner.blockInfo.coreHeight,
-            finishedAtBlockTimeMs: winner.blockInfo.timeMs,
-            finishedAtEpoch: winner.blockInfo.epoch
-          }
-        : undefined
-    }
-  })
+      return { result, rootHash, proof, metadata }
+    })
+    .execute()
 }

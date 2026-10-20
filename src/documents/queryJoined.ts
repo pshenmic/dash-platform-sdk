@@ -12,8 +12,8 @@ import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import withProofRetry from '../utils/withProofRetry.js'
-import { getDocumentsV1Proof, toOrderClauses, toStart, toSubQueries, toWhereClauses, verifyDocumentsV1Signature } from './v1.js'
+import QueryExecutor from '../utils/QueryExecutor.js'
+import { createDocumentsV1Request, getDocumentsV1Proof, toOrderClauses, toStart, toSubQueries, toWhereClauses } from './v1.js'
 
 export type ChainedDocuments = Omit<VerifiedChainedDocuments, 'rootHash'>
 export type CompositeDocuments = Omit<VerifiedCompositeDocuments, 'rootHash'>
@@ -31,8 +31,8 @@ export async function queryChained (
 ): Promise<ChainedDocuments> {
   const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
 
-  return await withProofRetry(grpcPool, async client => {
-    const { proof, metadata } = await getDocumentsV1Proof(client, {
+  return await QueryExecutor.build(grpcPool)
+    .addGrpcRequest(client => client.getDocuments(createDocumentsV1Request({
       dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
       documentType: query.documentTypeName,
       whereClauses: toWhereClauses(query.where),
@@ -40,14 +40,15 @@ export async function queryChained (
       limit: query.limit,
       start: toStart(query.startAt, query.startAtIncluded),
       chained: { joinProperty, outerDocumentType: outerDocumentTypeName }
+    })))
+    .addProof(response => {
+      const { proof, metadata } = getDocumentsV1Proof(response)
+
+      const { rootHash, ...result } = verifyGroveDBProof(verifyChainedDocumentsProof, proof.grovedbProof, dataContract, query, joinProperty, outerDocumentTypeName, LATEST_PLATFORM_VERSION)
+
+      return { result, rootHash, proof, metadata }
     })
-
-    const { rootHash, ...result } = verifyGroveDBProof(verifyChainedDocumentsProof, proof.grovedbProof, dataContract, query, joinProperty, outerDocumentTypeName, LATEST_PLATFORM_VERSION)
-
-    await verifyDocumentsV1Signature(grpcPool, proof, metadata, rootHash)
-
-    return result
-  })
+    .execute()
 }
 
 /**
@@ -63,8 +64,8 @@ export async function queryComposite (
   const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
   const identifier = new IdentifierWASM(dataContractId)
 
-  return await withProofRetry(grpcPool, async client => {
-    const { proof, metadata } = await getDocumentsV1Proof(client, {
+  return await QueryExecutor.build(grpcPool)
+    .addGrpcRequest(client => client.getDocuments(createDocumentsV1Request({
       dataContractId: identifier.bytes(),
       documentType: query.documentTypeName,
       whereClauses: toWhereClauses(query.where),
@@ -73,12 +74,13 @@ export async function queryComposite (
       offset: query.offset,
       start: toStart(query.startAt, query.startAtIncluded),
       subQueries: toSubQueries(subQueries, identifier)
+    })))
+    .addProof(response => {
+      const { proof, metadata } = getDocumentsV1Proof(response)
+
+      const { rootHash, ...result } = verifyGroveDBProof(verifyCompositeDocumentsProof, proof.grovedbProof, dataContract, query, subQueries, LATEST_PLATFORM_VERSION)
+
+      return { result, rootHash, proof, metadata }
     })
-
-    const { rootHash, ...result } = verifyGroveDBProof(verifyCompositeDocumentsProof, proof.grovedbProof, dataContract, query, subQueries, LATEST_PLATFORM_VERSION)
-
-    await verifyDocumentsV1Signature(grpcPool, proof, metadata, rootHash)
-
-    return result
-  })
+    .execute()
 }

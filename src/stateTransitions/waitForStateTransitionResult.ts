@@ -9,12 +9,8 @@ import {
 import { GRPCPool } from '../grpcConnectionPool.js'
 import hexToBytes from '../utils/hexToBytes.js'
 import { WaitForStateTransitionResultRequest } from '../../proto/generated/platform.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import withProofRetry from '../utils/withProofRetry.js'
-import ProofError from '../utils/ProofError.js'
+import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
 import { base64 } from '@scure/base'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
@@ -33,48 +29,41 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
     }
   })
 
-  return await withProofRetry(grpcPool, async client => {
-    const { response } = await client.waitForStateTransitionResult(waitForStateTransitionResultRequest)
+  // contracts are fetched before the request, so their proof errors are not attributed to the node of the request
+  const knownContracts: DataContractWASM[] = []
 
-    const { version } = response
+  if (stateTransition.getActionType() === 'BATCH') {
+    const batchTransition = BatchTransitionWASM.fromStateTransition(stateTransition)
+    const [transition] = batchTransition.transitions
 
-    if (version.oneofKind !== 'v0') {
-      throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-    }
+    knownContracts.push(await getDataContractByIdentifier(grpcPool, transition.dataContractId))
+  }
 
-    const { v0 } = version
+  if (stateTransition.getActionType() === 'MASTERNODE_VOTE') {
+    const masternodeVote = MasternodeVoteTransitionWASM.fromStateTransition(stateTransition)
 
-    if (v0.result.oneofKind !== 'proof' && v0.result.oneofKind !== 'error') {
-      throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-    }
+    knownContracts.push(await getDataContractByIdentifier(grpcPool, masternodeVote.vote.votePoll.contractId))
+  }
 
-    if (v0.result.oneofKind === 'proof') {
-      const { result: { proof }, metadata } = v0
+  return await QueryExecutor.build(grpcPool)
+    .addGrpcRequest(client => client.waitForStateTransitionResult(waitForStateTransitionResultRequest))
+    .addProof(response => {
+      const { version } = response
 
-      if (metadata == null) {
-        throw new Error('Metadata not found')
+      if (version.oneofKind !== 'v0') {
+        throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
       }
+
+      const { v0 } = version
+
+      if (v0.result.oneofKind === 'error') {
+        const { code, message, data } = v0.result.error
+        throw new Error(`State transition ${txHash} failed to execute with code ${String(code)}, message: ${String(message)}, data: ${base64.encode(data)}`)
+      }
+
+      const { proof, metadata } = getResponseProof(response)
 
       const { timeMs, height, coreChainLockedHeight, epoch } = metadata
-
-      const knownContracts: DataContractWASM[] = []
-
-      if (stateTransition.getActionType() === 'BATCH') {
-        const batchTransition = BatchTransitionWASM.fromStateTransition(stateTransition)
-        const [transition] = batchTransition.transitions
-
-        const dataContract = await getDataContractByIdentifier(grpcPool, transition.dataContractId)
-
-        knownContracts.push(dataContract)
-      }
-
-      if (stateTransition.getActionType() === 'MASTERNODE_VOTE') {
-        const masternodeVote = MasternodeVoteTransitionWASM.fromStateTransition(stateTransition)
-
-        const dataContract = await getDataContractByIdentifier(grpcPool, masternodeVote.vote.votePoll.contractId)
-
-        knownContracts.push(dataContract)
-      }
 
       const blockInfo: BlockInfo = {
         timeMs: BigInt(timeMs),
@@ -93,20 +82,7 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
         throw new Error('State transition result was null')
       }
 
-      const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-      const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-      if (!verify) {
-        throw new ProofError('Failed to verify wait for state transition result query')
-      }
-
-      return ownerBalance
-    } else if (v0.result.oneofKind === 'error') {
-      const { code, message, data } = v0.result.error
-      throw new Error(`State transition ${txHash} failed to execute with code ${String(code)}, message: ${String(message)}, data: ${base64.encode(data)}`)
-    } else {
-      throw new Error('Unexpected oneOfKind returned for waitForStateTransitionResult')
-    }
-  })
+      return { result: ownerBalance, rootHash, proof, metadata }
+    })
+    .execute()
 }

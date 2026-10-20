@@ -9,15 +9,15 @@ import {
   verifyRankedDocumentsProof
 } from 'pshenmic-dpp'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
-import { PlatformClient } from '../../proto/generated/platform.client.js'
+import { GetDocumentsRequest } from '../../proto/generated/platform.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import withProofRetry from '../utils/withProofRetry.js'
-import { getDocumentsV1Proof, toHavingClauses, toOrderClauses, toSelect, toWhereClauses, verifyDocumentsV1Signature } from './v1.js'
+import QueryExecutor from '../utils/QueryExecutor.js'
+import { createDocumentsV1Request, getDocumentsV1Proof, toHavingClauses, toOrderClauses, toSelect, toWhereClauses } from './v1.js'
 
-async function getRankedProof (client: PlatformClient, dataContractId: IdentifierLike, query: AggregateDocumentsQuery, having: HavingClause[]): ReturnType<typeof getDocumentsV1Proof> {
-  return await getDocumentsV1Proof(client, {
+function createRankedRequest (dataContractId: IdentifierLike, query: AggregateDocumentsQuery, having: HavingClause[]): GetDocumentsRequest {
+  return createDocumentsV1Request({
     dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
     documentType: query.documentTypeName,
     whereClauses: toWhereClauses(query.where),
@@ -36,15 +36,16 @@ async function getRankedProof (client: PlatformClient, dataContractId: Identifie
 export async function queryRanked (grpcPool: GRPCPool, dataContractId: IdentifierLike, query: AggregateDocumentsQuery): Promise<ProvenRankedPage> {
   const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
 
-  return await withProofRetry(grpcPool, async client => {
-    const { proof, metadata } = await getRankedProof(client, dataContractId, query, [])
+  return await QueryExecutor.build(grpcPool)
+    .addGrpcRequest(client => client.getDocuments(createRankedRequest(dataContractId, query, [])))
+    .addProof(response => {
+      const { proof, metadata } = getDocumentsV1Proof(response)
 
-    const { rootHash, value } = verifyGroveDBProof(verifyRankedDocumentsProof, proof.grovedbProof, dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs))
+      const { rootHash, value } = verifyGroveDBProof(verifyRankedDocumentsProof, proof.grovedbProof, dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs))
 
-    await verifyDocumentsV1Signature(grpcPool, proof, metadata, rootHash)
-
-    return value
-  })
+      return { result: value, rootHash, proof, metadata }
+    })
+    .execute()
 }
 
 /**
@@ -53,13 +54,14 @@ export async function queryRanked (grpcPool: GRPCPool, dataContractId: Identifie
 export async function queryHaving (grpcPool: GRPCPool, dataContractId: IdentifierLike, query: AggregateDocumentsQuery & { having: HavingClause[] }): Promise<ProvenRankedEntry[]> {
   const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
 
-  return await withProofRetry(grpcPool, async client => {
-    const { proof, metadata } = await getRankedProof(client, dataContractId, query, query.having)
+  return await QueryExecutor.build(grpcPool)
+    .addGrpcRequest(client => client.getDocuments(createRankedRequest(dataContractId, query, query.having)))
+    .addProof(response => {
+      const { proof, metadata } = getDocumentsV1Proof(response)
 
-    const { rootHash, value } = verifyGroveDBProof(verifyHavingDocumentsProof, proof.grovedbProof, dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs))
+      const { rootHash, value } = verifyGroveDBProof(verifyHavingDocumentsProof, proof.grovedbProof, dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs))
 
-    await verifyDocumentsV1Signature(grpcPool, proof, metadata, rootHash)
-
-    return value
-  })
+      return { result: value, rootHash, proof, metadata }
+    })
+    .execute()
 }

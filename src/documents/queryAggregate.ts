@@ -11,8 +11,8 @@ import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import withProofRetry from '../utils/withProofRetry.js'
-import { getDocumentsV1Proof, toOrderClauses, toSelect, toWhereClauses, verifyDocumentsV1Signature } from './v1.js'
+import QueryExecutor from '../utils/QueryExecutor.js'
+import { createDocumentsV1Request, getDocumentsV1Proof, toOrderClauses, toSelect, toWhereClauses } from './v1.js'
 
 export type DocumentsAggregateFunction = 'count' | 'sum' | 'avg'
 
@@ -29,8 +29,8 @@ export default async function queryAggregate (
 
   const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
 
-  return await withProofRetry(grpcPool, async client => {
-    const { proof, metadata } = await getDocumentsV1Proof(client, {
+  return await QueryExecutor.build(grpcPool)
+    .addGrpcRequest(client => client.getDocuments(createDocumentsV1Request({
       dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
       documentType: query.documentTypeName,
       whereClauses: toWhereClauses(query.where),
@@ -38,22 +38,23 @@ export default async function queryAggregate (
       limit: query.limit,
       selects: toSelect({ function: aggregateFunction, field }),
       groupBy: query.groupBy ?? []
+    })))
+    .addProof(response => {
+      const { proof, metadata } = getDocumentsV1Proof(response)
+
+      const metadataTimeMs = BigInt(metadata.timeMs)
+
+      let verified
+
+      if (aggregateFunction === 'count') {
+        verified = verifyGroveDBProof(verifyDocumentsCountProof, proof.grovedbProof, dataContract, query, LATEST_PLATFORM_VERSION, metadataTimeMs)
+      } else if (aggregateFunction === 'sum') {
+        verified = verifyGroveDBProof(verifyDocumentsSumProof, proof.grovedbProof, dataContract, query, field as string, LATEST_PLATFORM_VERSION, metadataTimeMs)
+      } else {
+        verified = verifyGroveDBProof(verifyDocumentsAverageProof, proof.grovedbProof, dataContract, query, field as string, LATEST_PLATFORM_VERSION, metadataTimeMs)
+      }
+
+      return { result: verified.value, rootHash: verified.rootHash, proof, metadata }
     })
-
-    const metadataTimeMs = BigInt(metadata.timeMs)
-
-    let verified
-
-    if (aggregateFunction === 'count') {
-      verified = verifyGroveDBProof(verifyDocumentsCountProof, proof.grovedbProof, dataContract, query, LATEST_PLATFORM_VERSION, metadataTimeMs)
-    } else if (aggregateFunction === 'sum') {
-      verified = verifyGroveDBProof(verifyDocumentsSumProof, proof.grovedbProof, dataContract, query, field as string, LATEST_PLATFORM_VERSION, metadataTimeMs)
-    } else {
-      verified = verifyGroveDBProof(verifyDocumentsAverageProof, proof.grovedbProof, dataContract, query, field as string, LATEST_PLATFORM_VERSION, metadataTimeMs)
-    }
-
-    await verifyDocumentsV1Signature(grpcPool, proof, metadata, verified.rootHash)
-
-    return verified.value
-  })
+    .execute()
 }
