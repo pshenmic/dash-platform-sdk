@@ -80,8 +80,11 @@ export class NamesController {
    * @param name {string} username (ex. pshenmic.dash)
    * @param identityId {IdentifierLike} identity identifier
    * @param privateKey {PrivateKeyWASM} Authentication / High private key from your identity
+   * @param preorderSalt {Uint8Array=} Optional 32 bytes salt of already existing preorder document. If provided, preorder step is skipped
+   *
+   * @return {Promise<Uint8Array>} preorder salt (also attached as `preorderSalt` to the error if domain broadcast fails)
    */
-  async registerName (name: string, identityId: IdentifierLike, privateKey: PrivateKeyWASM): Promise<void> {
+  async registerName (name: string, identityId: IdentifierLike, privateKey: PrivateKeyWASM, preorderSalt?: Uint8Array): Promise<Uint8Array> {
     const validation = validateName(name)
 
     if (validation != null) {
@@ -90,7 +93,7 @@ export class NamesController {
 
     const identity = await getIdentityByIdentifier(this.grpcPool, identityId)
 
-    await registerName(this.grpcPool, name, identity, privateKey)
+    return await registerName(this.grpcPool, name, identity, privateKey, preorderSalt)
   }
 
   /**
