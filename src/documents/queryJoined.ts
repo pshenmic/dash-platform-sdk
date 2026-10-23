@@ -11,9 +11,18 @@ import {
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
 import QueryExecutor from '../QueryExecutor.js'
-import { createDocumentsV1Request, getDocumentsV1Proof, toOrderClauses, toStart, toSubQueries, toWhereClauses } from './v1.js'
+import {
+  createDocumentsV1Request,
+  getDocumentsV1Data,
+  getDocumentsV1Proof,
+  toDocumentRemovalEntry,
+  toDocuments,
+  toOrderClauses,
+  toStart,
+  toSubQueries,
+  toWhereClauses
+} from './v1.js'
 
 export type ChainedDocuments = Omit<VerifiedChainedDocuments, 'rootHash'>
 export type CompositeDocuments = Omit<VerifiedCompositeDocuments, 'rootHash'>
@@ -43,12 +52,23 @@ export async function queryChained (
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getDocuments', request)
-    .addProof(response => {
-      const { proof, metadata } = getDocumentsV1Proof(response)
+    .setProofExtractor(getDocumentsV1Proof)
+    .addProofVerifier(verifyChainedDocumentsProof, dataContract, query, joinProperty, outerDocumentTypeName, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      if (data.proved) {
+        const { rootHash, ...result } = data.verified
 
-      const { rootHash, ...result } = verifyGroveDBProof(verifyChainedDocumentsProof, proof.grovedbProof, dataContract, query, joinProperty, outerDocumentTypeName, LATEST_PLATFORM_VERSION)
+        return result
+      }
 
-      return { result, rootHash, proof, metadata }
+      const { innerDocuments, outerDocuments, missingOuterIds, removedOuterDocuments } = getDocumentsV1Data(data.result, 'chained')
+
+      return {
+        innerDocuments: toDocuments(innerDocuments, dataContract, query.documentTypeName),
+        outerDocuments: toDocuments(outerDocuments, dataContract, outerDocumentTypeName),
+        missingOuterIds: missingOuterIds.map(id => new IdentifierWASM(id)),
+        removedOuterDocuments: removedOuterDocuments.map(toDocumentRemovalEntry)
+      }
     })
     .execute()
 }
@@ -79,12 +99,34 @@ export async function queryComposite (
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getDocuments', request)
-    .addProof(response => {
-      const { proof, metadata } = getDocumentsV1Proof(response)
+    .setProofExtractor(getDocumentsV1Proof)
+    .addProofVerifier(verifyCompositeDocumentsProof, dataContract, query, subQueries, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      if (data.proved) {
+        const { rootHash, ...result } = data.verified
 
-      const { rootHash, ...result } = verifyGroveDBProof(verifyCompositeDocumentsProof, proof.grovedbProof, dataContract, query, subQueries, LATEST_PLATFORM_VERSION)
+        return result
+      }
 
-      return { result, rootHash, proof, metadata }
+      const { pageDocuments, subResults } = getDocumentsV1Data(data.result, 'composite')
+
+      return {
+        pageDocuments: toDocuments(pageDocuments, dataContract, query.documentTypeName),
+        subResults: subResults.map(({ result, missingIds, removed }, index) => {
+          const subQuery = subQueries[index]
+
+          return {
+            documents: result.oneofKind === 'documents'
+              ? toDocuments(result.documents.documents, subQuery.dataContract ?? dataContract, subQuery.documentTypeName)
+              : undefined,
+            counts: result.oneofKind === 'counts'
+              ? result.counts.entries.map(({ inKey, key, count }) => ({ inKey: inKey ?? null, key, count: BigInt(count) }))
+              : undefined,
+            missingIds: missingIds.map(id => new IdentifierWASM(id)),
+            removals: removed.map(toDocumentRemovalEntry)
+          }
+        })
+      }
     })
     .execute()
 }

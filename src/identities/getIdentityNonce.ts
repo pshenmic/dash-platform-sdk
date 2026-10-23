@@ -1,8 +1,7 @@
 import { GetIdentityNonceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyIdentityNonceProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 const IDENTITY_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
@@ -21,17 +20,11 @@ export default async function getIdentityNonce (grpcPool: GRPCPool, identifier: 
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getIdentityNonce', getIdentityNonceRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
+    .addProofVerifier(verifyIdentityNonceProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      const nonce = data.proved ? data.verified.nonce : BigInt(data.result.identityNonce)
 
-      const {
-        rootHash,
-        nonce
-      } = verifyGroveDBProof(verifyIdentityNonceProof, proof.grovedbProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
-
-      const result = nonce != null ? BigInt(nonce) & IDENTITY_NONCE_VALUE_FILTER : BigInt(0)
-
-      return { result, rootHash, proof, metadata }
+      return nonce != null ? nonce & IDENTITY_NONCE_VALUE_FILTER : BigInt(0)
     })
     .execute()
 }

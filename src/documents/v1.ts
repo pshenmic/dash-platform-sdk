@@ -14,20 +14,27 @@ import {
   GetDocumentsRequest_TimeRangeSelection_Selector,
   GetDocumentsRequest_WhereClause,
   GetDocumentsRequest_WhereOperator,
+  GetContractDocumentRemovalsResponse_ContractDocumentRemoval,
   GetDocumentsResponse,
+  GetDocumentsResponse_GetDocumentsResponseV1_ResultData,
   Proof,
   ResponseMetadata
 } from '../../proto/generated/platform.js'
 import {
   AggregateSelect,
   CompositeSubQuery,
+  DataContractWASM,
+  DocumentWASM,
   HavingClause,
   IdentifierLike,
   IdentifierWASM,
   IntegerRangeSelection,
+  ProvenDocumentRemovalEntry,
   TimeRangeSelection,
   WhereClause
 } from 'pshenmic-dpp'
+import { ResponseResult } from '../QueryExecutor.js'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 type DocumentFieldValue = GetDocumentsRequest_DocumentFieldValue
 
@@ -291,4 +298,59 @@ export function getDocumentsV1Proof (response: GetDocumentsResponse): { proof: P
   }
 
   return { proof: result.proof, metadata }
+}
+
+type DocumentsV1Variant = GetDocumentsResponse_GetDocumentsResponseV1_ResultData['variant']
+type DocumentsV1Kind = NonNullable<DocumentsV1Variant['oneofKind']>
+type DocumentsV1Data<K extends DocumentsV1Kind> = Extract<DocumentsV1Variant, { oneofKind: K }> extends infer V ? V[K & keyof V] : never
+
+/**
+ * Returns the data of the given kind from the result of a v1 getDocuments response requested without proof
+ */
+export function getDocumentsV1Data<K extends DocumentsV1Kind> (result: ResponseResult<GetDocumentsResponse>, kind: K): DocumentsV1Data<K> {
+  if (result.oneofKind !== 'data') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be data)')
+  }
+
+  const { variant } = result.data
+
+  if (variant.oneofKind !== kind) {
+    throw new Error(`Unexpected oneOf type returned from DAPI (must be ${kind})`)
+  }
+
+  return (variant as Record<string, unknown>)[kind] as DocumentsV1Data<K>
+}
+
+/**
+ * Deserializes the documents of a getDocuments response requested without proof
+ */
+export function toDocuments (documents: Uint8Array[], dataContract: DataContractWASM, documentTypeName: string): DocumentWASM[] {
+  return documents.map(bytes => DocumentWASM.fromBytes(bytes, dataContract, documentTypeName, LATEST_PLATFORM_VERSION))
+}
+
+/**
+ * Converts the document removal of a getDocuments response requested without proof to the one of the proof verification
+ */
+export function toDocumentRemovalEntry (removal: GetContractDocumentRemovalsResponse_ContractDocumentRemoval): ProvenDocumentRemovalEntry {
+  const { documentId, documentOwnerId, moderatorId, removedAt, reason, documentHash, restoration, keptFields } = removal
+
+  return {
+    documentId: new IdentifierWASM(documentId),
+    removal: {
+      documentOwnerId: new IdentifierWASM(documentOwnerId),
+      moderatorId: new IdentifierWASM(moderatorId),
+      reason: {
+        code: reason?.code ?? null,
+        text: reason?.text ?? '',
+        documents: reason?.documents.map(({ documentTypeName, documentId }) => ({ documentTypeName, documentId: new IdentifierWASM(documentId) })),
+        reasonDocumentId: reason?.reasonDocumentId != null ? new IdentifierWASM(reason.reasonDocumentId) : undefined
+      },
+      removedAt: BigInt(removedAt),
+      documentHash,
+      restoration: restoration != null
+        ? { moderatorId: new IdentifierWASM(restoration.moderatorId), restoredAt: BigInt(restoration.restoredAt) }
+        : null,
+      keptFields: keptFields.length > 0 ? keptFields : undefined
+    }
+  }
 }

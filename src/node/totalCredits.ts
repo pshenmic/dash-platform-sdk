@@ -7,8 +7,7 @@ import {
   TESTNET_ACTIVATION_HEIGHT
 } from '../constants.js'
 import { verifyTotalCreditsProof } from 'pshenmic-dpp'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 
 export default async function totalCredits (grpcPool: GRPCPool): Promise<bigint> {
   const getTotalCreditsInPlatformRequest = GetTotalCreditsInPlatformRequest.create({
@@ -20,23 +19,11 @@ export default async function totalCredits (grpcPool: GRPCPool): Promise<bigint>
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getTotalCreditsInPlatform', getTotalCreditsInPlatformRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
-
+    .addProofVerifier(verifyTotalCreditsProof, ({ metadata }) => {
       const activationHeight = grpcPool.network === 'testnet' ? TESTNET_ACTIVATION_HEIGHT : MAINNET_ACTIVATION_HEIGHT
 
-      const { rootHash, totalCredits } = verifyGroveDBProof(
-        verifyTotalCreditsProof,
-        proof.grovedbProof,
-        HALVING_INTERVAL,
-        activationHeight,
-        Number(metadata.height),
-        LATEST_PLATFORM_VERSION
-      )
-
-      const result = totalCredits
-
-      return { result, rootHash, proof, metadata }
+      return [HALVING_INTERVAL, activationHeight, metadata.coreChainLockedHeight, LATEST_PLATFORM_VERSION]
     })
+    .addMapper(data => data.proved ? data.verified.totalCredits : BigInt(data.result.credits))
     .execute()
 }

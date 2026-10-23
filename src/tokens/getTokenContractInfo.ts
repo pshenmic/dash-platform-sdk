@@ -1,8 +1,7 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetTokenContractInfoRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenContractInfoProof } from 'pshenmic-dpp'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface TokenContractInfo {
@@ -25,30 +24,18 @@ export default async function getTokenContractInfo (grpcPool: GRPCPool, tokenIde
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getTokenContractInfo', getTokenContractInfoRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
-
-      const {
-        rootHash,
-        contractInfo
-      } = verifyGroveDBProof(
-        verifyTokenContractInfoProof,
-        proof.grovedbProof,
-        tokenId,
-        true,
-        LATEST_PLATFORM_VERSION
-      )
+    .addProofVerifier(verifyTokenContractInfoProof, tokenId, true, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      const contractInfo = data.proved ? data.verified.contractInfo : data.result.data
 
       if (contractInfo == null) {
         throw new Error('ContractInfo not found')
       }
 
-      const result = {
-        dataContractId: contractInfo.contractId,
+      return {
+        dataContractId: new IdentifierWASM(contractInfo.contractId),
         tokenContractPosition: contractInfo.tokenContractPosition
       }
-
-      return { result, rootHash, proof, metadata }
     })
     .execute()
 }

@@ -1,26 +1,25 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
-import {GetFinalizedEpochInfosRequest} from '../../proto/generated/platform.js'
-import {IdentifierWASM, verifyFinalizedEpochInfosProof} from 'pshenmic-dpp'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import { GetFinalizedEpochInfosRequest } from '../../proto/generated/platform.js'
+import { IdentifierWASM, verifyFinalizedEpochInfosProof } from 'pshenmic-dpp'
+import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface FinalizedEpochInfo {
-  epochIndex: number,
-  firstBlockTime: Date,
-  firstBlockHeight: bigint,
-  totalBlocksInEpoch: bigint,
-  firstCoreBlockHeight: number,
-  nextEpochStartCoreBlockHeight: number,
-  totalProcessingFees: bigint,
-  totalDistributedStorageFees: bigint,
-  totalCreatedStorageFees: bigint,
-  coreBlockRewards: bigint,
-  blockProposers: {
-    proposer: IdentifierWASM;
-    count: bigint;
-  }[],
-  feeMultiplier: bigint,
+  epochIndex: number
+  firstBlockTime: Date
+  firstBlockHeight: bigint
+  totalBlocksInEpoch: bigint
+  firstCoreBlockHeight: number
+  nextEpochStartCoreBlockHeight: number
+  totalProcessingFees: bigint
+  totalDistributedStorageFees: bigint
+  totalCreatedStorageFees: bigint
+  coreBlockRewards: bigint
+  blockProposers: Array<{
+    proposer: IdentifierWASM
+    count: bigint
+  }>
+  feeMultiplier: bigint
   protocolVersion: number
 }
 
@@ -40,39 +39,45 @@ export default async function getFinalizedEpochsInfo (grpcPool: GRPCPool, startE
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getFinalizedEpochInfos', getEpochsInfoRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
+    .addProofVerifier(verifyFinalizedEpochInfosProof, startEpochIndex, startEpochIndexIncluded, endEpochIndex, endEpochIndexIncluded, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      if (data.proved) {
+        return data.verified.epochInfos.map(info => ({
+          epochIndex: info.epochIndex,
+          firstBlockTime: info.firstBlockTime,
+          firstBlockHeight: info.firstBlockHeight,
+          totalBlocksInEpoch: info.totalBlocksInEpoch,
+          firstCoreBlockHeight: info.firstCoreBlockHeight,
+          nextEpochStartCoreBlockHeight: info.nextEpochStartCoreBlockHeight,
+          totalProcessingFees: info.totalProcessingFees,
+          totalDistributedStorageFees: info.totalDistributedStorageFees,
+          totalCreatedStorageFees: info.totalCreatedStorageFees,
+          coreBlockRewards: info.coreBlockRewards,
+          blockProposers: info.blockProposers,
+          feeMultiplier: info.feeMultiplierPermille,
+          protocolVersion: info.protocolVersion
+        })) as unknown as FinalizedEpochInfo[]
+      }
 
-      const {
-        rootHash,
-        epochInfos
-      } = verifyGroveDBProof(
-        verifyFinalizedEpochInfosProof,
-        proof.grovedbProof,
-        startEpochIndex,
-        startEpochIndexIncluded,
-        endEpochIndex,
-        endEpochIndexIncluded,
-        LATEST_PLATFORM_VERSION
-      )
-
-      const result = epochInfos.map(info => ({
-        epochIndex: info.epochIndex,
-        firstBlockTime: info.firstBlockTime,
-        firstBlockHeight: info.firstBlockHeight,
-        totalBlocksInEpoch: info.totalBlocksInEpoch,
+      return data.result.epochs.finalizedEpochInfos.map(info => ({
+        epochIndex: info.number,
+        firstBlockTime: new Date(Number(info.firstBlockTime)),
+        firstBlockHeight: BigInt(info.firstBlockHeight),
+        totalBlocksInEpoch: BigInt(info.totalBlocksInEpoch),
         firstCoreBlockHeight: info.firstCoreBlockHeight,
         nextEpochStartCoreBlockHeight: info.nextEpochStartCoreBlockHeight,
-        totalProcessingFees: info.totalProcessingFees,
-        totalDistributedStorageFees: info.totalDistributedStorageFees,
-        totalCreatedStorageFees: info.totalCreatedStorageFees,
-        coreBlockRewards: info.coreBlockRewards,
-        blockProposers: info.blockProposers,
-        feeMultiplier: info.feeMultiplierPermille,
+        totalProcessingFees: BigInt(info.totalProcessingFees),
+        totalDistributedStorageFees: BigInt(info.totalDistributedStorageFees),
+        totalCreatedStorageFees: BigInt(info.totalCreatedStorageFees),
+        coreBlockRewards: BigInt(info.coreBlockRewards),
+        blockProposers: info.blockProposers.map(({ proposerId, blockCount }) => ({
+          proposer: new IdentifierWASM(proposerId),
+          count: BigInt(blockCount)
+        })),
+        // returned as a fraction, e.g. 1.5 for 1500 permille
+        feeMultiplier: BigInt(Math.round(info.feeMultiplier * 1000)),
         protocolVersion: info.protocolVersion
       })) as unknown as FinalizedEpochInfo[]
-
-      return { result, rootHash, proof, metadata }
     })
     .execute()
 }

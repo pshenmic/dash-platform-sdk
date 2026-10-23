@@ -6,8 +6,7 @@ import {
 } from 'pshenmic-dpp'
 import { GetAddressInfoRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { PlatformAddressInfo } from '../../types.js'
 
 export async function getAddressInfo (grpcPool: GRPCPool, platformAddress: PlatformAddressLike): Promise<PlatformAddressInfo> {
@@ -25,22 +24,19 @@ export async function getAddressInfo (grpcPool: GRPCPool, platformAddress: Platf
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getAddressInfo', getAddressInfoRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
+    .addProofVerifier(verifyPlatformAddressInfo, platformAddressWASM, true, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      const balanceAndNonce = data.proved ? data.verified : data.result.addressInfoEntry.balanceAndNonce
 
-      const { rootHash, address, nonce, balance } = verifyGroveDBProof(verifyPlatformAddressInfo, proof.grovedbProof, platformAddressWASM, true, LATEST_PLATFORM_VERSION)
-
-      if (address == null || nonce == null || balance == null) {
+      if (balanceAndNonce?.nonce == null || balanceAndNonce.balance == null) {
         throw new Error(`Failed to fetch info for address ${platformAddressWASM.toBech32m(grpcPool.network)}`)
       }
 
-      const result = {
-        address,
-        nonce,
-        balance
+      return {
+        address: platformAddressWASM,
+        nonce: balanceAndNonce.nonce,
+        balance: BigInt(balanceAndNonce.balance)
       }
-
-      return { result, rootHash, proof, metadata }
     })
     .execute()
 }

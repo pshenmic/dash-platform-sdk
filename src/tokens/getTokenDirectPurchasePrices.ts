@@ -1,8 +1,7 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { TokenDirectPurchasePrices } from '../../types.js'
-import { IdentifierLike, IdentifierWASM, verifyTokenDirectPurchasePrices } from 'pshenmic-dpp'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import { IdentifierLike, IdentifierWASM, verifyTokenDirectPurchasePrices, TokenPricingScheduleWASM } from 'pshenmic-dpp'
+import QueryExecutor from '../QueryExecutor.js'
 import { GetTokenDirectPurchasePricesRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
@@ -21,24 +20,28 @@ export default async function getTokenDirectPurchasePrices (grpcPool: GRPCPool, 
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getTokenDirectPurchasePrices', request)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
+    .addProofVerifier(verifyTokenDirectPurchasePrices, tokenIds, true, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      if (data.proved) {
+        if (data.verified.prices == null) {
+          throw new Error('Prices not found')
+        }
 
-      const { rootHash, prices } = verifyGroveDBProof(
-        verifyTokenDirectPurchasePrices,
-        proof.grovedbProof,
-        tokenIds,
-        true,
-        LATEST_PLATFORM_VERSION
-      )
-
-      if (prices == null) {
-        throw new Error('Prices not found')
+        return data.verified.prices
       }
 
-      const result = prices
+      return data.result.tokenDirectPurchasePrices.tokenDirectPurchasePrice.map(({ tokenId, price }) => {
+        let pricingSchedule: TokenPricingScheduleWASM | undefined
 
-      return { result, rootHash, proof, metadata }
+        if (price.oneofKind === 'fixedPrice') {
+          pricingSchedule = TokenPricingScheduleWASM.SinglePrice(BigInt(price.fixedPrice))
+        } else if (price.oneofKind === 'variablePrice') {
+          pricingSchedule = TokenPricingScheduleWASM.SetPrices(Object.fromEntries(price.variablePrice.priceForQuantity
+            .map(({ quantity, price }) => [quantity, BigInt(price)])))
+        }
+
+        return { tokenId: new IdentifierWASM(tokenId), pricingSchedule }
+      })
     })
     .execute()
 }

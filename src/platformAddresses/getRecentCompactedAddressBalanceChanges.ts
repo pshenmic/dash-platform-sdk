@@ -1,9 +1,8 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
-import { verifyRecentCompactedAddressBalanceChanges, CompactedBlockAddressBalanceChanges } from 'pshenmic-dpp'
+import { verifyRecentCompactedAddressBalanceChanges, CompactedBlockAddressBalanceChanges, PlatformAddressWASM } from 'pshenmic-dpp'
 import { GetRecentCompactedAddressBalanceChangesRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 
 export async function getRecentCompactedAddressBalanceChanges (grpcPool: GRPCPool, startBlockHeight: bigint): Promise<CompactedBlockAddressBalanceChanges[]> {
   const getRecentCompactedAddressBalanceChangesRequest = GetRecentCompactedAddressBalanceChangesRequest.create({
@@ -18,14 +17,30 @@ export async function getRecentCompactedAddressBalanceChanges (grpcPool: GRPCPoo
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getRecentCompactedAddressBalanceChanges', getRecentCompactedAddressBalanceChangesRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
+    .addProofVerifier(verifyRecentCompactedAddressBalanceChanges, startBlockHeight, undefined, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      if (data.proved) {
+        return data.verified.ranges
+      }
 
-      const { rootHash, ranges } = verifyGroveDBProof(verifyRecentCompactedAddressBalanceChanges, proof.grovedbProof, startBlockHeight, undefined, LATEST_PLATFORM_VERSION)
+      return data.result.compactedAddressBalanceUpdateEntries.compactedBlockChanges.map(({ startBlockHeight, endBlockHeight, changes }) => ({
+        startBlockHeight: BigInt(startBlockHeight),
+        endBlockHeight: BigInt(endBlockHeight),
+        changes: changes.map(({ address, operation }) => {
+          if (operation.oneofKind == null) {
+            throw new Error('Unexpected address balance change operation')
+          }
 
-      const result = ranges
-
-      return { result, rootHash, proof, metadata }
+          return {
+            address: PlatformAddressWASM.fromBytes(address),
+            operation: operation.oneofKind,
+            setCredits: operation.oneofKind === 'setCredits' ? BigInt(operation.setCredits) : undefined,
+            addToCreditsOperations: operation.oneofKind === 'addToCreditsOperations'
+              ? operation.addToCreditsOperations.entries.map(({ blockHeight, credits }) => ({ blockHeight: BigInt(blockHeight), credits: BigInt(credits) }))
+              : []
+          }
+        })
+      }))
     })
     .execute()
 }

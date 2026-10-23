@@ -34,6 +34,8 @@ export interface GRPCPool {
   banNode?: (client: PlatformClient) => void
   /** Lifts the ban of the node that served the request of the client, e.g. after its response was verified **/
   unbanNode?: (client: PlatformClient) => void
+  /** Requests and verifies proofs of the queries, `true` if not set **/
+  proofs?: boolean
 }
 
 export interface MasternodeInfo {
@@ -199,6 +201,7 @@ export default class GRPCConnectionPool implements GRPCPool {
   #poolLimit: number
   #dapiUrl?: string | string[]
   readonly retries: number
+  proofs?: boolean
   #nodeIndex = 0
   #initialization?: Promise<void>
   // ban state of nodes that failed with a retryable error, banned nodes are skipped on node selection

@@ -19,6 +19,12 @@ export type { GRPCOptions, GRPCPool }
 export interface SDKOptions {
   network: Network
   grpc?: GRPCOptions
+  /**
+   * Requests and verifies proofs of the queries (default `true`).
+   * Without proofs, responses are trusted as is, queries that can not be done without proofs are still requested with proofs.
+   * Overrides `proofs` of a custom GRPC pool
+   */
+  proofs?: boolean
   /** @deprecated Use {GRPCOptions} instead, will be removed in next major version **/
   dapiUrl?: string | string[]
 }
@@ -87,6 +93,10 @@ export class DashPlatformSDK {
    * @param network
    */
   _initialize (grpcPool: GRPCPool): void {
+    if (this.options?.proofs != null) {
+      grpcPool.proofs = this.options.proofs
+    }
+
     this.grpcPool = grpcPool
 
     this.contestedResources = new ContestedResourcesController(grpcPool)

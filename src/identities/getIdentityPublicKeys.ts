@@ -1,8 +1,7 @@
 import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, IdentityPublicKeyWASM, verifyIdentityKeysByIdentifierProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getIdentityPublicKeys (grpcPool: GRPCPool, identifier: IdentifierLike, keyIds?: number[]): Promise<IdentityPublicKeyWASM[]> {
@@ -35,29 +34,19 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCPool, identif
     }
   })
 
-  // TODO:
-  // мапить поля не только под proof
-  // переименовать addProof.
-  // вынести verifyGroveDBProof внутрь QueryExecutor
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getIdentityKeys', getIdentityKeysRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
+    .addProofVerifier(verifyIdentityKeysByIdentifierProof, id.bytes(), keyIds ?? null, false, false, true, null, null, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      const keys = data.proved
+        ? data.verified.identity?.loadedPublicKeys
+        : data.result.keys.keysBytes.map(bytes => IdentityPublicKeyWASM.fromBytes(bytes))
 
-      const {
-        rootHash,
-        identity
-      } = verifyGroveDBProof(verifyIdentityKeysByIdentifierProof, proof.grovedbProof, id.bytes(), keyIds != null ? keyIds : null, false, false, true, null, null, LATEST_PLATFORM_VERSION)
-
-      if (identity == null) {
+      if (keys == null) {
         throw new Error(`Identity with identifier ${id.base58()} not found`)
       }
 
-      const loadedKeysIds = Object.keys(identity.loadedPublicKeys)
-
-      const result = loadedKeysIds.map((id) => identity.loadedPublicKeys[id])
-
-      return { result, rootHash, proof, metadata }
+      return Object.values(keys)
     })
     .execute()
 }

@@ -1,9 +1,8 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedAnchorsRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyShieldedAnchorsProof } from 'pshenmic-dpp'
-import {LATEST_PLATFORM_VERSION} from "../constants.js";
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
+import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getShieldedAnchors (
   grpcPool: GRPCPool,
@@ -23,14 +22,7 @@ export default async function getShieldedAnchors (
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getShieldedAnchors', getShieldedAnchorsRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
-
-      const {rootHash, anchors} = verifyGroveDBProof(verifyShieldedAnchorsProof, proof.grovedbProof, true, LATEST_PLATFORM_VERSION, tokenId)
-
-      const result = anchors
-
-      return { result, rootHash, proof, metadata }
-    })
+    .addProofVerifier(verifyShieldedAnchorsProof, true, LATEST_PLATFORM_VERSION, tokenId)
+    .addMapper(data => data.proved ? data.verified.anchors : data.result.anchors.anchors)
     .execute()
 }

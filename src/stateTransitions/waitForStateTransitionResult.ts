@@ -8,12 +8,15 @@ import {
 } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import hexToBytes from '../utils/hexToBytes.js'
-import { WaitForStateTransitionResultRequest } from '../../proto/generated/platform.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
+import { StateTransitionBroadcastError, WaitForStateTransitionResultRequest } from '../../proto/generated/platform.js'
 import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { base64 } from '@scure/base'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
+
+function toStateTransitionError (txHash: string, { code, message, data }: StateTransitionBroadcastError): Error {
+  return new Error(`State transition ${txHash} failed to execute with code ${String(code)}, message: ${String(message)}, data: ${base64.encode(data)}`)
+}
 
 export default async function waitForStateTransitionResult (grpcPool: GRPCPool, stateTransition: StateTransitionWASM): Promise<bigint | undefined> {
   const txHash = stateTransition.hash(false)
@@ -24,7 +27,8 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
       v0: {
         stateTransitionHash: hexToBytes(txHash),
         prove: true,
-        requestUserBalance: false
+        // without proof the owner balance is returned only if requested
+        requestUserBalance: grpcPool.proofs === false
       }
     }
   })
@@ -47,7 +51,7 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('waitForStateTransitionResult', waitForStateTransitionResultRequest)
-    .addProof(response => {
+    .setProofExtractor(response => {
       const { version } = response
 
       if (version.oneofKind !== 'v0') {
@@ -57,12 +61,12 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
       const { v0 } = version
 
       if (v0.result.oneofKind === 'error') {
-        const { code, message, data } = v0.result.error
-        throw new Error(`State transition ${txHash} failed to execute with code ${String(code)}, message: ${String(message)}, data: ${base64.encode(data)}`)
+        throw toStateTransitionError(txHash, v0.result.error)
       }
 
-      const { proof, metadata } = getResponseProof(response)
-
+      return getResponseProof(response)
+    })
+    .addProofVerifier(verifyStateTransitionResult, ({ metadata }) => {
       const { timeMs, height, coreChainLockedHeight, epoch } = metadata
 
       const blockInfo: BlockInfo = {
@@ -72,17 +76,22 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
         epoch
       }
 
-      const {
-        rootHash,
-        result,
-        ownerBalance
-      } = verifyGroveDBProof(verifyStateTransitionResult, proof.grovedbProof, stateTransition, blockInfo, knownContracts, LATEST_PLATFORM_VERSION)
+      return [stateTransition, blockInfo, knownContracts, LATEST_PLATFORM_VERSION]
+    })
+    .addMapper(data => {
+      if (data.proved) {
+        if (data.verified.result == null) {
+          throw new Error('State transition result was null')
+        }
 
-      if (result == null) {
-        throw new Error('State transition result was null')
+        return data.verified.ownerBalance
       }
 
-      return { result: ownerBalance, rootHash, proof, metadata }
+      if (data.result.oneofKind === 'error') {
+        throw toStateTransitionError(txHash, data.result.error)
+      }
+
+      return BigInt(data.result.successWithOwnerBalance.ownerBalance)
     })
     .execute()
 }

@@ -2,9 +2,8 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedNullifiersRequest } from '../../proto/generated/platform.js'
 import { ShieldedNullifierStatus } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyShieldedNullifiersProof } from 'pshenmic-dpp'
-import {LATEST_PLATFORM_VERSION} from "../constants.js";
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
+import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getShieldedNullifiers (
   grpcPool: GRPCPool,
@@ -26,17 +25,14 @@ export default async function getShieldedNullifiers (
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getShieldedNullifiers', getShieldedNullifiersRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
+    .addProofVerifier(verifyShieldedNullifiersProof, nullifiers, true, LATEST_PLATFORM_VERSION, tokenId)
+    .addMapper(data => {
+      const nullifiersStatuses = data.proved ? data.verified.nullifiers : data.result.nullifierStatuses.entries
 
-      const {rootHash, nullifiers: nullifiersStatuses} = verifyGroveDBProof(verifyShieldedNullifiersProof, proof.grovedbProof, nullifiers, true, LATEST_PLATFORM_VERSION, tokenId)
-
-      const result = nullifiersStatuses.map(entry => ({
+      return nullifiersStatuses.map(entry => ({
         nullifier: entry.nullifier,
         isSpent: entry.isSpent
       }))
-
-      return { result, rootHash, proof, metadata }
     })
     .execute()
 }

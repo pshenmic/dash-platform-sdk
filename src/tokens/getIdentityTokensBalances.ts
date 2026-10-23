@@ -1,8 +1,7 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { IdentifierLike, IdentifierWASM, verifyTokensBalancesForIdentityProof } from 'pshenmic-dpp'
 import { GetIdentityTokenBalancesRequest } from '../../proto/generated/platform.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface IdentityTokenBalances {
@@ -27,28 +26,18 @@ export default async function getIdentityTokensBalances (grpcPool: GRPCPool, ide
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getIdentityTokenBalances', getIdentityTokenBalancesRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
+    .addProofVerifier(verifyTokensBalancesForIdentityProof, tokenIds, id, true, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      const balances = data.proved
+        ? data.verified.balances
+        : data.result.tokenBalances.tokenBalances
+          .map(({ tokenId, balance }) => ({ id: tokenId, balance: balance != null ? BigInt(balance) : undefined }))
 
-      const {
-        rootHash,
-        balances
-      } = verifyGroveDBProof(
-        verifyTokensBalancesForIdentityProof,
-        proof.grovedbProof,
-        tokenIds,
-        id,
-        true,
-        LATEST_PLATFORM_VERSION
-      )
-
-      const result = balances
+      return balances
         .map(({ id, balance }) => ({
           tokenId: new IdentifierWASM(id),
           balance
         }))
-
-      return { result, rootHash, proof, metadata }
     })
     .execute()
 }

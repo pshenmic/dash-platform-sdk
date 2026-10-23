@@ -1,8 +1,7 @@
 import { GetIdentityBalanceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyIdentityBalanceProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getIdentityBalance (grpcPool: GRPCPool, identifier: IdentifierLike): Promise<bigint> {
@@ -20,19 +19,15 @@ export default async function getIdentityBalance (grpcPool: GRPCPool, identifier
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getIdentityBalance', getIdentityBalanceRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
-
-      const {
-        rootHash,
-        balance
-      } = verifyGroveDBProof(verifyIdentityBalanceProof, proof.grovedbProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
+    .addProofVerifier(verifyIdentityBalanceProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      const balance = data.proved ? data.verified.balance : BigInt(data.result.balance)
 
       if (balance == null) {
         throw new Error(`Failed to fetch balance for identifier ${id.base58()}`)
       }
 
-      return { result: BigInt(balance), rootHash, proof, metadata }
+      return balance
     })
     .execute()
 }

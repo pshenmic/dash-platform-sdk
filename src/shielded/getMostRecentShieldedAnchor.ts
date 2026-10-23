@@ -1,9 +1,8 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetMostRecentShieldedAnchorRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyMostRecentShieldedAnchorProof } from 'pshenmic-dpp'
-import {LATEST_PLATFORM_VERSION} from "../constants.js";
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
+import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getMostRecentShieldedAnchor (
   grpcPool: GRPCPool,
@@ -23,14 +22,7 @@ export default async function getMostRecentShieldedAnchor (
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getMostRecentShieldedAnchor', getMostRecentShieldedAnchorRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
-
-      const {rootHash, anchor} = verifyGroveDBProof(verifyMostRecentShieldedAnchorProof, proof.grovedbProof, true, LATEST_PLATFORM_VERSION, tokenId)
-
-      const result = anchor
-
-      return { result, rootHash, proof, metadata }
-    })
+    .addProofVerifier(verifyMostRecentShieldedAnchorProof, true, LATEST_PLATFORM_VERSION, tokenId)
+    .addMapper(data => data.proved ? data.verified.anchor : data.result.anchor)
     .execute()
 }

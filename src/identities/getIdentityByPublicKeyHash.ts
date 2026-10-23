@@ -2,8 +2,7 @@ import { GetIdentityByPublicKeyHashRequest } from '../../proto/generated/platfor
 import { IdentityWASM, verifyIdentityByUniqueKeyHashProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import hexToBytes from '../utils/hexToBytes.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getIdentityByPublicKeyHash (grpcPool: GRPCPool, hex: string): Promise<IdentityWASM> {
@@ -19,21 +18,15 @@ export default async function getIdentityByPublicKeyHash (grpcPool: GRPCPool, he
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getIdentityByPublicKeyHash', getIdentityByPublicKeyHashRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
-
-      const {
-        rootHash,
-        identity
-      } = verifyGroveDBProof(verifyIdentityByUniqueKeyHashProof, proof.grovedbProof, hexToBytes(hex), LATEST_PLATFORM_VERSION)
+    .addProofVerifier(verifyIdentityByUniqueKeyHashProof, hexToBytes(hex), LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      const identity = data.proved ? data.verified.identity : IdentityWASM.fromBytes(data.result.identity)
 
       if (identity == null) {
         throw new Error(`Identity with public key hash ${hex} not found`)
       }
 
-      const result = identity
-
-      return { result, rootHash, proof, metadata }
+      return identity
     })
     .execute()
 }

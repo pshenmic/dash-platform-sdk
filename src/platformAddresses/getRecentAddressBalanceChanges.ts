@@ -1,9 +1,8 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
-import { verifyRecentAddressBalanceChanges, BlockAddressBalanceChanges } from 'pshenmic-dpp'
+import { verifyRecentAddressBalanceChanges, BlockAddressBalanceChanges, PlatformAddressWASM } from 'pshenmic-dpp'
 import { GetRecentAddressBalanceChangesRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 
 export async function getRecentAddressBalanceChanges (grpcPool: GRPCPool, startHeight: bigint, startHeightExclusive: boolean = false): Promise<BlockAddressBalanceChanges[]> {
   const getRecentAddressBalanceChangesRequest = GetRecentAddressBalanceChangesRequest.create({
@@ -19,14 +18,26 @@ export async function getRecentAddressBalanceChanges (grpcPool: GRPCPool, startH
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getRecentAddressBalanceChanges', getRecentAddressBalanceChangesRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
+    .addProofVerifier(verifyRecentAddressBalanceChanges, startHeight, startHeightExclusive, undefined, true, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      if (data.proved) {
+        return data.verified.blocks
+      }
 
-      const { rootHash, blocks } = verifyGroveDBProof(verifyRecentAddressBalanceChanges, proof.grovedbProof, startHeight, startHeightExclusive, undefined, true, LATEST_PLATFORM_VERSION)
+      return data.result.addressBalanceUpdateEntries.blockChanges.map(({ blockHeight, changes }) => ({
+        blockHeight: BigInt(blockHeight),
+        changes: changes.map(({ address, operation }) => {
+          if (operation.oneofKind == null) {
+            throw new Error('Unexpected address balance change operation')
+          }
 
-      const result = blocks
-
-      return { result, rootHash, proof, metadata }
+          return {
+            address: PlatformAddressWASM.fromBytes(address),
+            operation: operation.oneofKind === 'setBalance' ? 'setCredits' as const : 'addToCredits' as const,
+            credits: BigInt(operation.oneofKind === 'setBalance' ? operation.setBalance : operation.addToBalance)
+          }
+        })
+      }))
     })
     .execute()
 }

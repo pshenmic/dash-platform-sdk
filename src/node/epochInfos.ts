@@ -1,8 +1,7 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetEpochsInfoRequest } from '../../proto/generated/platform.js'
 import { verifyEpochsInfoProof } from 'pshenmic-dpp'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { UInt32Value } from '../../proto/generated/google/protobuf/wrappers.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
@@ -30,32 +29,28 @@ export default async function epochInfos (grpcPool: GRPCPool, count: number, asc
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getEpochsInfo', getEpochsInfoRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
+    .addProofVerifier(verifyEpochsInfoProof, ({ metadata }) => [metadata.epoch, start, count, ascending, LATEST_PLATFORM_VERSION])
+    .addMapper(data => {
+      if (data.proved) {
+        return data.verified.epochsInfo.map(info => ({
+          number: info.index,
+          firstBlockHeight: info.firstBlockHeight,
+          firstCoreBlockHeight: info.firstCoreBlockHeight,
+          startTime: info.firstBlockTime,
+          feeMultiplier: info.feeMultiplierPermille,
+          protocolVersion: info.protocolVersion
+        })) as unknown as EpochInfo[]
+      }
 
-      const {
-        rootHash,
-        epochsInfo
-      } = verifyGroveDBProof(
-        verifyEpochsInfoProof,
-        proof.grovedbProof,
-        metadata.epoch,
-        start,
-        count,
-        ascending,
-        LATEST_PLATFORM_VERSION
-      )
-
-      const result = epochsInfo.map(info => ({
-        number: info.index,
-        firstBlockHeight: info.firstBlockHeight,
+      return data.result.epochs.epochInfos.map(info => ({
+        number: info.number,
+        firstBlockHeight: BigInt(info.firstBlockHeight),
         firstCoreBlockHeight: info.firstCoreBlockHeight,
-        startTime: info.firstBlockTime,
-        feeMultiplier: info.feeMultiplierPermille,
+        startTime: BigInt(info.startTime),
+        // returned as a fraction, e.g. 1.5 for 1500 permille
+        feeMultiplier: BigInt(Math.round(info.feeMultiplier * 1000)),
         protocolVersion: info.protocolVersion
       })) as unknown as EpochInfo[]
-
-      return { result, rootHash, proof, metadata }
     })
     .execute()
 }

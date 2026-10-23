@@ -2,7 +2,6 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { verifyAddressesTrunkState } from 'pshenmic-dpp'
 import { GetAddressesTrunkStateRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
 import QueryExecutor from '../QueryExecutor.js'
 import { PlatformAddressesTrunkState } from '../../types.js'
 
@@ -16,9 +15,7 @@ export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<Platf
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getAddressesTrunkState', getAddressesTrunkStateRequest)
-    .addProof(response => {
-      const { version } = response
-
+    .setProofExtractor(({ version }) => {
       if (version.oneofKind !== 'v0') {
         throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
       }
@@ -33,9 +30,15 @@ export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<Platf
         throw new Error('Metadata not found')
       }
 
-      const trunk = verifyGroveDBProof(verifyAddressesTrunkState, proof.grovedbProof, LATEST_PLATFORM_VERSION)
+      return { proof, metadata }
+    })
+    .addProofVerifier(verifyAddressesTrunkState, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      if (!data.proved) {
+        throw new Error('Addresses trunk state can only be requested with proof')
+      }
 
-      return { result: { trunk, metadata }, rootHash: trunk.rootHash, proof, metadata }
+      return { trunk: data.verified, metadata: data.metadata }
     })
     .execute()
 }

@@ -1,9 +1,8 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedNotesCountRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyShieldedNotesCountProof } from 'pshenmic-dpp'
-import {LATEST_PLATFORM_VERSION} from "../constants.js";
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
+import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getShieldedNotesCount (
   grpcPool: GRPCPool,
@@ -23,14 +22,7 @@ export default async function getShieldedNotesCount (
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getShieldedNotesCount', getShieldedNotesCountRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
-
-      const {rootHash, count} = verifyGroveDBProof(verifyShieldedNotesCountProof, proof.grovedbProof, true, LATEST_PLATFORM_VERSION, tokenId)
-
-      const result = count
-
-      return { result, rootHash, proof, metadata }
-    })
+    .addProofVerifier(verifyShieldedNotesCountProof, true, LATEST_PLATFORM_VERSION, tokenId)
+    .addMapper(data => data.proved ? data.verified.count : BigInt(data.result.totalNotesCount))
     .execute()
 }

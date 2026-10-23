@@ -2,9 +2,8 @@ import { DocumentWASM, IdentifierLike, IdentifierWASM, verifyDocumentsProof, Whe
 import { DAPI_DEFAULT_LIMIT, LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
 import QueryExecutor from '../QueryExecutor.js'
-import { createDocumentsV1Request, getDocumentsV1Proof, toOrderClauses, toStart, toWhereClauses } from './v1.js'
+import { createDocumentsV1Request, getDocumentsV1Data, getDocumentsV1Proof, toDocuments, toOrderClauses, toStart, toWhereClauses } from './v1.js'
 
 export default async function query (
   grpcPool: GRPCPool,
@@ -32,17 +31,14 @@ export default async function query (
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getDocuments', request)
-    .addProof(response => {
-      const { proof, metadata } = getDocumentsV1Proof(response)
-
+    .setProofExtractor(getDocumentsV1Proof)
+    .addProofVerifier(verifyDocumentsProof, ({ metadata }) => {
       const metadataTimeMs = BigInt(metadata.timeMs)
 
-      const {
-        rootHash,
-        documents
-      } = verifyGroveDBProof(verifyDocumentsProof, proof.grovedbProof, dataContract, documentTypeName, where, orderBy, limit, startIdentifier?.bytes(), startAtIncluded, metadataTimeMs, LATEST_PLATFORM_VERSION, metadataTimeMs)
-
-      return { result: documents ?? [], rootHash, proof, metadata }
+      return [dataContract, documentTypeName, where, orderBy, limit, startIdentifier?.bytes(), startAtIncluded, metadataTimeMs, LATEST_PLATFORM_VERSION, metadataTimeMs]
     })
+    .addMapper(data => data.proved
+      ? data.verified.documents ?? []
+      : toDocuments(getDocumentsV1Data(data.result, 'documents').documents, dataContract, documentTypeName))
     .execute()
 }

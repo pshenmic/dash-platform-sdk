@@ -1,8 +1,7 @@
 import { DataContractWASM, IdentifierLike, IdentifierWASM, verifyContractProof } from 'pshenmic-dpp'
 import { GetDataContractRequest } from '../../proto/generated/platform.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { DPNS_DATA_CONTRACT_BYTES, DPNS_DATA_CONTRACT_ID, LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getByIdentifier (grpcPool: GRPCPool, identifier: IdentifierLike): Promise<DataContractWASM> {
@@ -24,21 +23,17 @@ export default async function getByIdentifier (grpcPool: GRPCPool, identifier: I
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getDataContract', getDataContractRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
-
-      const {
-        rootHash,
-        dataContract
-      } = verifyGroveDBProof(verifyContractProof, proof.grovedbProof, undefined, false, false, id.bytes(), LATEST_PLATFORM_VERSION)
+    .addProofVerifier(verifyContractProof, undefined, false, false, id.bytes(), LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      const dataContract = data.proved
+        ? data.verified.dataContract
+        : DataContractWASM.fromBytes(data.result.dataContract, false, LATEST_PLATFORM_VERSION)
 
       if (dataContract == null) {
         throw new Error(`Data Contract with identifier ${id.base58()} not found`)
       }
 
-      const result = dataContract
-
-      return { result, rootHash, proof, metadata }
+      return dataContract
     })
     .execute()
 }

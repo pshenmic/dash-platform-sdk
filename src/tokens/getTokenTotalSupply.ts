@@ -2,8 +2,7 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetTokenTotalSupplyRequest } from '../../proto/generated/platform.js'
 import { TokenTotalSupply } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenTotalSupplyProof } from 'pshenmic-dpp'
-import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getTokenTotalSupply (grpcPool: GRPCPool, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
@@ -21,27 +20,17 @@ export default async function getTokenTotalSupply (grpcPool: GRPCPool, tokenIden
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getTokenTotalSupply', getTokenTotalSupplyRequest)
-    .addProof(response => {
-      const { proof, metadata } = getResponseProof(response)
+    .addProofVerifier(verifyTokenTotalSupplyProof, tokenId, true, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      const [totalSystemAmount, totalAggregatedAmountInUserAccounts] = data.proved
+        ? [data.verified.totalBalance.tokenSupply, data.verified.totalBalance.aggregatedTokenAccountBalances]
+        : [BigInt(data.result.tokenTotalSupply.totalSystemAmount), BigInt(data.result.tokenTotalSupply.totalAggregatedAmountInUserAccounts)]
 
-      const {
-        rootHash,
-        totalBalance
-      } = verifyGroveDBProof(
-        verifyTokenTotalSupplyProof,
-        proof.grovedbProof,
+      return {
         tokenId,
-        true,
-        LATEST_PLATFORM_VERSION
-      )
-
-      const result = {
-        tokenId,
-        totalSystemAmount: totalBalance.tokenSupply,
-        totalAggregatedAmountInUserAccounts: totalBalance.aggregatedTokenAccountBalances
+        totalSystemAmount,
+        totalAggregatedAmountInUserAccounts
       }
-
-      return { result, rootHash, proof, metadata }
     })
     .execute()
 }
