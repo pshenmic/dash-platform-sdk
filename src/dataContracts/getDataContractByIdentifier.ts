@@ -2,7 +2,7 @@ import { DataContractWASM, IdentifierLike, IdentifierWASM, verifyContractProof }
 import { GetDataContractRequest } from '../../proto/generated/platform.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { DPNS_DATA_CONTRACT_BYTES, DPNS_DATA_CONTRACT_ID, LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getByIdentifier (grpcPool: GRPCPool, identifier: IdentifierLike): Promise<DataContractWASM> {
@@ -23,7 +23,7 @@ export default async function getByIdentifier (grpcPool: GRPCPool, identifier: I
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getDataContract(getDataContractRequest))
+    .addGrpcRequest('getDataContract', getDataContractRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

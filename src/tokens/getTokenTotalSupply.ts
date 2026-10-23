@@ -3,7 +3,7 @@ import { GetTokenTotalSupplyRequest } from '../../proto/generated/platform.js'
 import { TokenTotalSupply } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenTotalSupplyProof } from 'pshenmic-dpp'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getTokenTotalSupply (grpcPool: GRPCPool, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
@@ -20,7 +20,7 @@ export default async function getTokenTotalSupply (grpcPool: GRPCPool, tokenIden
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getTokenTotalSupply(getTokenTotalSupplyRequest))
+    .addGrpcRequest('getTokenTotalSupply', getTokenTotalSupplyRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

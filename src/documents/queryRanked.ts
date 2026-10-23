@@ -13,7 +13,7 @@ import { GetDocumentsRequest } from '../../proto/generated/platform.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor from '../utils/QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { createDocumentsV1Request, getDocumentsV1Proof, toHavingClauses, toOrderClauses, toSelect, toWhereClauses } from './v1.js'
 
 function createRankedRequest (dataContractId: IdentifierLike, query: AggregateDocumentsQuery, having: HavingClause[]): GetDocumentsRequest {
@@ -36,8 +36,10 @@ function createRankedRequest (dataContractId: IdentifierLike, query: AggregateDo
 export async function queryRanked (grpcPool: GRPCPool, dataContractId: IdentifierLike, query: AggregateDocumentsQuery): Promise<ProvenRankedPage> {
   const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
 
+  const request = createRankedRequest(dataContractId, query, [])
+
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getDocuments(createRankedRequest(dataContractId, query, [])))
+    .addGrpcRequest('getDocuments', request)
     .addProof(response => {
       const { proof, metadata } = getDocumentsV1Proof(response)
 
@@ -54,8 +56,10 @@ export async function queryRanked (grpcPool: GRPCPool, dataContractId: Identifie
 export async function queryHaving (grpcPool: GRPCPool, dataContractId: IdentifierLike, query: AggregateDocumentsQuery & { having: HavingClause[] }): Promise<ProvenRankedEntry[]> {
   const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
 
+  const request = createRankedRequest(dataContractId, query, query.having)
+
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getDocuments(createRankedRequest(dataContractId, query, query.having)))
+    .addGrpcRequest('getDocuments', request)
     .addProof(response => {
       const { proof, metadata } = getDocumentsV1Proof(response)
 

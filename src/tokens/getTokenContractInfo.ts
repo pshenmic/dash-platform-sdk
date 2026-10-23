@@ -2,7 +2,7 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetTokenContractInfoRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenContractInfoProof } from 'pshenmic-dpp'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface TokenContractInfo {
@@ -24,7 +24,7 @@ export default async function getTokenContractInfo (grpcPool: GRPCPool, tokenIde
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getTokenContractInfo(getTokenContractInfoRequest))
+    .addGrpcRequest('getTokenContractInfo', getTokenContractInfoRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

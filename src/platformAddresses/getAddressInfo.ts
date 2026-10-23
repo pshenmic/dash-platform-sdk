@@ -7,7 +7,7 @@ import {
 import { GetAddressInfoRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { PlatformAddressInfo } from '../../types.js'
 
 export async function getAddressInfo (grpcPool: GRPCPool, platformAddress: PlatformAddressLike): Promise<PlatformAddressInfo> {
@@ -24,7 +24,7 @@ export async function getAddressInfo (grpcPool: GRPCPool, platformAddress: Platf
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getAddressInfo(getAddressInfoRequest))
+    .addGrpcRequest('getAddressInfo', getAddressInfoRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

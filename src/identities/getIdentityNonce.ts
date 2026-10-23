@@ -2,7 +2,7 @@ import { GetIdentityNonceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyIdentityNonceProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 const IDENTITY_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
@@ -20,7 +20,7 @@ export default async function getIdentityNonce (grpcPool: GRPCPool, identifier: 
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getIdentityNonce(getIdentityNonceRequest))
+    .addGrpcRequest('getIdentityNonce', getIdentityNonceRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

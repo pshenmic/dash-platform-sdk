@@ -3,7 +3,7 @@ import { IdentityWASM, PlatformVersionWASM, verifyFullIdentityByNonUniquePublicK
 import { GRPCPool } from '../grpcConnectionPool.js'
 import hexToBytes from '../utils/hexToBytes.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRPCPool, hex: string): Promise<IdentityWASM> {
@@ -18,7 +18,7 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getIdentityByNonUniquePublicKeyHash(getIdentityByNonUniquePublicKeyHashRequest))
+    .addGrpcRequest('getIdentityByNonUniquePublicKeyHash', getIdentityByNonUniquePublicKeyHashRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

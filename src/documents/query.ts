@@ -3,7 +3,7 @@ import { DAPI_DEFAULT_LIMIT, LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor from '../utils/QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { createDocumentsV1Request, getDocumentsV1Proof, toOrderClauses, toStart, toWhereClauses } from './v1.js'
 
 export default async function query (
@@ -21,15 +21,17 @@ export default async function query (
   const startIdentifier = startAt ?? startAfter
   const startAtIncluded = startAt != null
 
+  const request = createDocumentsV1Request({
+    dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
+    documentType: documentTypeName,
+    whereClauses: toWhereClauses(where),
+    orderBy: toOrderClauses(orderBy),
+    limit: limit ?? DAPI_DEFAULT_LIMIT,
+    start: toStart(startIdentifier, startAtIncluded)
+  })
+
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getDocuments(createDocumentsV1Request({
-      dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
-      documentType: documentTypeName,
-      whereClauses: toWhereClauses(where),
-      orderBy: toOrderClauses(orderBy),
-      limit: limit ?? DAPI_DEFAULT_LIMIT,
-      start: toStart(startIdentifier, startAtIncluded)
-    })))
+    .addGrpcRequest('getDocuments', request)
     .addProof(response => {
       const { proof, metadata } = getDocumentsV1Proof(response)
 

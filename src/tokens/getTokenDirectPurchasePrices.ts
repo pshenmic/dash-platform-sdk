@@ -2,7 +2,7 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { TokenDirectPurchasePrices } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenDirectPurchasePrices } from 'pshenmic-dpp'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { GetTokenDirectPurchasePricesRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
@@ -20,7 +20,7 @@ export default async function getTokenDirectPurchasePrices (grpcPool: GRPCPool, 
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getTokenDirectPurchasePrices(request))
+    .addGrpcRequest('getTokenDirectPurchasePrices', request)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

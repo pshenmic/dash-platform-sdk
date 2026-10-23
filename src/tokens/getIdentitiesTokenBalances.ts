@@ -2,7 +2,7 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetIdentitiesTokenBalancesRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenBalancesForIdentitiesProof } from 'pshenmic-dpp'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface IdentitiesTokenBalances {
@@ -26,7 +26,7 @@ export default async function getIdentitiesTokenBalances (grpcPool: GRPCPool, id
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getIdentitiesTokenBalances(getIdentitiesTokenBalancesRequest))
+    .addGrpcRequest('getIdentitiesTokenBalances', getIdentitiesTokenBalancesRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

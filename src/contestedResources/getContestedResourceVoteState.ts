@@ -10,7 +10,7 @@ import {
 } from '../../proto/generated/platform.js'
 import { DataContractWASM, DocumentWASM, IdentifierWASM, verifyVotePollVoteStateProof } from 'pshenmic-dpp'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
@@ -51,7 +51,7 @@ export default async function getContestedResourceVoteState (
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getContestedResourceVoteState(getContestedResourceVoteStateRequest))
+    .addGrpcRequest('getContestedResourceVoteState', getContestedResourceVoteStateRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

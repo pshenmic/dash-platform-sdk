@@ -2,7 +2,7 @@ import { GetIdentityBalanceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyIdentityBalanceProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getIdentityBalance (grpcPool: GRPCPool, identifier: IdentifierLike): Promise<bigint> {
@@ -19,7 +19,7 @@ export default async function getIdentityBalance (grpcPool: GRPCPool, identifier
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getIdentityBalance(getIdentityBalanceRequest))
+    .addGrpcRequest('getIdentityBalance', getIdentityBalanceRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

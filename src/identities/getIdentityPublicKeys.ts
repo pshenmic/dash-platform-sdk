@@ -2,7 +2,7 @@ import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/pl
 import { IdentifierLike, IdentifierWASM, IdentityPublicKeyWASM, verifyIdentityKeysByIdentifierProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getIdentityPublicKeys (grpcPool: GRPCPool, identifier: IdentifierLike, keyIds?: number[]): Promise<IdentityPublicKeyWASM[]> {
@@ -35,8 +35,12 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCPool, identif
     }
   })
 
+  // TODO:
+  // мапить поля не только под proof
+  // переименовать addProof.
+  // вынести verifyGroveDBProof внутрь QueryExecutor
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getIdentityKeys(getIdentityKeysRequest))
+    .addGrpcRequest('getIdentityKeys', getIdentityKeysRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

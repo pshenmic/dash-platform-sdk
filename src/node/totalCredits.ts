@@ -8,7 +8,7 @@ import {
 } from '../constants.js'
 import { verifyTotalCreditsProof } from 'pshenmic-dpp'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 
 export default async function totalCredits (grpcPool: GRPCPool): Promise<bigint> {
   const getTotalCreditsInPlatformRequest = GetTotalCreditsInPlatformRequest.create({
@@ -19,7 +19,7 @@ export default async function totalCredits (grpcPool: GRPCPool): Promise<bigint>
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getTotalCreditsInPlatform(getTotalCreditsInPlatformRequest))
+    .addGrpcRequest('getTotalCreditsInPlatform', getTotalCreditsInPlatformRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

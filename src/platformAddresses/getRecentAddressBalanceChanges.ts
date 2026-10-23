@@ -3,7 +3,7 @@ import { verifyRecentAddressBalanceChanges, BlockAddressBalanceChanges } from 'p
 import { GetRecentAddressBalanceChangesRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 
 export async function getRecentAddressBalanceChanges (grpcPool: GRPCPool, startHeight: bigint, startHeightExclusive: boolean = false): Promise<BlockAddressBalanceChanges[]> {
   const getRecentAddressBalanceChangesRequest = GetRecentAddressBalanceChangesRequest.create({
@@ -18,7 +18,7 @@ export async function getRecentAddressBalanceChanges (grpcPool: GRPCPool, startH
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getRecentAddressBalanceChanges(getRecentAddressBalanceChangesRequest))
+    .addGrpcRequest('getRecentAddressBalanceChanges', getRecentAddressBalanceChangesRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

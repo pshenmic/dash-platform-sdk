@@ -1,7 +1,7 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { GetShieldedPoolStateRequest } from '../../proto/generated/platform.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { IdentifierLike, IdentifierWASM, verifyShieldedPoolStateProof } from 'pshenmic-dpp'
 import {LATEST_PLATFORM_VERSION} from "../constants.js";
 
@@ -22,7 +22,7 @@ export default async function getShieldedPoolState (
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getShieldedPoolState(getShieldedPoolStateRequest))
+    .addGrpcRequest('getShieldedPoolState', getShieldedPoolStateRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

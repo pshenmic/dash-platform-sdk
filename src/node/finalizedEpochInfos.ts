@@ -2,7 +2,7 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import {GetFinalizedEpochInfosRequest} from '../../proto/generated/platform.js'
 import {IdentifierWASM, verifyFinalizedEpochInfosProof} from 'pshenmic-dpp'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface FinalizedEpochInfo {
@@ -39,7 +39,7 @@ export default async function getFinalizedEpochsInfo (grpcPool: GRPCPool, startE
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getFinalizedEpochInfos(getEpochsInfoRequest))
+    .addGrpcRequest('getFinalizedEpochInfos', getEpochsInfoRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 

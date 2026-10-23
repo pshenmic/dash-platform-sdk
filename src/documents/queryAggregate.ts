@@ -11,7 +11,7 @@ import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor from '../utils/QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { createDocumentsV1Request, getDocumentsV1Proof, toOrderClauses, toSelect, toWhereClauses } from './v1.js'
 
 export type DocumentsAggregateFunction = 'count' | 'sum' | 'avg'
@@ -29,16 +29,18 @@ export default async function queryAggregate (
 
   const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
 
+  const request = createDocumentsV1Request({
+    dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
+    documentType: query.documentTypeName,
+    whereClauses: toWhereClauses(query.where),
+    orderBy: toOrderClauses(query.orderBy),
+    limit: query.limit,
+    selects: toSelect({ function: aggregateFunction, field }),
+    groupBy: query.groupBy ?? []
+  })
+
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getDocuments(createDocumentsV1Request({
-      dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
-      documentType: query.documentTypeName,
-      whereClauses: toWhereClauses(query.where),
-      orderBy: toOrderClauses(query.orderBy),
-      limit: query.limit,
-      selects: toSelect({ function: aggregateFunction, field }),
-      groupBy: query.groupBy ?? []
-    })))
+    .addGrpcRequest('getDocuments', request)
     .addProof(response => {
       const { proof, metadata } = getDocumentsV1Proof(response)
 

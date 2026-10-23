@@ -3,7 +3,7 @@ import { verifyAddressesTrunkState } from 'pshenmic-dpp'
 import { GetAddressesTrunkStateRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor from '../utils/QueryExecutor.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { PlatformAddressesTrunkState } from '../../types.js'
 
 export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<PlatformAddressesTrunkState> {
@@ -15,7 +15,7 @@ export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<Platf
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getAddressesTrunkState(getAddressesTrunkStateRequest))
+    .addGrpcRequest('getAddressesTrunkState', getAddressesTrunkStateRequest)
     .addProof(response => {
       const { version } = response
 

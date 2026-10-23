@@ -1,13 +1,19 @@
-import { PlatformClient } from '../../proto/generated/platform.client.js'
-import { Proof, ResponseMetadata } from '../../proto/generated/platform.js'
-import { GRPCPool } from '../grpcConnectionPool.js'
-import { getQuorumPublicKey } from './getQuorumPublicKey.js'
-import bytesToHex from './bytesToHex.js'
-import verifyTenderdashProof from './verifyTenderdashProof.js'
-import ProofError from './ProofError.js'
-import sleep from './sleep.js'
+import { PlatformClient } from '../proto/generated/platform.client.js'
+import { Proof, ResponseMetadata } from '../proto/generated/platform.js'
+import { GRPCPool } from './grpcConnectionPool.js'
+import { getQuorumPublicKey } from './utils/getQuorumPublicKey.js'
+import bytesToHex from './utils/bytesToHex.js'
+import verifyTenderdashProof from './utils/verifyTenderdashProof.js'
+import ProofError from './utils/ProofError.js'
+import sleep from './utils/sleep.js'
 
 const RETRY_DELAY_MS = 10
+
+type SubType<Base, Condition> = Pick<Base, {
+  [Key in keyof Base]: Base[Key] extends Condition ? Key : never
+}[keyof Base]>;
+
+type PlatformClientMethods = SubType<PlatformClient, (...args: any[]) => any>
 
 /**
  * Result of the proof verification of a response, `proof`, `metadata` and `rootHash`
@@ -92,10 +98,29 @@ export default class QueryExecutor<Response = unknown, T = unknown> {
   /**
    * Sets the GRPC request, it is sent again on every retry
    */
-  addGrpcRequest<R> (request: GrpcRequest<R>): QueryExecutor<R, T> {
-    const executor = this as unknown as QueryExecutor<R, T>
+  addGrpcRequest<M extends keyof PlatformClientMethods>(
+    method: M,
+    request: Parameters<PlatformClientMethods[M]>[0]
+  ): QueryExecutor<
+    Awaited<ReturnType<PlatformClientMethods[M]>> extends { response: infer R }
+      ? R
+      : never,
+    T
+  > {
+    const executor = this as unknown as QueryExecutor<
+      Awaited<ReturnType<PlatformClientMethods[M]>> extends { response: infer R }
+        ? R
+        : never,
+      T
+    >
 
-    executor.#request = request
+    executor.#request = (client) => {
+      const fn = client[method] as (
+        request: Parameters<PlatformClientMethods[M]>[0]
+      ) => ReturnType<PlatformClientMethods[M]>
+
+      return fn.call(client, request)
+    }
 
     return executor
   }

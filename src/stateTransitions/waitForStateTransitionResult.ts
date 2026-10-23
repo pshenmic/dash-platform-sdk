@@ -10,7 +10,7 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import hexToBytes from '../utils/hexToBytes.js'
 import { WaitForStateTransitionResultRequest } from '../../proto/generated/platform.js'
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { base64 } from '@scure/base'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
@@ -46,7 +46,7 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
   }
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.waitForStateTransitionResult(waitForStateTransitionResultRequest))
+    .addGrpcRequest('waitForStateTransitionResult', waitForStateTransitionResultRequest)
     .addProof(response => {
       const { version } = response
 

@@ -4,7 +4,7 @@ import { ShieldedEncryptedNote } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyShieldedEncryptedNotesProof } from 'pshenmic-dpp'
 import { LATEST_PLATFORM_VERSION, SHIELDED_MAX_NOTES_PER_QUERY} from "../constants.js";
 import verifyGroveDBProof from '../utils/verifyGroveDBProof.js'
-import QueryExecutor, { getResponseProof } from '../utils/QueryExecutor.js'
+import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 
 export default async function getShieldedEncryptedNotes (
   grpcPool: GRPCPool,
@@ -27,7 +27,7 @@ export default async function getShieldedEncryptedNotes (
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest(client => client.getShieldedEncryptedNotes(getShieldedEncryptedNotesRequest))
+    .addGrpcRequest('getShieldedEncryptedNotes', getShieldedEncryptedNotesRequest)
     .addProof(response => {
       const { proof, metadata } = getResponseProof(response)
 
