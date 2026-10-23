@@ -2,7 +2,7 @@ import getStatus from './status.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { NodeStatus } from '../../types.js'
 import getEpochsInfo, { EpochInfo } from './epochInfos.js'
-import getFinalizedEpochsInfo, {FinalizedEpochInfo} from './finalizedEpochInfos.js'
+import getFinalizedEpochsInfo, { FinalizedEpochInfo } from './finalizedEpochInfos.js'
 import getTotalCredits from './totalCredits.js'
 import getCurrentQuorumsInfo, { CurrentQuorumsInfo } from './getCurrentQuorumsInfo.js'
 
@@ -67,5 +67,4 @@ export class NodeController {
   async getCurrentQuorumsInfo (): Promise<CurrentQuorumsInfo> {
     return await getCurrentQuorumsInfo(this.grpcPool)
   }
-
 }
