@@ -24,7 +24,7 @@ export interface ResponseProof {
 }
 
 type GrpcRequest<Response> = (client: PlatformClient) => PromiseLike<{ response: Response }>
-type ProofExtractor<Response> = (response: Response) => ResponseProof
+type ProofExtractor<Response, P extends ResponseProof = ResponseProof> = (response: Response) => P
 type GroveDBVerifier<Args extends unknown[], V> = (grovedbProof: Uint8Array, ...args: Args) => V
 
 /**
@@ -135,12 +135,12 @@ export function getResponseProof (response: ProvedResponse): ResponseProof {
  *   .addMapper(data => data.proved ? data.verified.balance : BigInt(data.result.balance))
  *   .execute()
  */
-export default class QueryExecutor<Response = unknown, V = unknown, T = unknown> {
+export default class QueryExecutor<Response = unknown, V = unknown, T = unknown, P extends ResponseProof = ResponseProof> {
   readonly #grpcPool: GRPCPool
   #request?: GrpcRequest<Response>
   #requestMessage?: unknown
-  #extractProof: ProofExtractor<Response> = getResponseProof as unknown as ProofExtractor<Response>
-  #verifyProof?: (responseProof: ResponseProof) => V
+  #extractProof: ProofExtractor<Response, P> = getResponseProof as unknown as ProofExtractor<Response, P>
+  #verifyProof?: (responseProof: P) => V
   #map?: ResultMapper<Response, V, T>
   #validateProof = true
 
@@ -164,14 +164,16 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown>
       ? R
       : never,
     V,
-    T
+    T,
+    P
     > {
     const executor = this as unknown as QueryExecutor<
     Awaited<ReturnType<PlatformClientMethods[M]>> extends { response: infer R }
       ? R
       : never,
     V,
-    T
+    T,
+    P
     >
 
     executor.#requestMessage = request
@@ -187,12 +189,15 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown>
   }
 
   /**
-   * Overrides the extraction of the proof and the metadata from the response (v0 response by default)
+   * Overrides the extraction of the proof and the metadata from the response (v0 response by default).
+   * Additional data of the proof (e.g. a second proof) is passed to the args callback of the proof verifier
    */
-  setProofExtractor (extractProof: ProofExtractor<Response>): this {
-    this.#extractProof = extractProof
+  setProofExtractor<E extends ResponseProof> (extractProof: ProofExtractor<Response, E>): QueryExecutor<Response, V, T, E> {
+    const executor = this as unknown as QueryExecutor<Response, V, T, E>
 
-    return this
+    executor.#extractProof = extractProof
+
+    return executor
   }
 
   /**
@@ -202,20 +207,20 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown>
    */
   addProofVerifier<Args extends unknown[] | [], U> (
     verify: GroveDBVerifier<Args, U>,
-    getArgs: (responseProof: ResponseProof) => NoInfer<Args>
-  ): QueryExecutor<Response, U, T>
+    getArgs: (responseProof: P) => NoInfer<Args>
+  ): QueryExecutor<Response, U, T, P>
   addProofVerifier<Args extends unknown[] | [], U> (
     verify: GroveDBVerifier<Args, U>,
     ...args: Args
-  ): QueryExecutor<Response, U, T>
+  ): QueryExecutor<Response, U, T, P>
   addProofVerifier<Args extends unknown[] | [], U> (
     verify: GroveDBVerifier<Args, U>,
-    ...args: Args | [(responseProof: ResponseProof) => Args]
-  ): QueryExecutor<Response, U, T> {
-    const executor = this as unknown as QueryExecutor<Response, U, T>
+    ...args: Args | [(responseProof: P) => Args]
+  ): QueryExecutor<Response, U, T, P> {
+    const executor = this as unknown as QueryExecutor<Response, U, T, P>
 
     const getArgs = args.length === 1 && typeof args[0] === 'function'
-      ? args[0] as (responseProof: ResponseProof) => Args
+      ? args[0] as (responseProof: P) => Args
       : () => args as Args
 
     executor.#verifyProof = (responseProof) => {
@@ -233,8 +238,8 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown>
    * Sets the mapping of the query data to the result of the query, also the place for "not found" checks.
    * The data is either verified from the proof or the result of the response requested without proof
    */
-  addMapper<U> (map: ResultMapper<Response, V, U>): QueryExecutor<Response, V, U> {
-    const executor = this as unknown as QueryExecutor<Response, V, U>
+  addMapper<U> (map: ResultMapper<Response, V, U>): QueryExecutor<Response, V, U, P> {
+    const executor = this as unknown as QueryExecutor<Response, V, U, P>
 
     executor.#map = map
 
@@ -298,7 +303,7 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown>
   }
 
   async #executeWithProof (request: GrpcRequest<Response>): Promise<QueryData<Response, V>> {
-    const verifyProof = this.#verifyProof as (responseProof: ResponseProof) => V
+    const verifyProof = this.#verifyProof as (responseProof: P) => V
     const grpcPool = this.#grpcPool
     // custom pools without retries are not retried
     const retries = grpcPool.retries ?? 0
