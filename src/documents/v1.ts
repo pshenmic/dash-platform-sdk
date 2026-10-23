@@ -315,7 +315,7 @@ export function getDocumentsV1Data<K extends DocumentsV1Kind> (result: ResponseR
   const { variant } = result.data
 
   if (variant.oneofKind !== kind) {
-    throw new Error(`Unexpected oneOf type returned from DAPI (must be ${kind})`)
+    throw new Error(`Unexpected oneOf type returned from DAPI (must be ${String(kind)})`)
   }
 
   return (variant as Record<string, unknown>)[kind] as DocumentsV1Data<K>
