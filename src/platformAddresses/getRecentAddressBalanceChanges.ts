@@ -1,7 +1,7 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { verifyRecentAddressBalanceChanges, BlockAddressBalanceChanges, PlatformAddressWASM } from 'pshenmic-dpp'
 import { GetRecentAddressBalanceChangesRequest } from '../../proto/generated/platform.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
+import { LATEST_PLATFORM_VERSION, RECENT_ADDRESS_BALANCE_CHANGES_LIMIT } from '../constants.js'
 import QueryExecutor from '../QueryExecutor.js'
 
 export async function getRecentAddressBalanceChanges (grpcPool: GRPCPool, startHeight: bigint, startHeightExclusive: boolean = false): Promise<BlockAddressBalanceChanges[]> {
@@ -18,7 +18,7 @@ export async function getRecentAddressBalanceChanges (grpcPool: GRPCPool, startH
 
   return await QueryExecutor.build(grpcPool)
     .addGrpcRequest('getRecentAddressBalanceChanges', getRecentAddressBalanceChangesRequest)
-    .addProofVerifier(verifyRecentAddressBalanceChanges, startHeight, startHeightExclusive, undefined, true, LATEST_PLATFORM_VERSION)
+    .addProofVerifier(verifyRecentAddressBalanceChanges, startHeight, startHeightExclusive, RECENT_ADDRESS_BALANCE_CHANGES_LIMIT, true, LATEST_PLATFORM_VERSION)
     .addMapper(data => {
       if (data.proved) {
         return data.verified.blocks
