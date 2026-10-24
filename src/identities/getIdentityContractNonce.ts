@@ -1,9 +1,7 @@
 import { GetIdentityContractNonceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyIdentityContractNonceProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 const IDENTITY_CONTRACT_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
@@ -23,42 +21,13 @@ export default async function getIdentityContractNonce (grpcPool: GRPCPool, iden
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getIdentityContractNonce(getIdentityContractNonceRequest)
+  return await QueryExecutor.build(grpcPool)
+    .addGrpcRequest('getIdentityContractNonce', getIdentityContractNonceRequest)
+    .addProofVerifier(verifyIdentityContractNonceProof, identityIdentifier.bytes(), dataContractIdentifier.bytes(), true, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      const contractNonce = data.proved ? data.verified.contractNonce : BigInt(data.result.identityContractNonce)
 
-  const { version } = response
-
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
-
-  const { v0 } = version
-
-  if (v0.result.oneofKind !== 'proof') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-  }
-
-  const { result: { proof }, metadata } = v0
-
-  if (metadata == null) {
-    throw new Error('Metadata not found')
-  }
-
-  const {
-    rootHash,
-    contractNonce
-  } = verifyIdentityContractNonceProof(proof.grovedbProof, identityIdentifier.bytes(), dataContractIdentifier.bytes(), true, LATEST_PLATFORM_VERSION)
-
-  if (contractNonce == null) {
-    return BigInt(0)
-  }
-
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
-
-  return BigInt(contractNonce) & IDENTITY_CONTRACT_NONCE_VALUE_FILTER
+      return contractNonce != null ? contractNonce & IDENTITY_CONTRACT_NONCE_VALUE_FILTER : BigInt(0)
+    })
+    .execute()
 }

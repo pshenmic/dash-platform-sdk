@@ -6,13 +6,19 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import {
   GetContestedResourceVoteStateRequest,
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_ResultType,
-  GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
+  GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo,
+  GetContestedResourceVoteStateResponse_GetContestedResourceVoteStateResponseV0_FinishedVoteInfo_FinishedVoteOutcome as FinishedVoteOutcome
 } from '../../proto/generated/platform.js'
 import { DataContractWASM, DocumentWASM, IdentifierWASM, verifyVotePollVoteStateProof } from 'pshenmic-dpp'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
+
+// winner types of the proof verification by finished vote outcome of the response
+const FINISHED_VOTE_OUTCOMES: Record<FinishedVoteOutcome, string> = {
+  [FinishedVoteOutcome.TOWARDS_IDENTITY]: 'WonByIdentity',
+  [FinishedVoteOutcome.LOCKED]: 'Locked',
+  [FinishedVoteOutcome.NO_PREVIOUS_WINNER]: 'NoWinner'
+}
 
 export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_StartAtIdentifierInfo
 
@@ -51,77 +57,83 @@ export default async function getContestedResourceVoteState (
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getContestedResourceVoteState(getContestedResourceVoteStateRequest)
+  return await QueryExecutor.build(grpcPool)
+    .addGrpcRequest('getContestedResourceVoteState', getContestedResourceVoteStateRequest)
+    .addProofVerifier(
+      verifyVotePollVoteStateProof,
+      contract,
+      documentTypeName,
+      indexName,
+      indexValues,
+      // same enums
+      // @ts-expect-error
+      resultType,
+      allowIncludeLockedAndAbstainingVoteTally,
+      count,
+      startAtIdentifierInfo,
+      LATEST_PLATFORM_VERSION
+    )
+    .addMapper(data => {
+      const toDocument = (bytes?: Uint8Array): DocumentWASM | undefined => bytes != null ? DocumentWASM.fromBytes(bytes, contract, documentTypeName, LATEST_PLATFORM_VERSION) : undefined
 
-  const { version } = response
+      if (data.proved) {
+        const { result: voteState } = data.verified
+        const { contenders } = voteState ?? { contenders: [] }
+        const { winner } = voteState ?? { winner: undefined }
 
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
-
-  const { v0 } = version
-
-  if (v0.result.oneofKind !== 'proof') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-  }
-
-  const { result: { proof }, metadata } = v0
-
-  if (metadata == null) {
-    throw new Error('Metadata not found')
-  }
-
-  const {
-    rootHash,
-    result
-  } = verifyVotePollVoteStateProof(
-    proof.grovedbProof,
-    contract,
-    documentTypeName,
-    indexName,
-    indexValues,
-    // same enums
-    // @ts-expect-error
-    resultType,
-    allowIncludeLockedAndAbstainingVoteTally,
-    count,
-    startAtIdentifierInfo,
-    LATEST_PLATFORM_VERSION
-  )
-
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
-
-  const { contenders } = result ?? { contenders: [] }
-  const { winner } = result ?? { winner: undefined }
-
-  if (contenders.length === 0) {
-    throw new Error('Vote state not found')
-  }
-
-  return {
-    contenders: contenders.map(contender => ({
-      identifier: contender.identityId,
-      document: contender.serializedDocument != null ? DocumentWASM.fromBytes(contender.serializedDocument, contract, documentTypeName, LATEST_PLATFORM_VERSION) : undefined,
-      voteTally: contender.voteTally
-    })),
-    abstainVoteTally: result?.abstainingVoteTally ?? 0,
-    lockVoteTally: result?.lockedVoteTally ?? 0,
-    skipped: result?.skipped === 1,
-    finishedVoteInfo: (winner != null)
-      ? {
-          type: winner.type,
-          wonByIdentityId: 'identityId' in winner && winner.identityId != null ? new IdentifierWASM(winner.identityId) : undefined,
-          finishedAtBlockHeight: winner.blockInfo.height,
-          finishedAtCoreBlockHeight: winner.blockInfo.coreHeight,
-          finishedAtBlockTimeMs: winner.blockInfo.timeMs,
-          finishedAtEpoch: winner.blockInfo.epoch
+        if (contenders.length === 0) {
+          throw new Error('Vote state not found')
         }
-      : undefined
-  }
+
+        return {
+          contenders: contenders.map(contender => ({
+            identifier: contender.identityId,
+            document: toDocument(contender.serializedDocument),
+            voteTally: contender.voteTally
+          })),
+          abstainVoteTally: voteState?.abstainingVoteTally ?? 0,
+          lockVoteTally: voteState?.lockedVoteTally ?? 0,
+          skipped: voteState?.skipped === 1,
+          finishedVoteInfo: (winner != null)
+            ? {
+                type: winner.type,
+                wonByIdentityId: 'identityId' in winner && winner.identityId != null ? new IdentifierWASM(winner.identityId) : undefined,
+                finishedAtBlockHeight: winner.blockInfo.height,
+                finishedAtCoreBlockHeight: winner.blockInfo.coreHeight,
+                finishedAtBlockTimeMs: winner.blockInfo.timeMs,
+                finishedAtEpoch: winner.blockInfo.epoch
+              }
+            : undefined
+        }
+      }
+
+      const { contenders, abstainVoteTally, lockVoteTally, finishedVoteInfo } = data.result.contestedResourceContenders
+
+      if (contenders.length === 0) {
+        throw new Error('Vote state not found')
+      }
+
+      return {
+        contenders: contenders.map(contender => ({
+          identifier: new IdentifierWASM(contender.identifier),
+          document: toDocument(contender.document),
+          voteTally: contender.voteCount
+        })),
+        abstainVoteTally: abstainVoteTally ?? 0,
+        lockVoteTally: lockVoteTally ?? 0,
+        // the number of skipped items is returned only with proof
+        skipped: false,
+        finishedVoteInfo: (finishedVoteInfo != null)
+          ? {
+              type: FINISHED_VOTE_OUTCOMES[finishedVoteInfo.finishedVoteOutcome],
+              wonByIdentityId: finishedVoteInfo.wonByIdentityId != null ? new IdentifierWASM(finishedVoteInfo.wonByIdentityId) : undefined,
+              finishedAtBlockHeight: BigInt(finishedVoteInfo.finishedAtBlockHeight),
+              finishedAtCoreBlockHeight: finishedVoteInfo.finishedAtCoreBlockHeight,
+              finishedAtBlockTimeMs: BigInt(finishedVoteInfo.finishedAtBlockTimeMs),
+              finishedAtEpoch: finishedVoteInfo.finishedAtEpoch
+            }
+          : undefined
+      }
+    })
+    .execute()
 }
