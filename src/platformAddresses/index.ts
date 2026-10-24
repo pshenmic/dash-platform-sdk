@@ -81,7 +81,7 @@ export class PlatformAddressesController {
    * @return {Promise<VerifiedAddressesBranchState>}
    */
   async getAddressesBranchState (key: Uint8Array, depth: number, checkpointHeight: bigint, expectedRootHash: Uint8Array): Promise<VerifiedAddressesBranchState> {
-    return await getAddressesBranchState(this.grpcPool, key, depth, checkpointHeight, expectedRootHash)
+    return await getAddressesBranchState(this.grpcPool, this.quorumKeyProvider, key, depth, checkpointHeight, expectedRootHash)
   }
 
   /**

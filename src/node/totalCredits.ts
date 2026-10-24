@@ -1,5 +1,6 @@
 import { GetTotalCreditsInPlatformRequest } from '../../proto/generated/platform.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import {
   HALVING_INTERVAL,
   LATEST_PLATFORM_VERSION,
@@ -7,9 +8,7 @@ import {
   TESTNET_ACTIVATION_HEIGHT
 } from '../constants.js'
 import { verifyTotalCreditsProof } from 'pshenmic-dpp'
-import { QuorumKeyProvider } from '../quorumKeyProvider.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import QueryExecutor from '../QueryExecutor.js'
 
 export default async function totalCredits (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider): Promise<bigint> {
   const getTotalCreditsInPlatformRequest = GetTotalCreditsInPlatformRequest.create({
@@ -19,43 +18,13 @@ export default async function totalCredits (grpcPool: GRPCPool, quorumKeyProvide
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getTotalCreditsInPlatform(getTotalCreditsInPlatformRequest)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
+    .addGrpcRequest('getTotalCreditsInPlatform', getTotalCreditsInPlatformRequest)
+    .addProofVerifier(verifyTotalCreditsProof, ({ metadata }) => {
+      const activationHeight = grpcPool.network === 'testnet' ? TESTNET_ACTIVATION_HEIGHT : MAINNET_ACTIVATION_HEIGHT
 
-  const { version } = response
-
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
-
-  const { v0 } = version
-
-  if (v0.result.oneofKind !== 'proof') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-  }
-
-  const { result: { proof }, metadata } = v0
-
-  if (metadata == null) {
-    throw new Error('Metadata not found')
-  }
-
-  const activationHeight = grpcPool.network === 'testnet' ? TESTNET_ACTIVATION_HEIGHT : MAINNET_ACTIVATION_HEIGHT
-
-  const { rootHash, totalCredits } = verifyTotalCreditsProof(
-    proof.grovedbProof,
-    HALVING_INTERVAL,
-    activationHeight,
-    Number(metadata.height),
-    LATEST_PLATFORM_VERSION
-  )
-
-  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
-
-  return totalCredits
+      return [HALVING_INTERVAL, activationHeight, metadata.coreChainLockedHeight, LATEST_PLATFORM_VERSION]
+    })
+    .addMapper(data => data.proved ? data.verified.totalCredits : BigInt(data.result.credits))
+    .execute()
 }

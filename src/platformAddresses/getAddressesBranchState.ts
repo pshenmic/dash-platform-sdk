@@ -1,9 +1,11 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { verifyAddressesBranchState, VerifiedAddressesBranchState } from 'pshenmic-dpp'
-import { GetAddressesBranchStateRequest } from '../../proto/generated/platform.js'
+import { GetAddressesBranchStateRequest, Proof, ResponseMetadata } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
+import QueryExecutor from '../QueryExecutor.js'
 
-export async function getAddressesBranchState (grpcPool: GRPCPool, key: Uint8Array, depth: number, checkpointHeight: bigint, expectedRootHash: Uint8Array): Promise<VerifiedAddressesBranchState> {
+export async function getAddressesBranchState (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, key: Uint8Array, depth: number, checkpointHeight: bigint, expectedRootHash: Uint8Array): Promise<VerifiedAddressesBranchState> {
   const getAddressesBranchStateRequest = GetAddressesBranchStateRequest.create({
     version: {
       oneofKind: 'v0',
@@ -15,13 +17,25 @@ export async function getAddressesBranchState (grpcPool: GRPCPool, key: Uint8Arr
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getAddressesBranchState(getAddressesBranchStateRequest)
+  // the proof is verified against the root hash of the already verified trunk state, so it has no quorum signature
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
+    .addGrpcRequest('getAddressesBranchState', getAddressesBranchStateRequest)
+    // the response has no proof message, only the merk proof
+    .setProofExtractor(({ version }) => {
+      if (version.oneofKind !== 'v0') {
+        throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
+      }
 
-  const { version } = response
+      return { proof: Proof.create({ grovedbProof: version.v0.merkProof }), metadata: ResponseMetadata.create() }
+    })
+    .addProofVerifier(verifyAddressesBranchState, key, depth, expectedRootHash, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      if (!data.proved) {
+        throw new Error('Addresses branch state can only be requested with proof')
+      }
 
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
-
-  return verifyAddressesBranchState(version.v0.merkProof, key, depth, expectedRootHash, LATEST_PLATFORM_VERSION)
+      return data.verified
+    })
+    .setValidateProof(false)
+    .execute()
 }

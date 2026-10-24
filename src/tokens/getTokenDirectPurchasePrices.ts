@@ -1,9 +1,8 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
-import { TokenDirectPurchasePrices } from '../../types.js'
-import { IdentifierLike, IdentifierWASM, verifyTokenDirectPurchasePrices } from 'pshenmic-dpp'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
-import bytesToHex from '../utils/bytesToHex.js'
+import { TokenDirectPurchasePrices } from '../../types.js'
+import { IdentifierLike, IdentifierWASM, verifyTokenDirectPurchasePrices, TokenPricingScheduleWASM } from 'pshenmic-dpp'
+import QueryExecutor from '../QueryExecutor.js'
 import { GetTokenDirectPurchasePricesRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
@@ -20,44 +19,30 @@ export default async function getTokenDirectPurchasePrices (grpcPool: GRPCPool, 
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getTokenDirectPurchasePrices(request)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
+    .addGrpcRequest('getTokenDirectPurchasePrices', request)
+    .addProofVerifier(verifyTokenDirectPurchasePrices, tokenIds, true, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      if (data.proved) {
+        if (data.verified.prices == null) {
+          throw new Error('Prices not found')
+        }
 
-  const { version } = response
+        return data.verified.prices
+      }
 
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
+      return data.result.tokenDirectPurchasePrices.tokenDirectPurchasePrice.map(({ tokenId, price }) => {
+        let pricingSchedule: TokenPricingScheduleWASM | undefined
 
-  const { v0 } = version
+        if (price.oneofKind === 'fixedPrice') {
+          pricingSchedule = TokenPricingScheduleWASM.SinglePrice(BigInt(price.fixedPrice))
+        } else if (price.oneofKind === 'variablePrice') {
+          pricingSchedule = TokenPricingScheduleWASM.SetPrices(Object.fromEntries(price.variablePrice.priceForQuantity
+            .map(({ quantity, price }) => [quantity, BigInt(price)])))
+        }
 
-  if (v0.result.oneofKind !== 'proof') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-  }
-
-  const { result: { proof }, metadata } = v0
-
-  if (metadata == null) {
-    throw new Error('Metadata not found')
-  }
-
-  const { rootHash, prices } = verifyTokenDirectPurchasePrices(
-    proof.grovedbProof,
-    tokenIds,
-    true,
-    LATEST_PLATFORM_VERSION
-  )
-
-  if (prices == null) {
-    throw new Error('Prices not found')
-  }
-
-  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
-
-  return prices
+        return { tokenId: new IdentifierWASM(tokenId), pricingSchedule }
+      })
+    })
+    .execute()
 }

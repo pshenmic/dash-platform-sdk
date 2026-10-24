@@ -42,7 +42,7 @@ export class ShieldedController {
   /** @ignore **/
   shieldedBuilder?: ShieldedBuilderWASM
 
-  constructor(grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
+  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.grpcPool = grpcPool
     this.quorumKeyProvider = quorumKeyProvider
   }
@@ -51,7 +51,7 @@ export class ShieldedController {
    * Set bindings instance of builder
    * Needed for custom builder load, because ShieldedBuilderWASM inits very slow on old hardware
    */
-  async init(builder?: ShieldedBuilderWASM): Promise<ShieldedBuilderWASM> {
+  async init (builder?: ShieldedBuilderWASM): Promise<ShieldedBuilderWASM> {
     this.shieldedBuilder = builder ?? new ShieldedBuilderWASM()
 
     await this.shieldedBuilder.init()
@@ -65,7 +65,7 @@ export class ShieldedController {
    *
    * @ignore
    */
-  async getShieldedBuilder(): Promise<ShieldedBuilderWASM> {
+  async getShieldedBuilder (): Promise<ShieldedBuilderWASM> {
     if (this.shieldedBuilder == null) {
       return await this.init()
     }
@@ -86,7 +86,7 @@ export class ShieldedController {
    *
    * @return {Promise<ShieldedEncryptedNote[]>}
    */
-  async getShieldedEncryptedNotes(startIndex: bigint, count: number, tokenIdentifier?: IdentifierLike): Promise<ShieldedEncryptedNote[]> {
+  async getShieldedEncryptedNotes (startIndex: bigint, count: number, tokenIdentifier?: IdentifierLike): Promise<ShieldedEncryptedNote[]> {
     return await getShieldedEncryptedNotes(this.grpcPool, this.quorumKeyProvider, startIndex, count, tokenIdentifier)
   }
 
@@ -98,7 +98,7 @@ export class ShieldedController {
    *
    * @return {Promise<Uint8Array[]>}
    */
-  async getShieldedAnchors(tokenIdentifier?: IdentifierLike): Promise<Uint8Array[]> {
+  async getShieldedAnchors (tokenIdentifier?: IdentifierLike): Promise<Uint8Array[]> {
     return await getShieldedAnchors(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
   }
 
@@ -109,7 +109,7 @@ export class ShieldedController {
    *
    * @return {Promise<Uint8Array>}
    */
-  async getMostRecentShieldedAnchor(tokenIdentifier?: IdentifierLike): Promise<Uint8Array | undefined> {
+  async getMostRecentShieldedAnchor (tokenIdentifier?: IdentifierLike): Promise<Uint8Array | undefined> {
     return await getMostRecentShieldedAnchor(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
   }
 
@@ -120,7 +120,7 @@ export class ShieldedController {
    *
    * @return {Promise<bigint>}
    */
-  async getShieldedPoolState(tokenIdentifier?: IdentifierLike): Promise<bigint | undefined> {
+  async getShieldedPoolState (tokenIdentifier?: IdentifierLike): Promise<bigint | undefined> {
     return await getShieldedPoolState(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
   }
 
@@ -132,7 +132,7 @@ export class ShieldedController {
    *
    * @return {Promise<bigint>}
    */
-  async getShieldedNotesCount(tokenIdentifier?: IdentifierLike): Promise<bigint | undefined> {
+  async getShieldedNotesCount (tokenIdentifier?: IdentifierLike): Promise<bigint | undefined> {
     return await getShieldedNotesCount(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
   }
 
@@ -147,7 +147,7 @@ export class ShieldedController {
    *
    * @return {Promise<ShieldedNullifierStatus[]>}
    */
-  async getShieldedNullifiers(nullifiers: Uint8Array[], tokenIdentifier?: IdentifierLike): Promise<ShieldedNullifierStatus[]> {
+  async getShieldedNullifiers (nullifiers: Uint8Array[], tokenIdentifier?: IdentifierLike): Promise<ShieldedNullifierStatus[]> {
     return await getShieldedNullifiers(this.grpcPool, this.quorumKeyProvider, nullifiers, tokenIdentifier)
   }
 
@@ -164,7 +164,7 @@ export class ShieldedController {
    *
    * @return {RecoveredNoteWASM[]}
    */
-  recoverNotes(notes: ShieldedEncryptedNote[], seed: Uint8Array, account: number): RecoveredNoteWASM[] {
+  recoverNotes (notes: ShieldedEncryptedNote[], seed: Uint8Array, account: number): RecoveredNoteWASM[] {
     // SLIP-44 coin type: 5 = Dash mainnet, 1 = testnets. Orchard derives via ZIP-32
     const coinType = this.grpcPool.network === 'mainnet' ? 5 : 1
 
@@ -192,8 +192,8 @@ export class ShieldedController {
    *
    * @return {{ spends: SpendableNoteWASM[], anchor: Uint8Array }}
    */
-  buildSpendableNotes(notes: ShieldedEncryptedNote[], recovered: RecoveredNoteWASM[]): {
-    spends: SpendableNoteWASM[],
+  buildSpendableNotes (notes: ShieldedEncryptedNote[], recovered: RecoveredNoteWASM[]): {
+    spends: SpendableNoteWASM[]
     anchor: Uint8Array
   } {
     // only the leaves we intend to witness need to be marked spendable
@@ -215,7 +215,7 @@ export class ShieldedController {
       return new SpendableNoteWASM(recoveredNote.note, merklePath)
     })
 
-    return {spends, anchor}
+    return { spends, anchor }
   }
 
   /**
@@ -249,7 +249,7 @@ export class ShieldedController {
 
       // @ts-expect-error builder expects IdentityPublicKeyInCreationWASM instances
       identityParams.publicKeys = identityParams.publicKeys
-        .map(({id, purpose, securityLevel, keyType, readOnly, data, signature, contractBounds}) =>
+        .map(({ id, purpose, securityLevel, keyType, readOnly, data, signature, contractBounds }) =>
           new IdentityPublicKeyInCreationWASM(id, purpose, securityLevel, keyType, readOnly, data, signature, (contractBounds != null) ? new ContractBoundsWASM(contractBounds.dataContractId, contractBounds.documentType) : undefined))
     }
 

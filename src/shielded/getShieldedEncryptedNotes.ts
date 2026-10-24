@@ -1,11 +1,10 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetShieldedEncryptedNotesRequest } from '../../proto/generated/platform.js'
 import { ShieldedEncryptedNote } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyShieldedEncryptedNotesProof } from 'pshenmic-dpp'
-import { LATEST_PLATFORM_VERSION, SHIELDED_MAX_NOTES_PER_QUERY} from "../constants.js";
-import {QuorumKeyProvider} from "../quorumKeyProvider.js";
-import bytesToHex from "../utils/bytesToHex.js";
-import verifyTenderdashProof from "../utils/verifyTenderdashProof.js";
+import { LATEST_PLATFORM_VERSION, SHIELDED_MAX_NOTES_PER_QUERY } from '../constants.js'
+import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getShieldedEncryptedNotes (
   grpcPool: GRPCPool,
@@ -28,40 +27,18 @@ export default async function getShieldedEncryptedNotes (
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getShieldedEncryptedNotes(getShieldedEncryptedNotesRequest)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
+    .addGrpcRequest('getShieldedEncryptedNotes', getShieldedEncryptedNotesRequest)
+    .addProofVerifier(verifyShieldedEncryptedNotesProof, startIndex, count, SHIELDED_MAX_NOTES_PER_QUERY, true, LATEST_PLATFORM_VERSION, tokenId)
+    .addMapper(data => {
+      const notes = data.proved ? data.verified.notes : data.result.encryptedNotes.entries
 
-  const { version } = response
-
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
-
-  const { v0 } = version
-
-  if (v0.result.oneofKind !== 'proof') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-  }
-
-  const { result: { proof }, metadata } = v0
-
-  if(metadata == null) {
-    throw new Error('Metadata not found')
-  }
-
-  const {rootHash, notes} = verifyShieldedEncryptedNotesProof(proof.grovedbProof, startIndex, count, SHIELDED_MAX_NOTES_PER_QUERY, true, LATEST_PLATFORM_VERSION, tokenId)
-
-  const quorumPublicKey = await quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
-
-  return notes.map(note => ({
-    nullifier: note.nullifier,
-    cmx: note.cmx,
-    encryptedNote: note.encryptedNote,
-    cvNet: note.cvNet
-  }))
+      return notes.map(note => ({
+        nullifier: note.nullifier,
+        cmx: note.cmx,
+        encryptedNote: note.encryptedNote,
+        cvNet: note.cvNet
+      }))
+    })
+    .execute()
 }

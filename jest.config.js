@@ -6,7 +6,8 @@ export default {
   transformIgnorePatterns: [
     '/node_modules/(?!(?:.pnpm/))(?!pshenmic-dpp|@protobuf-ts/grpcweb-transport|@scure*|@noble*|cbor2|@cto.af/wtf8|micro-packed)'
   ],
-  maxWorkers: 2,
+  // uncomment if don't need parallel tests
+  // maxWorkers: 1,
   testEnvironment: 'node',
   testTimeout: 40000,
   extensionsToTreatAsEsm: ['.ts']

@@ -10,7 +10,6 @@ import {
   DocumentWASM, HavingClause, IdentifierLike,
   IdentifierWASM,
   PrefundedVotingBalanceWASM,
-  ProvenAggregate,
   ProvenRankedEntry,
   ProvenRankedPage,
   StateTransitionWASM,
@@ -21,7 +20,7 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import query from './query.js'
 import getActionFeeAgreement from './getActionFeeAgreement.js'
-import queryAggregate from './queryAggregate.js'
+import queryAggregate, { DocumentsAggregate } from './queryAggregate.js'
 import { queryHaving, queryRanked } from './queryRanked.js'
 import { ChainedDocuments, CompositeDocuments, queryChained, queryComposite } from './queryJoined.js'
 
@@ -83,9 +82,9 @@ export class DocumentsController {
    * @param dataContractId {IdentifierLike} Identifier of the Data Contract
    * @param query {AggregateProofQuery} documentTypeName, where, orderBy, groupBy and limit of the query
    *
-   * @return {Promise<ProvenAggregate>}
+   * @return {Promise<DocumentsAggregate>}
    */
-  async count (dataContractId: IdentifierLike, query: AggregateProofQuery): Promise<ProvenAggregate> {
+  async count (dataContractId: IdentifierLike, query: AggregateProofQuery): Promise<DocumentsAggregate> {
     return await queryAggregate(this.grpcPool, this.quorumKeyProvider, dataContractId, 'count', query)
   }
 
@@ -97,9 +96,9 @@ export class DocumentsController {
    * @param query {AggregateProofQuery} documentTypeName, where, orderBy, groupBy and limit of the query
    * @param field {string} Integer field to sum
    *
-   * @return {Promise<ProvenAggregate>}
+   * @return {Promise<DocumentsAggregate>}
    */
-  async sum (dataContractId: IdentifierLike, query: AggregateProofQuery, field: string): Promise<ProvenAggregate> {
+  async sum (dataContractId: IdentifierLike, query: AggregateProofQuery, field: string): Promise<DocumentsAggregate> {
     return await queryAggregate(this.grpcPool, this.quorumKeyProvider, dataContractId, 'sum', query, field)
   }
 
@@ -111,9 +110,9 @@ export class DocumentsController {
    * @param query {AggregateProofQuery} documentTypeName, where, orderBy, groupBy and limit of the query
    * @param field {string} Integer field to average
    *
-   * @return {Promise<ProvenAggregate>}
+   * @return {Promise<DocumentsAggregate>}
    */
-  async average (dataContractId: IdentifierLike, query: AggregateProofQuery, field: string): Promise<ProvenAggregate> {
+  async average (dataContractId: IdentifierLike, query: AggregateProofQuery, field: string): Promise<DocumentsAggregate> {
     return await queryAggregate(this.grpcPool, this.quorumKeyProvider, dataContractId, 'avg', query, field)
   }
 
