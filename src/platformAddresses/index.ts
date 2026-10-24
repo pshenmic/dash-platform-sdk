@@ -1,4 +1,5 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import {
   BlockAddressBalanceChanges,
   CompactedBlockAddressBalanceChanges,
@@ -23,9 +24,12 @@ import createStateTransition from './createStateTransition.js'
 export class PlatformAddressesController {
   /** @ignore **/
   grpcPool: GRPCPool
+  /** @ignore **/
+  quorumKeyProvider: QuorumKeyProvider
 
-  constructor (grpcPool: GRPCPool) {
+  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.grpcPool = grpcPool
+    this.quorumKeyProvider = quorumKeyProvider
   }
 
   /**
@@ -35,7 +39,7 @@ export class PlatformAddressesController {
    * @return {Promise<PlatformAddressInfo>}
    */
   async getAddressInfo (address: PlatformAddressLike): Promise<PlatformAddressInfo> {
-    return await getAddressInfo(this.grpcPool, address)
+    return await getAddressInfo(this.grpcPool, this.quorumKeyProvider, address)
   }
 
   /**
@@ -45,7 +49,7 @@ export class PlatformAddressesController {
    * @return {Promise<PlatformAddressInfo[]>}
    */
   async getAddressesInfos (addresses: PlatformAddressLike[]): Promise<PlatformAddressInfo[]> {
-    return await getAddressesInfos(this.grpcPool, addresses)
+    return await getAddressesInfos(this.grpcPool, this.quorumKeyProvider, addresses)
   }
 
   /**
@@ -59,7 +63,7 @@ export class PlatformAddressesController {
    * @return {Promise<PlatformAddressesTrunkState>}
    */
   async getAddressesTrunkState (): Promise<PlatformAddressesTrunkState> {
-    return await getAddressesTrunkState(this.grpcPool)
+    return await getAddressesTrunkState(this.grpcPool, this.quorumKeyProvider)
   }
 
   /**
@@ -77,7 +81,7 @@ export class PlatformAddressesController {
    * @return {Promise<VerifiedAddressesBranchState>}
    */
   async getAddressesBranchState (key: Uint8Array, depth: number, checkpointHeight: bigint, expectedRootHash: Uint8Array): Promise<VerifiedAddressesBranchState> {
-    return await getAddressesBranchState(this.grpcPool, key, depth, checkpointHeight, expectedRootHash)
+    return await getAddressesBranchState(this.grpcPool, this.quorumKeyProvider, key, depth, checkpointHeight, expectedRootHash)
   }
 
   /**
@@ -89,7 +93,7 @@ export class PlatformAddressesController {
    * @return {Promise<BlockAddressBalanceChanges[]>}
    */
   async getRecentAddressBalanceChanges (startHeight: bigint, startHeightExclusive: boolean = false): Promise<BlockAddressBalanceChanges[]> {
-    return await getRecentAddressBalanceChanges(this.grpcPool, startHeight, startHeightExclusive)
+    return await getRecentAddressBalanceChanges(this.grpcPool, this.quorumKeyProvider, startHeight, startHeightExclusive)
   }
 
   /**
@@ -100,7 +104,7 @@ export class PlatformAddressesController {
    * @return {Promise<CompactedBlockAddressBalanceChanges[]>}
    */
   async getRecentCompactedAddressBalanceChanges (startBlockHeight: bigint): Promise<CompactedBlockAddressBalanceChanges[]> {
-    return await getRecentCompactedAddressBalanceChanges(this.grpcPool, startBlockHeight)
+    return await getRecentCompactedAddressBalanceChanges(this.grpcPool, this.quorumKeyProvider, startBlockHeight)
   }
 
   /**

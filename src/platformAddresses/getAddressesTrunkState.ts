@@ -1,13 +1,12 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { verifyAddressesTrunkState } from 'pshenmic-dpp'
 import { GetAddressesTrunkStateRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { PlatformAddressesTrunkState } from '../../types.js'
 
-export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<PlatformAddressesTrunkState> {
+export async function getAddressesTrunkState (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider): Promise<PlatformAddressesTrunkState> {
   const getAddressesTrunkStateRequest = GetAddressesTrunkStateRequest.create({
     version: {
       oneofKind: 'v0',
@@ -15,33 +14,32 @@ export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<Platf
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getAddressesTrunkState(getAddressesTrunkStateRequest)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
+    .addGrpcRequest('getAddressesTrunkState', getAddressesTrunkStateRequest)
+    .setProofExtractor(({ version }) => {
+      if (version.oneofKind !== 'v0') {
+        throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
+      }
 
-  const { version } = response
+      const { v0: { proof, metadata } } = version
 
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
+      if (proof == null) {
+        throw new Error('Proof not found')
+      }
 
-  const { v0: { proof, metadata } } = version
+      if (metadata == null) {
+        throw new Error('Metadata not found')
+      }
 
-  if (proof == null) {
-    throw new Error('Proof not found')
-  }
+      return { proof, metadata }
+    })
+    .addProofVerifier(verifyAddressesTrunkState, LATEST_PLATFORM_VERSION)
+    .addMapper(data => {
+      if (!data.proved) {
+        throw new Error('Addresses trunk state can only be requested with proof')
+      }
 
-  if (metadata == null) {
-    throw new Error('Metadata not found')
-  }
-
-  const trunk = verifyAddressesTrunkState(proof.grovedbProof, LATEST_PLATFORM_VERSION)
-
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, trunk.rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
-
-  return { trunk, metadata }
+      return { trunk: data.verified, metadata: data.metadata }
+    })
+    .execute()
 }

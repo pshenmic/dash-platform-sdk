@@ -1,8 +1,9 @@
 import getStatus from './status.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { NodeStatus } from '../../types.js'
 import getEpochsInfo, { EpochInfo } from './epochInfos.js'
-import getFinalizedEpochsInfo, {FinalizedEpochInfo} from './finalizedEpochInfos.js'
+import getFinalizedEpochsInfo, { FinalizedEpochInfo } from './finalizedEpochInfos.js'
 import getTotalCredits from './totalCredits.js'
 import getCurrentQuorumsInfo, { CurrentQuorumsInfo } from './getCurrentQuorumsInfo.js'
 
@@ -14,9 +15,12 @@ import getCurrentQuorumsInfo, { CurrentQuorumsInfo } from './getCurrentQuorumsIn
 export class NodeController {
   /** @ignore **/
   grpcPool: GRPCPool
+  /** @ignore **/
+  quorumKeyProvider: QuorumKeyProvider
 
-  constructor (grpcPool: GRPCPool) {
+  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.grpcPool = grpcPool
+    this.quorumKeyProvider = quorumKeyProvider
   }
 
   /**
@@ -35,7 +39,7 @@ export class NodeController {
    * @return {Promise<bigint>}
    */
   async totalCredits (): Promise<bigint> {
-    return await getTotalCredits(this.grpcPool)
+    return await getTotalCredits(this.grpcPool, this.quorumKeyProvider)
   }
 
   /**
@@ -45,7 +49,7 @@ export class NodeController {
    * @return {Promise<EpochInfo[]>}
    */
   async getEpochsInfo (count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
-    return await getEpochsInfo(this.grpcPool, count, ascending, start)
+    return await getEpochsInfo(this.grpcPool, this.quorumKeyProvider, count, ascending, start)
   }
 
   /**
@@ -55,7 +59,7 @@ export class NodeController {
    * @return {Promise<FinalizedEpochInfo[]>}
    */
   async getFinalizedEpochsInfo (startEpochIndex: number, startEpochIndexIncluded: boolean, endEpochIndex: number, endEpochIndexIncluded: boolean): Promise<FinalizedEpochInfo[]> {
-    return await getFinalizedEpochsInfo(this.grpcPool, startEpochIndex, startEpochIndexIncluded, endEpochIndex, endEpochIndexIncluded)
+    return await getFinalizedEpochsInfo(this.grpcPool, this.quorumKeyProvider, startEpochIndex, startEpochIndexIncluded, endEpochIndex, endEpochIndexIncluded)
   }
 
   /**
@@ -67,5 +71,4 @@ export class NodeController {
   async getCurrentQuorumsInfo (): Promise<CurrentQuorumsInfo> {
     return await getCurrentQuorumsInfo(this.grpcPool)
   }
-
 }

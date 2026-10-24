@@ -686,22 +686,48 @@ message GetIdentityByNonUniquePublicKeyHashRequest {
     optional bytes start_after = 2;
     bool prove = 3;
   }
-  oneof version { GetIdentityByNonUniquePublicKeyHashRequestV0 v0 = 1; }
+  message GetIdentityByNonUniquePublicKeyHashRequestV1 {
+    bytes public_key_hash = 1;
+    optional bytes start_after = 2;
+    bool prove = 3;
+  }
+  oneof version {
+    GetIdentityByNonUniquePublicKeyHashRequestV0 v0 = 1;
+    GetIdentityByNonUniquePublicKeyHashRequestV1 v1 = 2;
+  }
 }
 
 message GetIdentityByNonUniquePublicKeyHashResponse {
   message GetIdentityByNonUniquePublicKeyHashResponseV0 {
     message IdentityResponse { optional bytes identity = 1; }
 
-    reserved 2;
+    message IdentityProvedResponse {
+      Proof grovedb_identity_public_key_hash_proof = 1;
+      optional bytes identity_proof_bytes = 2;
+    }
     oneof result {
       IdentityResponse identity = 1;
-      Proof proof = 4;
+      IdentityProvedResponse proof = 2;
+      // single proof of nodes before v5.0.0-rc.8, reserved upstream since then
+      Proof legacy_proof = 4;
     }
 
     ResponseMetadata metadata = 3;
   }
-  oneof version { GetIdentityByNonUniquePublicKeyHashResponseV0 v0 = 1; }
+  message GetIdentityByNonUniquePublicKeyHashResponseV1 {
+    message IdentityResponse { optional bytes identity = 1; }
+
+    oneof result {
+      IdentityResponse identity = 1;
+      Proof proof = 2;
+    }
+
+    ResponseMetadata metadata = 3;
+  }
+  oneof version {
+    GetIdentityByNonUniquePublicKeyHashResponseV0 v0 = 1;
+    GetIdentityByNonUniquePublicKeyHashResponseV1 v1 = 2;
+  }
 }
 
 message WaitForStateTransitionResultRequest {

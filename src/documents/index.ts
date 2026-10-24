@@ -10,7 +10,6 @@ import {
   DocumentWASM, HavingClause, IdentifierLike,
   IdentifierWASM,
   PrefundedVotingBalanceWASM,
-  ProvenAggregate,
   ProvenRankedEntry,
   ProvenRankedPage,
   StateTransitionWASM,
@@ -18,9 +17,10 @@ import {
 } from 'pshenmic-dpp'
 import createStateTransition from './createStateTransition.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import query from './query.js'
 import getActionFeeAgreement from './getActionFeeAgreement.js'
-import queryAggregate from './queryAggregate.js'
+import queryAggregate, { DocumentsAggregate } from './queryAggregate.js'
 import { queryHaving, queryRanked } from './queryRanked.js'
 import { ChainedDocuments, CompositeDocuments, queryChained, queryComposite } from './queryJoined.js'
 
@@ -32,9 +32,12 @@ import { ChainedDocuments, CompositeDocuments, queryChained, queryComposite } fr
 export class DocumentsController {
   /** @ignore **/
   grpcPool: GRPCPool
+  /** @ignore **/
+  quorumKeyProvider: QuorumKeyProvider
 
-  constructor (grpcPool: GRPCPool) {
+  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.grpcPool = grpcPool
+    this.quorumKeyProvider = quorumKeyProvider
   }
 
   /**
@@ -69,7 +72,7 @@ export class DocumentsController {
       throw new Error('You may only set either startAfter or startAt at once')
     }
 
-    return await query(this.grpcPool, new IdentifierWASM(dataContractId), documentType, where, orderBy, limit ?? 100, startAt, startAfter)
+    return await query(this.grpcPool, this.quorumKeyProvider, new IdentifierWASM(dataContractId), documentType, where, orderBy, limit ?? 100, startAt, startAfter)
   }
 
   /**
@@ -79,10 +82,10 @@ export class DocumentsController {
    * @param dataContractId {IdentifierLike} Identifier of the Data Contract
    * @param query {AggregateProofQuery} documentTypeName, where, orderBy, groupBy and limit of the query
    *
-   * @return {Promise<ProvenAggregate>}
+   * @return {Promise<DocumentsAggregate>}
    */
-  async count (dataContractId: IdentifierLike, query: AggregateProofQuery): Promise<ProvenAggregate> {
-    return await queryAggregate(this.grpcPool, dataContractId, 'count', query)
+  async count (dataContractId: IdentifierLike, query: AggregateProofQuery): Promise<DocumentsAggregate> {
+    return await queryAggregate(this.grpcPool, this.quorumKeyProvider, dataContractId, 'count', query)
   }
 
   /**
@@ -93,10 +96,10 @@ export class DocumentsController {
    * @param query {AggregateProofQuery} documentTypeName, where, orderBy, groupBy and limit of the query
    * @param field {string} Integer field to sum
    *
-   * @return {Promise<ProvenAggregate>}
+   * @return {Promise<DocumentsAggregate>}
    */
-  async sum (dataContractId: IdentifierLike, query: AggregateProofQuery, field: string): Promise<ProvenAggregate> {
-    return await queryAggregate(this.grpcPool, dataContractId, 'sum', query, field)
+  async sum (dataContractId: IdentifierLike, query: AggregateProofQuery, field: string): Promise<DocumentsAggregate> {
+    return await queryAggregate(this.grpcPool, this.quorumKeyProvider, dataContractId, 'sum', query, field)
   }
 
   /**
@@ -107,10 +110,10 @@ export class DocumentsController {
    * @param query {AggregateProofQuery} documentTypeName, where, orderBy, groupBy and limit of the query
    * @param field {string} Integer field to average
    *
-   * @return {Promise<ProvenAggregate>}
+   * @return {Promise<DocumentsAggregate>}
    */
-  async average (dataContractId: IdentifierLike, query: AggregateProofQuery, field: string): Promise<ProvenAggregate> {
-    return await queryAggregate(this.grpcPool, dataContractId, 'avg', query, field)
+  async average (dataContractId: IdentifierLike, query: AggregateProofQuery, field: string): Promise<DocumentsAggregate> {
+    return await queryAggregate(this.grpcPool, this.quorumKeyProvider, dataContractId, 'avg', query, field)
   }
 
   /**
@@ -123,7 +126,7 @@ export class DocumentsController {
    * @return {Promise<ProvenRankedPage>}
    */
   async ranked (dataContractId: IdentifierLike, query: AggregateDocumentsQuery): Promise<ProvenRankedPage> {
-    return await queryRanked(this.grpcPool, dataContractId, query)
+    return await queryRanked(this.grpcPool, this.quorumKeyProvider, dataContractId, query)
   }
 
   /**
@@ -135,7 +138,7 @@ export class DocumentsController {
    * @return {Promise<ProvenRankedEntry[]>}
    */
   async having (dataContractId: IdentifierLike, query: AggregateDocumentsQuery & { having: HavingClause[] }): Promise<ProvenRankedEntry[]> {
-    return await queryHaving(this.grpcPool, dataContractId, query)
+    return await queryHaving(this.grpcPool, this.quorumKeyProvider, dataContractId, query)
   }
 
   /**
@@ -150,7 +153,7 @@ export class DocumentsController {
    * @return {Promise<ChainedDocuments>}
    */
   async chained (dataContractId: IdentifierLike, query: DocumentsQuery, joinProperty: string, outerDocumentType: string): Promise<ChainedDocuments> {
-    return await queryChained(this.grpcPool, dataContractId, query, joinProperty, outerDocumentType)
+    return await queryChained(this.grpcPool, this.quorumKeyProvider, dataContractId, query, joinProperty, outerDocumentType)
   }
 
   /**
@@ -164,7 +167,7 @@ export class DocumentsController {
    * @return {Promise<CompositeDocuments>}
    */
   async composite (dataContractId: IdentifierLike, query: DocumentsQuery & { offset?: number }, subQueries: CompositeSubQuery[]): Promise<CompositeDocuments> {
-    return await queryComposite(this.grpcPool, dataContractId, query, subQueries)
+    return await queryComposite(this.grpcPool, this.quorumKeyProvider, dataContractId, query, subQueries)
   }
 
   /**
@@ -236,6 +239,6 @@ export class DocumentsController {
    * @return {Promise<DocumentActionFeeAgreementWASM | undefined>}
    */
   async getActionFeeAgreement (dataContractId: IdentifierLike, documentType: string, action: DocumentTransitionType, increaseTolerancePercent?: number): Promise<DocumentActionFeeAgreementWASM | undefined> {
-    return await getActionFeeAgreement(this.grpcPool, dataContractId, documentType, action, increaseTolerancePercent ?? 0)
+    return await getActionFeeAgreement(this.grpcPool, this.quorumKeyProvider, dataContractId, documentType, action, increaseTolerancePercent ?? 0)
   }
 }

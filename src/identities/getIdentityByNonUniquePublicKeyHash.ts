@@ -1,15 +1,67 @@
-import { GetIdentityByNonUniquePublicKeyHashRequest } from '../../proto/generated/platform.js'
-import { IdentityWASM, PlatformVersionWASM, verifyFullIdentityByNonUniquePublicKeyHashProof } from 'pshenmic-dpp'
+import { GetIdentityByNonUniquePublicKeyHashRequest, GetIdentityByNonUniquePublicKeyHashResponse } from '../../proto/generated/platform.js'
+import {
+  IdentityWASM,
+  PlatformVersionLike,
+  PlatformVersionWASM,
+  verifyFullIdentityByNonUniquePublicKeyHashProof,
+  verifyFullIdentityByNonUniquePublicKeyHashTwoProofs,
+  VerifiedFullIdentityByNonUniquePublicKeyHash
+} from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import hexToBytes from '../utils/hexToBytes.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import QueryExecutor, { ResponseProof } from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRPCPool, hex: string): Promise<IdentityWASM> {
+/**
+ * Proof of a v0 response, nodes since platform v5.0.0-rc.8 return separate index and identity proofs,
+ * older nodes return a single proof
+ */
+interface NonUniquePublicKeyHashProof extends ResponseProof {
+  identityProof?: Uint8Array
+  twoProofs: boolean
+}
+
+function getNonUniquePublicKeyHashProof ({ version }: GetIdentityByNonUniquePublicKeyHashResponse): NonUniquePublicKeyHashProof {
+  if (version.oneofKind !== 'v0') {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
+  }
+
+  const { result, metadata } = version.v0
+
+  if (metadata == null) {
+    throw new Error('Metadata not found')
+  }
+
+  if (result.oneofKind === 'legacyProof') {
+    return { proof: result.legacyProof, metadata, twoProofs: false }
+  }
+
+  if (result.oneofKind !== 'proof' || result.proof.grovedbIdentityPublicKeyHashProof == null) {
+    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
+  }
+
+  // the quorum signature is carried by the index proof
+  return { proof: result.proof.grovedbIdentityPublicKeyHashProof, metadata, identityProof: result.proof.identityProofBytes, twoProofs: true }
+}
+
+function verifyNonUniquePublicKeyHashProof (
+  proof: Uint8Array,
+  identityProof: Uint8Array | undefined,
+  twoProofs: boolean,
+  publicKeyHash: Uint8Array,
+  queryPlatformVersion: PlatformVersionLike,
+  platformVersion: PlatformVersionLike
+): VerifiedFullIdentityByNonUniquePublicKeyHash {
+  return twoProofs
+    ? verifyFullIdentityByNonUniquePublicKeyHashTwoProofs(proof, identityProof, publicKeyHash, undefined, queryPlatformVersion, platformVersion)
+    : verifyFullIdentityByNonUniquePublicKeyHashProof(proof, publicKeyHash, undefined, queryPlatformVersion, platformVersion)
+}
+
+export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, hex: string): Promise<IdentityWASM> {
   const getIdentityByNonUniquePublicKeyHashRequest = GetIdentityByNonUniquePublicKeyHashRequest.create({
     version: {
+      // v0 is supported by all nodes, v1 only since platform v5.0.0-rc.8
       oneofKind: 'v0',
       v0: {
         publicKeyHash: hexToBytes(hex),
@@ -18,42 +70,30 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getIdentityByNonUniquePublicKeyHash(getIdentityByNonUniquePublicKeyHashRequest)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
+    .addGrpcRequest('getIdentityByNonUniquePublicKeyHash', getIdentityByNonUniquePublicKeyHashRequest)
+    .setProofExtractor(getNonUniquePublicKeyHashProof)
+    .addProofVerifier(verifyNonUniquePublicKeyHashProof, ({ metadata, identityProof, twoProofs }) => [
+      identityProof,
+      twoProofs,
+      hexToBytes(hex),
+      metadata.protocolVersion as PlatformVersionWASM,
+      LATEST_PLATFORM_VERSION
+    ])
+    .addMapper(data => {
+      if (data.proved) {
+        if (data.verified.identity == null) {
+          throw new Error(`Identity with non unique public key hash ${hex} not found`)
+        }
 
-  const { version } = response
+        return data.verified.identity
+      }
 
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
+      if (data.result.oneofKind !== 'identity' || data.result.identity.identity == null) {
+        throw new Error(`Identity with non unique public key hash ${hex} not found`)
+      }
 
-  const { v0 } = version
-
-  if (v0.result.oneofKind !== 'proof') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-  }
-
-  const { result: { proof }, metadata } = v0
-
-  if (metadata == null) {
-    throw new Error('Metadata not found')
-  }
-
-  const {
-    rootHash,
-    identity
-  } = verifyFullIdentityByNonUniquePublicKeyHashProof(proof.grovedbProof, hexToBytes(hex), undefined, metadata.protocolVersion as PlatformVersionWASM, LATEST_PLATFORM_VERSION)
-
-  if (identity == null) {
-    throw new Error(`Identity with non unique public key hash ${hex} not found`)
-  }
-
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
-
-  return identity
+      return IdentityWASM.fromBytes(data.result.identity.identity)
+    })
+    .execute()
 }

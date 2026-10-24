@@ -16,15 +16,15 @@ import {
   SpendableNoteWASM,
   StateTransitionWASM
 } from 'pshenmic-dpp'
-import {DashPlatformSDK} from '../../src/DashPlatformSDK.js'
-import {IdentityPublicKeyInCreation} from "../../types.js";
+import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
+import { IdentityPublicKeyInCreation } from '../../types.js'
 
 let sdk: DashPlatformSDK
 
 const COIN_TYPE = 1
 const ACCOUNT = 0
 
-function randomBytes(length: number): Uint8Array {
+function randomBytes (length: number): Uint8Array {
   const bytes = new Uint8Array(length)
   for (let i = 0; i < length; i++) {
     bytes[i] = Math.floor(Math.random() * 256)
@@ -33,7 +33,7 @@ function randomBytes(length: number): Uint8Array {
 }
 
 // Builds a 21-byte (version + pubkey hash) platform address.
-function platformAddress(keyHash: Uint8Array = randomBytes(20)): PlatformAddressWASM {
+function platformAddress (keyHash: Uint8Array = randomBytes(20)): PlatformAddressWASM {
   const bytes = new Uint8Array(21)
   bytes[0] = 0x00
   bytes.set(keyHash, 1)
@@ -42,9 +42,9 @@ function platformAddress(keyHash: Uint8Array = randomBytes(20)): PlatformAddress
 
 // Builds a spendable note owned by `seed` and a matching anchor by inserting its
 // commitment into a fresh commitment tree and witnessing it.
-function makeSpendableNote(seed: Uint8Array, value: bigint): {
-  spend: SpendableNoteWASM,
-  anchor: Uint8Array,
+function makeSpendableNote (seed: Uint8Array, value: bigint): {
+  spend: SpendableNoteWASM
+  anchor: Uint8Array
   owner: OrchardAddressWASM
 } {
   const owner = OrchardAddressWASM.fromSeed(seed, COIN_TYPE, ACCOUNT)
@@ -64,12 +64,12 @@ function makeSpendableNote(seed: Uint8Array, value: bigint): {
     throw new Error('failed to witness note')
   }
 
-  return {spend: new SpendableNoteWASM(note, merklePath), anchor, owner}
+  return { spend: new SpendableNoteWASM(note, merklePath), anchor, owner }
 }
 
 describe('Shielded', () => {
   beforeAll(async () => {
-    sdk = new DashPlatformSDK({network: 'testnet'})
+    sdk = new DashPlatformSDK({ network: 'testnet' })
     await sdk.shielded.init()
   }, 60000)
 
@@ -223,7 +223,7 @@ describe('Shielded', () => {
 
     test('should be able to create a shieldedTransfer transition', async () => {
       const seed = randomBytes(32)
-      const {spend, anchor, owner} = makeSpendableNote(seed, BigInt(10000000000))
+      const { spend, anchor, owner } = makeSpendableNote(seed, BigInt(10000000000))
       const recipient = OrchardAddressWASM.fromSeed(randomBytes(32), COIN_TYPE, ACCOUNT)
 
       const stateTransition = await sdk.shielded.createStateTransition('shieldedTransfer', {
@@ -243,7 +243,7 @@ describe('Shielded', () => {
 
     test('should be able to create an unshield transition', async () => {
       const seed = randomBytes(32)
-      const {spend, anchor, owner} = makeSpendableNote(seed, BigInt(10000000000))
+      const { spend, anchor, owner } = makeSpendableNote(seed, BigInt(10000000000))
 
       const stateTransition = await sdk.shielded.createStateTransition('unshield', {
         spends: [spend],
@@ -262,7 +262,7 @@ describe('Shielded', () => {
 
     test('should be able to create a shieldedWithdrawal transition', async () => {
       const seed = randomBytes(32)
-      const {spend, anchor, owner} = makeSpendableNote(seed, BigInt(10000000000))
+      const { spend, anchor, owner } = makeSpendableNote(seed, BigInt(10000000000))
 
       const stateTransition = await sdk.shielded.createStateTransition('shieldedWithdrawal', {
         spends: [spend],
@@ -286,7 +286,7 @@ describe('Shielded', () => {
     // A real run needs a funded note and signed keys, so this is covered against a live pool.
     test('should be able to create an identityCreateFromShieldedPool transition', async () => {
       const seed = randomBytes(32)
-      const {spend, anchor, owner} = makeSpendableNote(seed, BigInt(20000000000))
+      const { spend, anchor, owner } = makeSpendableNote(seed, BigInt(20000000000))
 
       const privateKey = PrivateKeyWASM.fromHex('a1286dd195e2b8e1f6bdc946c56a53e0c544750d6452ddc0f4c593ef311f21af', 'testnet')
       const identityPublicKeyInCreation: IdentityPublicKeyInCreation = {
