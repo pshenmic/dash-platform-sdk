@@ -61,10 +61,10 @@ export async function queryRanked (grpcPool: GRPCPool, dataContractId: Identifie
   const request = createRankedRequest(dataContractId, query, [])
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getDocuments', request)
+    .setGrpcRequest('getDocuments', request)
     .setProofExtractor(getDocumentsV1Proof)
-    .addProofVerifier(verifyRankedDocumentsProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
-    .addMapper(data => {
+    .setProofVerifier(verifyRankedDocumentsProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
+    .mapResponse(data => {
       if (data.proved) {
         return data.verified.value
       }
@@ -85,9 +85,9 @@ export async function queryHaving (grpcPool: GRPCPool, dataContractId: Identifie
   const request = createRankedRequest(dataContractId, query, query.having)
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getDocuments', request)
+    .setGrpcRequest('getDocuments', request)
     .setProofExtractor(getDocumentsV1Proof)
-    .addProofVerifier(verifyHavingDocumentsProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
-    .addMapper(data => data.proved ? data.verified.value : toRankedEntries(getDocumentsV1Data(data.result, 'ranked').entries))
+    .setProofVerifier(verifyHavingDocumentsProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
+    .mapResponse(data => data.proved ? data.verified.value : toRankedEntries(getDocumentsV1Data(data.result, 'ranked').entries))
     .execute()
 }

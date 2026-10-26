@@ -18,12 +18,12 @@ export default async function totalCredits (grpcPool: GRPCPool): Promise<bigint>
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getTotalCreditsInPlatform', getTotalCreditsInPlatformRequest)
-    .addProofVerifier(verifyTotalCreditsProof, ({ metadata }) => {
+    .setGrpcRequest('getTotalCreditsInPlatform', getTotalCreditsInPlatformRequest)
+    .setProofVerifier(verifyTotalCreditsProof, ({ metadata }) => {
       const activationHeight = grpcPool.network === 'testnet' ? TESTNET_ACTIVATION_HEIGHT : MAINNET_ACTIVATION_HEIGHT
 
       return [HALVING_INTERVAL, activationHeight, metadata.coreChainLockedHeight, LATEST_PLATFORM_VERSION]
     })
-    .addMapper(data => data.proved ? data.verified.totalCredits : BigInt(data.result.credits))
+    .mapResponse(data => data.proved ? data.verified.totalCredits : BigInt(data.result.credits))
     .execute()
 }

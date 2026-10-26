@@ -51,10 +51,10 @@ export async function queryChained (
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getDocuments', request)
+    .setGrpcRequest('getDocuments', request)
     .setProofExtractor(getDocumentsV1Proof)
-    .addProofVerifier(verifyChainedDocumentsProof, dataContract, query, joinProperty, outerDocumentTypeName, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setProofVerifier(verifyChainedDocumentsProof, dataContract, query, joinProperty, outerDocumentTypeName, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       if (data.proved) {
         const { rootHash, ...result } = data.verified
 
@@ -98,10 +98,10 @@ export async function queryComposite (
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getDocuments', request)
+    .setGrpcRequest('getDocuments', request)
     .setProofExtractor(getDocumentsV1Proof)
-    .addProofVerifier(verifyCompositeDocumentsProof, dataContract, query, subQueries, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setProofVerifier(verifyCompositeDocumentsProof, dataContract, query, subQueries, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       if (data.proved) {
         const { rootHash, ...result } = data.verified
 

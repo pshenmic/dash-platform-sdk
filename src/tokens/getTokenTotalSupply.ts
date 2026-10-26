@@ -19,9 +19,9 @@ export default async function getTokenTotalSupply (grpcPool: GRPCPool, tokenIden
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getTokenTotalSupply', getTokenTotalSupplyRequest)
-    .addProofVerifier(verifyTokenTotalSupplyProof, tokenId, true, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getTokenTotalSupply', getTokenTotalSupplyRequest)
+    .setProofVerifier(verifyTokenTotalSupplyProof, tokenId, true, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       const [totalSystemAmount, totalAggregatedAmountInUserAccounts] = data.proved
         ? [data.verified.totalBalance.tokenSupply, data.verified.totalBalance.aggregatedTokenAccountBalances]
         : [BigInt(data.result.tokenTotalSupply.totalSystemAmount), BigInt(data.result.tokenTotalSupply.totalAggregatedAmountInUserAccounts)]

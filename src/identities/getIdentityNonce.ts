@@ -19,9 +19,9 @@ export default async function getIdentityNonce (grpcPool: GRPCPool, identifier: 
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getIdentityNonce', getIdentityNonceRequest)
-    .addProofVerifier(verifyIdentityNonceProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getIdentityNonce', getIdentityNonceRequest)
+    .setProofVerifier(verifyIdentityNonceProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       const nonce = data.proved ? data.verified.nonce : BigInt(data.result.identityNonce)
 
       return nonce != null ? nonce & IDENTITY_NONCE_VALUE_FILTER : BigInt(0)

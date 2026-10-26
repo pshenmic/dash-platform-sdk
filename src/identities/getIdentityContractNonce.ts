@@ -22,9 +22,9 @@ export default async function getIdentityContractNonce (grpcPool: GRPCPool, iden
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getIdentityContractNonce', getIdentityContractNonceRequest)
-    .addProofVerifier(verifyIdentityContractNonceProof, identityIdentifier.bytes(), dataContractIdentifier.bytes(), true, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getIdentityContractNonce', getIdentityContractNonceRequest)
+    .setProofVerifier(verifyIdentityContractNonceProof, identityIdentifier.bytes(), dataContractIdentifier.bytes(), true, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       const contractNonce = data.proved ? data.verified.contractNonce : BigInt(data.result.identityContractNonce)
 
       return contractNonce != null ? contractNonce & IDENTITY_CONTRACT_NONCE_VALUE_FILTER : BigInt(0)

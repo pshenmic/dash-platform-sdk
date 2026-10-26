@@ -88,20 +88,20 @@ export default async function queryAggregate (
   })
 
   const executor = QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getDocuments', request)
+    .setGrpcRequest('getDocuments', request)
     .setProofExtractor(getDocumentsV1Proof)
 
   if (aggregateFunction === 'count') {
     return await executor
-      .addProofVerifier(verifyDocumentsCountProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
-      .addMapper(data => data.proved ? data.verified.value : toDocumentsAggregate(data.result, aggregateFunction))
+      .setProofVerifier(verifyDocumentsCountProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
+      .mapResponse(data => data.proved ? data.verified.value : toDocumentsAggregate(data.result, aggregateFunction))
       .execute()
   }
 
   const verify = aggregateFunction === 'sum' ? verifyDocumentsSumProof : verifyDocumentsAverageProof
 
   return await executor
-    .addProofVerifier(verify, ({ metadata }) => [dataContract, query, field as string, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
-    .addMapper(data => data.proved ? data.verified.value : toDocumentsAggregate(data.result, aggregateFunction))
+    .setProofVerifier(verify, ({ metadata }) => [dataContract, query, field as string, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
+    .mapResponse(data => data.proved ? data.verified.value : toDocumentsAggregate(data.result, aggregateFunction))
     .execute()
 }

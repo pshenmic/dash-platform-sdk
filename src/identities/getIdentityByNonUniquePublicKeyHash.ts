@@ -70,16 +70,16 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getIdentityByNonUniquePublicKeyHash', getIdentityByNonUniquePublicKeyHashRequest)
+    .setGrpcRequest('getIdentityByNonUniquePublicKeyHash', getIdentityByNonUniquePublicKeyHashRequest)
     .setProofExtractor(getNonUniquePublicKeyHashProof)
-    .addProofVerifier(verifyNonUniquePublicKeyHashProof, ({ metadata, identityProof, twoProofs }) => [
+    .setProofVerifier(verifyNonUniquePublicKeyHashProof, ({ metadata, identityProof, twoProofs }) => [
       identityProof,
       twoProofs,
       hexToBytes(hex),
       metadata.protocolVersion as PlatformVersionWASM,
       LATEST_PLATFORM_VERSION
     ])
-    .addMapper(data => {
+    .mapResponse(data => {
       if (data.proved) {
         if (data.verified.identity == null) {
           throw new Error(`Identity with non unique public key hash ${hex} not found`)

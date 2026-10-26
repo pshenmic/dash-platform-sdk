@@ -22,9 +22,9 @@ export default async function getByIdentifier (grpcPool: GRPCPool, identifier: I
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getDataContract', getDataContractRequest)
-    .addProofVerifier(verifyContractProof, undefined, false, false, id.bytes(), LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getDataContract', getDataContractRequest)
+    .setProofVerifier(verifyContractProof, undefined, false, false, id.bytes(), LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       const dataContract = data.proved
         ? data.verified.dataContract
         : DataContractWASM.fromBytes(data.result.dataContract, false, LATEST_PLATFORM_VERSION)

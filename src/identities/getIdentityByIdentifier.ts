@@ -17,9 +17,9 @@ export default async function getIdentityByIdentifier (grpcPool: GRPCPool, ident
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getIdentity', getIdentityRequest)
-    .addProofVerifier(verifyIdentityByIdentifierProof, id, true, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getIdentity', getIdentityRequest)
+    .setProofVerifier(verifyIdentityByIdentifierProof, id, true, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       const identity = data.proved ? data.verified.identity : IdentityWASM.fromBytes(data.result.identity)
 
       if (identity == null) {

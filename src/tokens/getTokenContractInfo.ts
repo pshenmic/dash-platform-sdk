@@ -23,9 +23,9 @@ export default async function getTokenContractInfo (grpcPool: GRPCPool, tokenIde
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getTokenContractInfo', getTokenContractInfoRequest)
-    .addProofVerifier(verifyTokenContractInfoProof, tokenId, true, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getTokenContractInfo', getTokenContractInfoRequest)
+    .setProofVerifier(verifyTokenContractInfoProof, tokenId, true, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       const contractInfo = data.proved ? data.verified.contractInfo : data.result.data
 
       if (contractInfo == null) {

@@ -21,8 +21,8 @@ export default async function getMostRecentShieldedAnchor (
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getMostRecentShieldedAnchor', getMostRecentShieldedAnchorRequest)
-    .addProofVerifier(verifyMostRecentShieldedAnchorProof, true, LATEST_PLATFORM_VERSION, tokenId)
-    .addMapper(data => data.proved ? data.verified.anchor : data.result.anchor)
+    .setGrpcRequest('getMostRecentShieldedAnchor', getMostRecentShieldedAnchorRequest)
+    .setProofVerifier(verifyMostRecentShieldedAnchorProof, true, LATEST_PLATFORM_VERSION, tokenId)
+    .mapResponse(data => data.proved ? data.verified.anchor : data.result.anchor)
     .execute()
 }

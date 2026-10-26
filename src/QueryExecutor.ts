@@ -44,7 +44,7 @@ export type ResponseResult<Response> = Response extends { version: infer Version
   : never
 
 /**
- * Data of a query for the mapper, either verified from the proof (`proved: true`)
+ * Data of a query passed to `mapResponse`, either verified from the proof (`proved: true`)
  * or the result of the response requested without proof (`proved: false`)
  */
 export type QueryData<Response, V> = {
@@ -57,7 +57,7 @@ export type QueryData<Response, V> = {
   metadata: ResponseMetadata
 }
 
-type ResultMapper<Response, V, T> = (data: QueryData<Response, V>) => T | Promise<T>
+type MapResponse<Response, V, T> = (data: QueryData<Response, V>) => T | Promise<T>
 
 /**
  * Generic shape of a request or a response with versioned body
@@ -122,7 +122,7 @@ export function getResponseProof (response: ProvedResponse): ResponseProof {
  * - with proofs: request (`prove: true`) -> proof extraction -> GroveDB proof verification -> quorum signature verification -> mapping
  * - without proofs: request (`prove: false`) -> mapping of the response result
  *
- * The mapper handles both cases, the verified data or the response result, see {QueryData}.
+ * `mapResponse` handles both cases, the verified data or the response result, see {QueryData}.
  * Requests without the `prove` field are always proved
  *
  * If the proof is invalid (ProofError), the node is banned and the request is sent again to another node,
@@ -130,9 +130,9 @@ export function getResponseProof (response: ProvedResponse): ResponseProof {
  *
  * @example
  * const balance = await QueryExecutor.build(grpcPool)
- *   .addGrpcRequest('getIdentityBalance', request)
- *   .addProofVerifier(verifyIdentityBalanceProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
- *   .addMapper(data => data.proved ? data.verified.balance : BigInt(data.result.balance))
+ *   .setGrpcRequest('getIdentityBalance', request)
+ *   .setProofVerifier(verifyIdentityBalanceProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
+ *   .mapResponse(data => data.proved ? data.verified.balance : BigInt(data.result.balance))
  *   .execute()
  */
 export default class QueryExecutor<Response = unknown, V = unknown, T = unknown, P extends ResponseProof = ResponseProof> {
@@ -141,7 +141,7 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
   #requestMessage?: unknown
   #extractProof: ProofExtractor<Response, P> = getResponseProof as unknown as ProofExtractor<Response, P>
   #verifyProof?: (responseProof: P) => V
-  #map?: ResultMapper<Response, V, T>
+  #mapResponse?: MapResponse<Response, V, T>
   #validateProof = true
 
   private constructor (grpcPool: GRPCPool) {
@@ -156,7 +156,7 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
    * Sets the GRPC request, it is sent again on every retry.
    * The `prove` field of the request is set by the executor
    */
-  addGrpcRequest<M extends keyof PlatformClientMethods>(
+  setGrpcRequest<M extends keyof PlatformClientMethods>(
     method: M,
     request: Parameters<PlatformClientMethods[M]>[0]
   ): QueryExecutor<
@@ -205,15 +205,15 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
    * followed by the given args. Args depending on the response (e.g. metadata) can be passed as a callback.
    * Failure of the verification is thrown as ProofError, so the request is retried on another node
    */
-  addProofVerifier<Args extends unknown[] | [], U> (
+  setProofVerifier<Args extends unknown[] | [], U> (
     verify: GroveDBVerifier<Args, U>,
     getArgs: (responseProof: P) => NoInfer<Args>
   ): QueryExecutor<Response, U, T, P>
-  addProofVerifier<Args extends unknown[] | [], U> (
+  setProofVerifier<Args extends unknown[] | [], U> (
     verify: GroveDBVerifier<Args, U>,
     ...args: Args
   ): QueryExecutor<Response, U, T, P>
-  addProofVerifier<Args extends unknown[] | [], U> (
+  setProofVerifier<Args extends unknown[] | [], U> (
     verify: GroveDBVerifier<Args, U>,
     ...args: Args | [(responseProof: P) => Args]
   ): QueryExecutor<Response, U, T, P> {
@@ -238,10 +238,10 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
    * Sets the mapping of the query data to the result of the query, also the place for "not found" checks.
    * The data is either verified from the proof or the result of the response requested without proof
    */
-  addMapper<U> (map: ResultMapper<Response, V, U>): QueryExecutor<Response, V, U, P> {
+  mapResponse<U> (mapResponse: MapResponse<Response, V, U>): QueryExecutor<Response, V, U, P> {
     const executor = this as unknown as QueryExecutor<Response, V, U, P>
 
-    executor.#map = map
+    executor.#mapResponse = mapResponse
 
     return executor
   }
@@ -258,18 +258,18 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
 
   async execute (): Promise<T> {
     const request = this.#request
-    const map = this.#map
+    const mapResponse = this.#mapResponse
 
     if (request == null) {
-      throw new Error('GRPC request is not set, call addGrpcRequest() before execute()')
+      throw new Error('GRPC request is not set, call setGrpcRequest() before execute()')
     }
 
     if (this.#verifyProof == null) {
-      throw new Error('Proof verification is not set, call addProofVerifier() before execute()')
+      throw new Error('Proof verification is not set, call setProofVerifier() before execute()')
     }
 
-    if (map == null) {
-      throw new Error('Mapper is not set, call addMapper() before execute()')
+    if (mapResponse == null) {
+      throw new Error('Response mapping is not set, call mapResponse() before execute()')
     }
 
     const requestBody = getVersionBody(this.#requestMessage)
@@ -280,7 +280,7 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
       requestBody.prove = prove
     }
 
-    return await map(prove ? await this.#executeWithProof(request) : await this.#executeWithoutProof(request))
+    return await mapResponse(prove ? await this.#executeWithProof(request) : await this.#executeWithoutProof(request))
   }
 
   async #executeWithoutProof (request: GrpcRequest<Response>): Promise<QueryData<Response, V>> {

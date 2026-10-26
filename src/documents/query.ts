@@ -30,14 +30,14 @@ export default async function query (
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getDocuments', request)
+    .setGrpcRequest('getDocuments', request)
     .setProofExtractor(getDocumentsV1Proof)
-    .addProofVerifier(verifyDocumentsProof, ({ metadata }) => {
+    .setProofVerifier(verifyDocumentsProof, ({ metadata }) => {
       const metadataTimeMs = BigInt(metadata.timeMs)
 
       return [dataContract, documentTypeName, where, orderBy, limit, startIdentifier?.bytes(), startAtIncluded, metadataTimeMs, LATEST_PLATFORM_VERSION, metadataTimeMs]
     })
-    .addMapper(data => data.proved
+    .mapResponse(data => data.proved
       ? data.verified.documents ?? []
       : toDocuments(getDocumentsV1Data(data.result, 'documents').documents, dataContract, documentTypeName))
     .execute()

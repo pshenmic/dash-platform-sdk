@@ -21,8 +21,8 @@ export default async function getShieldedPoolState (
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getShieldedPoolState', getShieldedPoolStateRequest)
-    .addProofVerifier(verifyShieldedPoolStateProof, true, LATEST_PLATFORM_VERSION, tokenId)
-    .addMapper(data => data.proved ? data.verified.totalBalance : BigInt(data.result.totalBalance))
+    .setGrpcRequest('getShieldedPoolState', getShieldedPoolStateRequest)
+    .setProofVerifier(verifyShieldedPoolStateProof, true, LATEST_PLATFORM_VERSION, tokenId)
+    .mapResponse(data => data.proved ? data.verified.totalBalance : BigInt(data.result.totalBalance))
     .execute()
 }

@@ -50,7 +50,7 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
   }
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('waitForStateTransitionResult', waitForStateTransitionResultRequest)
+    .setGrpcRequest('waitForStateTransitionResult', waitForStateTransitionResultRequest)
     .setProofExtractor(response => {
       const { version } = response
 
@@ -66,7 +66,7 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
 
       return getResponseProof(response)
     })
-    .addProofVerifier(verifyStateTransitionResult, ({ metadata }) => {
+    .setProofVerifier(verifyStateTransitionResult, ({ metadata }) => {
       const { timeMs, height, coreChainLockedHeight, epoch } = metadata
 
       const blockInfo: BlockInfo = {
@@ -78,7 +78,7 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
 
       return [stateTransition, blockInfo, knownContracts, LATEST_PLATFORM_VERSION]
     })
-    .addMapper(data => {
+    .mapResponse(data => {
       if (data.proved) {
         if (data.verified.result == null) {
           throw new Error('State transition result was null')

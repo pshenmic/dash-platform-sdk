@@ -18,7 +18,7 @@ export async function getAddressesBranchState (grpcPool: GRPCPool, key: Uint8Arr
 
   // the proof is verified against the root hash of the already verified trunk state, so it has no quorum signature
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getAddressesBranchState', getAddressesBranchStateRequest)
+    .setGrpcRequest('getAddressesBranchState', getAddressesBranchStateRequest)
     // the response has no proof message, only the merk proof
     .setProofExtractor(({ version }) => {
       if (version.oneofKind !== 'v0') {
@@ -27,8 +27,8 @@ export async function getAddressesBranchState (grpcPool: GRPCPool, key: Uint8Arr
 
       return { proof: Proof.create({ grovedbProof: version.v0.merkProof }), metadata: ResponseMetadata.create() }
     })
-    .addProofVerifier(verifyAddressesBranchState, key, depth, expectedRootHash, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setProofVerifier(verifyAddressesBranchState, key, depth, expectedRootHash, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       if (!data.proved) {
         throw new Error('Addresses branch state can only be requested with proof')
       }

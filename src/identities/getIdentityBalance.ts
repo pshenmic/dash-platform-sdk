@@ -18,9 +18,9 @@ export default async function getIdentityBalance (grpcPool: GRPCPool, identifier
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getIdentityBalance', getIdentityBalanceRequest)
-    .addProofVerifier(verifyIdentityBalanceProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getIdentityBalance', getIdentityBalanceRequest)
+    .setProofVerifier(verifyIdentityBalanceProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       const balance = data.proved ? data.verified.balance : BigInt(data.result.balance)
 
       if (balance == null) {

@@ -16,9 +16,9 @@ export async function getRecentCompactedAddressBalanceChanges (grpcPool: GRPCPoo
   })
 
   return await QueryExecutor.build(grpcPool)
-    .addGrpcRequest('getRecentCompactedAddressBalanceChanges', getRecentCompactedAddressBalanceChangesRequest)
-    .addProofVerifier(verifyRecentCompactedAddressBalanceChanges, startBlockHeight, RECENT_COMPACTED_ADDRESS_BALANCE_CHANGES_LIMIT, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getRecentCompactedAddressBalanceChanges', getRecentCompactedAddressBalanceChangesRequest)
+    .setProofVerifier(verifyRecentCompactedAddressBalanceChanges, startBlockHeight, RECENT_COMPACTED_ADDRESS_BALANCE_CHANGES_LIMIT, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       if (data.proved) {
         return data.verified.ranges
       }
