@@ -6,9 +6,7 @@ import {
 } from 'pshenmic-dpp'
 import { GetAddressInfoRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
-import { getQuorumPublicKey } from '../utils/getQuorumPublicKey.js'
-import bytesToHex from '../utils/bytesToHex.js'
-import verifyTenderdashProof from '../utils/verifyTenderdashProof.js'
+import QueryExecutor from '../QueryExecutor.js'
 import { PlatformAddressInfo } from '../../types.js'
 
 export async function getAddressInfo (grpcPool: GRPCPool, platformAddress: PlatformAddressLike): Promise<PlatformAddressInfo> {
@@ -24,43 +22,21 @@ export async function getAddressInfo (grpcPool: GRPCPool, platformAddress: Platf
     }
   })
 
-  const { response } = await (await grpcPool.getClient()).getAddressInfo(getAddressInfoRequest)
+  return await QueryExecutor.build(grpcPool)
+    .setGrpcRequest('getAddressInfo', getAddressInfoRequest)
+    .setProofVerifier(verifyPlatformAddressInfo, platformAddressWASM, true, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
+      const balanceAndNonce = data.proved ? data.verified : data.result.addressInfoEntry.balanceAndNonce
 
-  const { version } = response
+      if (balanceAndNonce?.nonce == null || balanceAndNonce.balance == null) {
+        throw new Error(`Failed to fetch info for address ${platformAddressWASM.toBech32m(grpcPool.network)}`)
+      }
 
-  if (version.oneofKind !== 'v0') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
-  }
-
-  const { v0 } = version
-
-  if (v0.result.oneofKind !== 'proof') {
-    throw new Error('Unexpected oneOf type returned from DAPI (must be proof)')
-  }
-
-  const { result: { proof }, metadata } = v0
-
-  if (metadata == null) {
-    throw new Error('Metadata not found')
-  }
-
-  const { rootHash, address, nonce, balance } = verifyPlatformAddressInfo(proof.grovedbProof, platformAddressWASM, true, LATEST_PLATFORM_VERSION)
-
-  if (address == null || nonce == null || balance == null) {
-    throw new Error(`Failed to fetch info for address ${platformAddressWASM.toBech32m(grpcPool.network)}`)
-  }
-
-  const quorumPublicKey = await getQuorumPublicKey(grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
-
-  const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
-
-  if (!verify) {
-    throw new Error('Failed to verify query')
-  }
-
-  return {
-    address,
-    nonce,
-    balance
-  }
+      return {
+        address: platformAddressWASM,
+        nonce: balanceAndNonce.nonce,
+        balance: BigInt(balanceAndNonce.balance)
+      }
+    })
+    .execute()
 }

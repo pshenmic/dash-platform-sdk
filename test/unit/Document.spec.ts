@@ -77,7 +77,7 @@ describe('Document', () => {
     const dataContract = '6hVQW16jyvZyGSQk2YVty4ND6bgFXozizYWnPt753uW5'
     const documentType = 'torrent'
     const limit = 5
-    const masterQueryLimit = limit*2
+    const masterQueryLimit = limit * 2
 
     // @ts-expect-error
     const masterQuery = await sdk.documents.query(dataContract, documentType, null, null, masterQueryLimit)

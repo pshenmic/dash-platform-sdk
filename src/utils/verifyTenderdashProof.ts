@@ -3,10 +3,11 @@ import { calculateSignHash } from './calculateSignHash.js'
 import { calculateStateIdHash } from './calculateStateIdHash.js'
 import { verifySignatureDigest } from 'pshenmic-dpp'
 import hexToBytes from './hexToBytes.js'
+import ProofError from './ProofError.js'
 
 export default async function verifyTenderdashProof (proof: Proof, metadata: ResponseMetadata, rootHash: Uint8Array, quorumPublicKey: string): Promise<boolean> {
   if (Date.now() - Number(metadata.timeMs) > 15 * 60 * 1000) {
-    throw new Error('Request is stalled (over 15 minutes)')
+    throw new ProofError('Request is stalled (over 15 minutes)')
   }
 
   const stateId = StateId.create({
