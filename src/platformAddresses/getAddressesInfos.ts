@@ -1,11 +1,12 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { PlatformAddressLike, PlatformAddressWASM, verifyPlatformAddressesInfos } from 'pshenmic-dpp'
 import { PlatformAddressInfo } from '../../types.js'
 import { GetAddressesInfosRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import QueryExecutor from '../QueryExecutor.js'
 
-export async function getAddressesInfos (grpcPool: GRPCPool, platformAddresses: PlatformAddressLike[]): Promise<PlatformAddressInfo[]> {
+export async function getAddressesInfos (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, platformAddresses: PlatformAddressLike[]): Promise<PlatformAddressInfo[]> {
   const platformAddressesWASM = platformAddresses.map(addr => new PlatformAddressWASM(addr))
 
   const getAddressInfoRequest = GetAddressesInfosRequest.create({
@@ -18,7 +19,7 @@ export async function getAddressesInfos (grpcPool: GRPCPool, platformAddresses: 
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getAddressesInfos', getAddressInfoRequest)
     .setProofVerifier(verifyPlatformAddressesInfos, platformAddressesWASM, true, LATEST_PLATFORM_VERSION)
     .mapResponse(data => {

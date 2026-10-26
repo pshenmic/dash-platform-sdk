@@ -1,7 +1,7 @@
 import { PlatformClient } from '../proto/generated/platform.client.js'
 import { Proof, ResponseMetadata } from '../proto/generated/platform.js'
 import { GRPCPool } from './grpcConnectionPool.js'
-import { getQuorumPublicKey } from './utils/getQuorumPublicKey.js'
+import { QuorumKeyProvider } from './quorumKeyProvider.js'
 import bytesToHex from './utils/bytesToHex.js'
 import verifyTenderdashProof from './utils/verifyTenderdashProof.js'
 import ProofError from './utils/ProofError.js'
@@ -129,7 +129,7 @@ export function getResponseProof (response: ProvedResponse): ResponseProof {
  * the node that returned a valid proof is unbanned. Any other error (including "not found") is thrown immediately
  *
  * @example
- * const balance = await QueryExecutor.build(grpcPool)
+ * const balance = await QueryExecutor.build(grpcPool, quorumKeyProvider)
  *   .setGrpcRequest('getIdentityBalance', request)
  *   .setProofVerifier(verifyIdentityBalanceProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
  *   .mapResponse(data => data.proved ? data.verified.balance : BigInt(data.result.balance))
@@ -137,6 +137,7 @@ export function getResponseProof (response: ProvedResponse): ResponseProof {
  */
 export default class QueryExecutor<Response = unknown, V = unknown, T = unknown, P extends ResponseProof = ResponseProof> {
   readonly #grpcPool: GRPCPool
+  readonly #quorumKeyProvider: QuorumKeyProvider
   #request?: GrpcRequest<Response>
   #requestMessage?: unknown
   #mapProof: MapProof<Response, P> = getResponseProof as unknown as MapProof<Response, P>
@@ -144,12 +145,13 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
   #mapResponse?: MapResponse<Response, V, T>
   #validateProof = true
 
-  private constructor (grpcPool: GRPCPool) {
+  private constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.#grpcPool = grpcPool
+    this.#quorumKeyProvider = quorumKeyProvider
   }
 
-  static build (grpcPool: GRPCPool): QueryExecutor {
-    return new QueryExecutor(grpcPool)
+  static build (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider): QueryExecutor {
+    return new QueryExecutor(grpcPool, quorumKeyProvider)
   }
 
   /**
@@ -355,7 +357,7 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
       throw new Error('Root hash is required to validate the proof, return it from the proof verifier or call setValidateProof(false)')
     }
 
-    const quorumPublicKey = await getQuorumPublicKey(this.#grpcPool.network, proof.quorumType, bytesToHex(proof.quorumHash))
+    const quorumPublicKey = await this.#quorumKeyProvider.getQuorumPublicKey(proof.quorumType, bytesToHex(proof.quorumHash))
 
     const verify = await verifyTenderdashProof(proof, metadata, rootHash, quorumPublicKey)
 

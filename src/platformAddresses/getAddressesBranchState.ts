@@ -1,10 +1,11 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { verifyAddressesBranchState, VerifiedAddressesBranchState } from 'pshenmic-dpp'
 import { GetAddressesBranchStateRequest, Proof, ResponseMetadata } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import QueryExecutor from '../QueryExecutor.js'
 
-export async function getAddressesBranchState (grpcPool: GRPCPool, key: Uint8Array, depth: number, checkpointHeight: bigint, expectedRootHash: Uint8Array): Promise<VerifiedAddressesBranchState> {
+export async function getAddressesBranchState (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, key: Uint8Array, depth: number, checkpointHeight: bigint, expectedRootHash: Uint8Array): Promise<VerifiedAddressesBranchState> {
   const getAddressesBranchStateRequest = GetAddressesBranchStateRequest.create({
     version: {
       oneofKind: 'v0',
@@ -17,7 +18,7 @@ export async function getAddressesBranchState (grpcPool: GRPCPool, key: Uint8Arr
   })
 
   // the proof is verified against the root hash of the already verified trunk state, so it has no quorum signature
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getAddressesBranchState', getAddressesBranchStateRequest)
     // the response has no proof message, only the merk proof
     .mapProof(({ version }) => {

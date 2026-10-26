@@ -3,6 +3,7 @@ import {
   ContestedStateResultType
 } from '../../types.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import {
   GetContestedResourceVoteStateRequest,
   GetContestedResourceVoteStateRequest_GetContestedResourceVoteStateRequestV0_ResultType,
@@ -24,6 +25,7 @@ export type StartAtIdentifierInfo = GetContestedResourceVoteStateRequest_GetCont
 
 export default async function getContestedResourceVoteState (
   grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider,
   contract: DataContractWASM,
   documentTypeName: string,
   indexName: string,
@@ -57,7 +59,7 @@ export default async function getContestedResourceVoteState (
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getContestedResourceVoteState', getContestedResourceVoteStateRequest)
     .setProofVerifier(
       verifyVotePollVoteStateProof,

@@ -7,6 +7,7 @@ import {
   verifyStateTransitionResult
 } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import hexToBytes from '../utils/hexToBytes.js'
 import { StateTransitionBroadcastError, WaitForStateTransitionResultRequest } from '../../proto/generated/platform.js'
 import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
@@ -18,7 +19,7 @@ function toStateTransitionError (txHash: string, { code, message, data }: StateT
   return new Error(`State transition ${txHash} failed to execute with code ${String(code)}, message: ${String(message)}, data: ${base64.encode(data)}`)
 }
 
-export default async function waitForStateTransitionResult (grpcPool: GRPCPool, stateTransition: StateTransitionWASM): Promise<bigint | undefined> {
+export default async function waitForStateTransitionResult (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, stateTransition: StateTransitionWASM): Promise<bigint | undefined> {
   const txHash = stateTransition.hash(false)
 
   const waitForStateTransitionResultRequest = WaitForStateTransitionResultRequest.create({
@@ -40,16 +41,16 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
     const batchTransition = BatchTransitionWASM.fromStateTransition(stateTransition)
     const [transition] = batchTransition.transitions
 
-    knownContracts.push(await getDataContractByIdentifier(grpcPool, transition.dataContractId))
+    knownContracts.push(await getDataContractByIdentifier(grpcPool, quorumKeyProvider, transition.dataContractId))
   }
 
   if (stateTransition.getActionType() === 'MASTERNODE_VOTE') {
     const masternodeVote = MasternodeVoteTransitionWASM.fromStateTransition(stateTransition)
 
-    knownContracts.push(await getDataContractByIdentifier(grpcPool, masternodeVote.vote.votePoll.contractId))
+    knownContracts.push(await getDataContractByIdentifier(grpcPool, quorumKeyProvider, masternodeVote.vote.votePoll.contractId))
   }
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('waitForStateTransitionResult', waitForStateTransitionResultRequest)
     .mapProof(response => {
       const { version } = response

@@ -10,6 +10,7 @@ import {
 } from 'pshenmic-dpp'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 import QueryExecutor, { ResponseResult } from '../QueryExecutor.js'
 import { createDocumentsV1Request, getDocumentsV1Data, getDocumentsV1Proof, toOrderClauses, toSelect, toWhereClauses } from './v1.js'
@@ -66,6 +67,7 @@ function toDocumentsAggregate (result: ResponseResult<GetDocumentsResponse>, agg
 
 export default async function queryAggregate (
   grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider,
   dataContractId: IdentifierLike,
   aggregateFunction: DocumentsAggregateFunction,
   query: AggregateProofQuery,
@@ -75,7 +77,7 @@ export default async function queryAggregate (
     throw new Error(`Field is required for ${aggregateFunction} query`)
   }
 
-  const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
+  const dataContract = await getDataContractByIdentifier(grpcPool, quorumKeyProvider, dataContractId)
 
   const request = createDocumentsV1Request({
     dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
@@ -87,7 +89,7 @@ export default async function queryAggregate (
     groupBy: query.groupBy ?? []
   })
 
-  const executor = QueryExecutor.build(grpcPool)
+  const executor = QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getDocuments', request)
     .mapProof(getDocumentsV1Proof)
 

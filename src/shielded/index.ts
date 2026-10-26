@@ -1,4 +1,5 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import {
   IdentityCreateFromShieldedPoolParams,
   ShieldedEncryptedNote,
@@ -35,12 +36,15 @@ import {
 export class ShieldedController {
   /** @ignore **/
   grpcPool: GRPCPool
+  /** @ignore **/
+  quorumKeyProvider: QuorumKeyProvider
 
   /** @ignore **/
   shieldedBuilder?: ShieldedBuilderWASM
 
-  constructor (grpcPool: GRPCPool) {
+  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.grpcPool = grpcPool
+    this.quorumKeyProvider = quorumKeyProvider
   }
 
   /**
@@ -83,7 +87,7 @@ export class ShieldedController {
    * @return {Promise<ShieldedEncryptedNote[]>}
    */
   async getShieldedEncryptedNotes (startIndex: bigint, count: number, tokenIdentifier?: IdentifierLike): Promise<ShieldedEncryptedNote[]> {
-    return await getShieldedEncryptedNotes(this.grpcPool, startIndex, count, tokenIdentifier)
+    return await getShieldedEncryptedNotes(this.grpcPool, this.quorumKeyProvider, startIndex, count, tokenIdentifier)
   }
 
   /**
@@ -95,7 +99,7 @@ export class ShieldedController {
    * @return {Promise<Uint8Array[]>}
    */
   async getShieldedAnchors (tokenIdentifier?: IdentifierLike): Promise<Uint8Array[]> {
-    return await getShieldedAnchors(this.grpcPool, tokenIdentifier)
+    return await getShieldedAnchors(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
   }
 
   /**
@@ -106,7 +110,7 @@ export class ShieldedController {
    * @return {Promise<Uint8Array>}
    */
   async getMostRecentShieldedAnchor (tokenIdentifier?: IdentifierLike): Promise<Uint8Array | undefined> {
-    return await getMostRecentShieldedAnchor(this.grpcPool, tokenIdentifier)
+    return await getMostRecentShieldedAnchor(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
   }
 
   /**
@@ -117,7 +121,7 @@ export class ShieldedController {
    * @return {Promise<bigint>}
    */
   async getShieldedPoolState (tokenIdentifier?: IdentifierLike): Promise<bigint | undefined> {
-    return await getShieldedPoolState(this.grpcPool, tokenIdentifier)
+    return await getShieldedPoolState(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
   }
 
   /**
@@ -129,7 +133,7 @@ export class ShieldedController {
    * @return {Promise<bigint>}
    */
   async getShieldedNotesCount (tokenIdentifier?: IdentifierLike): Promise<bigint | undefined> {
-    return await getShieldedNotesCount(this.grpcPool, tokenIdentifier)
+    return await getShieldedNotesCount(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
   }
 
   /**
@@ -144,7 +148,7 @@ export class ShieldedController {
    * @return {Promise<ShieldedNullifierStatus[]>}
    */
   async getShieldedNullifiers (nullifiers: Uint8Array[], tokenIdentifier?: IdentifierLike): Promise<ShieldedNullifierStatus[]> {
-    return await getShieldedNullifiers(this.grpcPool, nullifiers, tokenIdentifier)
+    return await getShieldedNullifiers(this.grpcPool, this.quorumKeyProvider, nullifiers, tokenIdentifier)
   }
 
   /**

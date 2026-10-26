@@ -1,4 +1,5 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetEpochsInfoRequest } from '../../proto/generated/platform.js'
 import { verifyEpochsInfoProof } from 'pshenmic-dpp'
 import QueryExecutor from '../QueryExecutor.js'
@@ -14,7 +15,7 @@ export interface EpochInfo {
   protocolVersion: 9
 }
 
-export default async function epochInfos (grpcPool: GRPCPool, count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
+export default async function epochInfos (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, count: number, ascending: boolean, start?: number): Promise<EpochInfo[]> {
   const getEpochsInfoRequest = GetEpochsInfoRequest.create({
     version: {
       oneofKind: 'v0',
@@ -27,7 +28,7 @@ export default async function epochInfos (grpcPool: GRPCPool, count: number, asc
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getEpochsInfo', getEpochsInfoRequest)
     .setProofVerifier(verifyEpochsInfoProof, ({ metadata }) => [metadata.epoch, start, count, ascending, LATEST_PLATFORM_VERSION])
     .mapResponse(data => {

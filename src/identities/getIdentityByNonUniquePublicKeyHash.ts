@@ -8,6 +8,7 @@ import {
   VerifiedFullIdentityByNonUniquePublicKeyHash
 } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import hexToBytes from '../utils/hexToBytes.js'
 import QueryExecutor, { ResponseProof } from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
@@ -57,7 +58,7 @@ function verifyNonUniquePublicKeyHashProof (
     : verifyFullIdentityByNonUniquePublicKeyHashProof(proof, publicKeyHash, undefined, queryPlatformVersion, platformVersion)
 }
 
-export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRPCPool, hex: string): Promise<IdentityWASM> {
+export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, hex: string): Promise<IdentityWASM> {
   const getIdentityByNonUniquePublicKeyHashRequest = GetIdentityByNonUniquePublicKeyHashRequest.create({
     version: {
       // v0 is supported by all nodes, v1 only since platform v5.0.0-rc.8
@@ -69,7 +70,7 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getIdentityByNonUniquePublicKeyHash', getIdentityByNonUniquePublicKeyHashRequest)
     .mapProof(getNonUniquePublicKeyHashProof)
     .setProofVerifier(verifyNonUniquePublicKeyHashProof, ({ metadata, identityProof, twoProofs }) => [

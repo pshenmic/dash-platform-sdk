@@ -11,6 +11,7 @@ import {
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GetDocumentsRequest, GetDocumentsResponse_GetDocumentsResponseV1_RankedEntry } from '../../proto/generated/platform.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 import QueryExecutor from '../QueryExecutor.js'
 import { createDocumentsV1Request, getDocumentsV1Data, getDocumentsV1Proof, toHavingClauses, toOrderClauses, toSelect, toWhereClauses } from './v1.js'
@@ -55,12 +56,12 @@ function createRankedRequest (dataContractId: IdentifierLike, query: AggregateDo
 /**
  * Top-K query: groups of `groupBy` ranked by the selected aggregate in the order `orderBy` names
  */
-export async function queryRanked (grpcPool: GRPCPool, dataContractId: IdentifierLike, query: AggregateDocumentsQuery): Promise<ProvenRankedPage> {
-  const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
+export async function queryRanked (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, dataContractId: IdentifierLike, query: AggregateDocumentsQuery): Promise<ProvenRankedPage> {
+  const dataContract = await getDataContractByIdentifier(grpcPool, quorumKeyProvider, dataContractId)
 
   const request = createRankedRequest(dataContractId, query, [])
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getDocuments', request)
     .mapProof(getDocumentsV1Proof)
     .setProofVerifier(verifyRankedDocumentsProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
@@ -79,12 +80,12 @@ export async function queryRanked (grpcPool: GRPCPool, dataContractId: Identifie
 /**
  * Having query: groups of `groupBy` whose aggregate falls within the `having` bounds
  */
-export async function queryHaving (grpcPool: GRPCPool, dataContractId: IdentifierLike, query: AggregateDocumentsQuery & { having: HavingClause[] }): Promise<ProvenRankedEntry[]> {
-  const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
+export async function queryHaving (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, dataContractId: IdentifierLike, query: AggregateDocumentsQuery & { having: HavingClause[] }): Promise<ProvenRankedEntry[]> {
+  const dataContract = await getDataContractByIdentifier(grpcPool, quorumKeyProvider, dataContractId)
 
   const request = createRankedRequest(dataContractId, query, query.having)
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getDocuments', request)
     .mapProof(getDocumentsV1Proof)
     .setProofVerifier(verifyHavingDocumentsProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])

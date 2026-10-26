@@ -1,10 +1,11 @@
 import { GetIdentityKeysRequest, KeyRequestType } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, IdentityPublicKeyWASM, verifyIdentityKeysByIdentifierProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getIdentityPublicKeys (grpcPool: GRPCPool, identifier: IdentifierLike, keyIds?: number[]): Promise<IdentityPublicKeyWASM[]> {
+export default async function getIdentityPublicKeys (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifier: IdentifierLike, keyIds?: number[]): Promise<IdentityPublicKeyWASM[]> {
   const id = new IdentifierWASM(identifier)
 
   let requestType: KeyRequestType = {
@@ -34,7 +35,7 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCPool, identif
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getIdentityKeys', getIdentityKeysRequest)
     .setProofVerifier(verifyIdentityKeysByIdentifierProof, id.bytes(), keyIds ?? null, false, false, true, null, null, LATEST_PLATFORM_VERSION)
     .mapResponse(data => {

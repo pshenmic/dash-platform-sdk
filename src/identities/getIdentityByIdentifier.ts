@@ -1,10 +1,11 @@
 import { GetIdentityRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, IdentityWASM, verifyIdentityByIdentifierProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getIdentityByIdentifier (grpcPool: GRPCPool, identifier: IdentifierLike): Promise<IdentityWASM> {
+export default async function getIdentityByIdentifier (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifier: IdentifierLike): Promise<IdentityWASM> {
   const id = new IdentifierWASM(identifier)
   const getIdentityRequest = GetIdentityRequest.create({
     version: {
@@ -16,7 +17,7 @@ export default async function getIdentityByIdentifier (grpcPool: GRPCPool, ident
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getIdentity', getIdentityRequest)
     .setProofVerifier(verifyIdentityByIdentifierProof, id, true, LATEST_PLATFORM_VERSION)
     .mapResponse(data => {

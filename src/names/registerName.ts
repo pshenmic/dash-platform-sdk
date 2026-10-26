@@ -1,6 +1,7 @@
 import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js'
 import { IdentityWASM, PrefundedVotingBalanceWASM, PrivateKeyWASM } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import getRandomBytes from '../utils/getRandomBytes.js'
 import sha256 from '../utils/sha256.js'
 import createDocument from '../documents/create.js'
@@ -11,7 +12,7 @@ import waitForStateTransitionResult from '../stateTransitions/waitForStateTransi
 import testNameContested from './testNameContested.js'
 import { DPNS_DATA_CONTRACT_ID } from '../constants.js'
 
-export default async function registerName (grpcPool: GRPCPool, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM, preorderSalt?: Uint8Array): Promise<Uint8Array> {
+export default async function registerName (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM, preorderSalt?: Uint8Array): Promise<Uint8Array> {
   const [identityPublicKey] = identity.getPublicKeys().filter(identityPublicKey => identityPublicKey.getPublicKeyHash() === privateKey.getPublicKeyHash())
 
   if (identityPublicKey == null) {
@@ -42,7 +43,7 @@ export default async function registerName (grpcPool: GRPCPool, name: string, id
     ])
   )) as Uint8Array
 
-  const identityContractNonce = await getIdentityContractNonce(grpcPool, identity.id, DPNS_DATA_CONTRACT_ID)
+  const identityContractNonce = await getIdentityContractNonce(grpcPool, quorumKeyProvider, identity.id, DPNS_DATA_CONTRACT_ID)
 
   // skip preorder if salt of existing preorder is provided
   const domainNonce = identityContractNonce + BigInt(preorderSalt == null ? 2 : 1)
@@ -66,7 +67,7 @@ export default async function registerName (grpcPool: GRPCPool, name: string, id
       preorderSent = true
 
       // wait for state transition confirmation before next broadcast
-      await waitForStateTransitionResult(grpcPool, preorderStateTransition)
+      await waitForStateTransitionResult(grpcPool, quorumKeyProvider, preorderStateTransition)
     }
 
     // 2. Create domain document
@@ -95,7 +96,7 @@ export default async function registerName (grpcPool: GRPCPool, name: string, id
     await broadcast(grpcPool, domainStateTransition)
 
     // wait for the domain too, so the next transition reads a nonce past it
-    await waitForStateTransitionResult(grpcPool, domainStateTransition)
+    await waitForStateTransitionResult(grpcPool, quorumKeyProvider, domainStateTransition)
   } catch (e) {
     if (preorderSent && e instanceof Error) {
       Object.assign(e, { preorderSalt: salt })

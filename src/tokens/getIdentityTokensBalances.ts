@@ -1,4 +1,5 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { IdentifierLike, IdentifierWASM, verifyTokensBalancesForIdentityProof } from 'pshenmic-dpp'
 import { GetIdentityTokenBalancesRequest } from '../../proto/generated/platform.js'
 import QueryExecutor from '../QueryExecutor.js'
@@ -9,7 +10,7 @@ export interface IdentityTokenBalances {
   balance?: bigint | undefined
 }
 
-export default async function getIdentityTokensBalances (grpcPool: GRPCPool, identifier: IdentifierLike, tokenIdentifiers: IdentifierLike[]): Promise<IdentityTokenBalances[]> {
+export default async function getIdentityTokensBalances (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifier: IdentifierLike, tokenIdentifiers: IdentifierLike[]): Promise<IdentityTokenBalances[]> {
   const id = new IdentifierWASM(identifier)
   const tokenIds = tokenIdentifiers.map(tokenIdentifier => new IdentifierWASM(tokenIdentifier))
 
@@ -24,7 +25,7 @@ export default async function getIdentityTokensBalances (grpcPool: GRPCPool, ide
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getIdentityTokenBalances', getIdentityTokenBalancesRequest)
     .setProofVerifier(verifyTokensBalancesForIdentityProof, tokenIds, id, true, LATEST_PLATFORM_VERSION)
     .mapResponse(data => {

@@ -1,4 +1,5 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetShieldedEncryptedNotesRequest } from '../../proto/generated/platform.js'
 import { ShieldedEncryptedNote } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyShieldedEncryptedNotesProof } from 'pshenmic-dpp'
@@ -7,6 +8,7 @@ import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getShieldedEncryptedNotes (
   grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider,
   startIndex: bigint,
   count: number,
   tokenIdentifier?: IdentifierLike
@@ -25,7 +27,7 @@ export default async function getShieldedEncryptedNotes (
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getShieldedEncryptedNotes', getShieldedEncryptedNotesRequest)
     .setProofVerifier(verifyShieldedEncryptedNotesProof, startIndex, count, SHIELDED_MAX_NOTES_PER_QUERY, true, LATEST_PLATFORM_VERSION, tokenId)
     .mapResponse(data => {

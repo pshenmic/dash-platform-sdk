@@ -1,12 +1,13 @@
 import { GetIdentityNonceRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyIdentityNonceProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 const IDENTITY_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 
-export default async function getIdentityNonce (grpcPool: GRPCPool, identifier: IdentifierLike): Promise<bigint> {
+export default async function getIdentityNonce (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifier: IdentifierLike): Promise<bigint> {
   const id = new IdentifierWASM(identifier)
   const getIdentityNonceRequest = GetIdentityNonceRequest.create({
     version: {
@@ -18,7 +19,7 @@ export default async function getIdentityNonce (grpcPool: GRPCPool, identifier: 
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getIdentityNonce', getIdentityNonceRequest)
     .setProofVerifier(verifyIdentityNonceProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
     .mapResponse(data => {

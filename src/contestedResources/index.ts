@@ -1,4 +1,5 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { ContestedResourceVoteState, ContestedStateResultType } from '../../types.js'
 import { DataContractWASM } from 'pshenmic-dpp'
 import getContestedResourceVoteState, { StartAtIdentifierInfo } from './getContestedResourceVoteState.js'
@@ -11,9 +12,12 @@ import getContestedResourceVoteState, { StartAtIdentifierInfo } from './getConte
 export class ContestedResourcesController {
   /** @ignore **/
   grpcPool: GRPCPool
+  /** @ignore **/
+  quorumKeyProvider: QuorumKeyProvider
 
-  constructor (grpcPool: GRPCPool) {
+  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.grpcPool = grpcPool
+    this.quorumKeyProvider = quorumKeyProvider
   }
 
   /**
@@ -40,6 +44,6 @@ export class ContestedResourcesController {
     startAtIdentifierInfo?: StartAtIdentifierInfo,
     count?: number
   ): Promise<ContestedResourceVoteState> {
-    return await getContestedResourceVoteState(this.grpcPool, contract, documentTypeName, indexName, indexValuesBytes, resultType, allowIncludeLockedAndAbstainingVoteTally, startAtIdentifierInfo, count)
+    return await getContestedResourceVoteState(this.grpcPool, this.quorumKeyProvider, contract, documentTypeName, indexName, indexValuesBytes, resultType, allowIncludeLockedAndAbstainingVoteTally, startAtIdentifierInfo, count)
   }
 }

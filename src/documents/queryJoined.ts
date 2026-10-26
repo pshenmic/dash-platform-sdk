@@ -10,6 +10,7 @@ import {
 } from 'pshenmic-dpp'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 import QueryExecutor from '../QueryExecutor.js'
 import {
@@ -33,12 +34,13 @@ export type CompositeDocuments = Omit<VerifiedCompositeDocuments, 'rootHash'>
  */
 export async function queryChained (
   grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider,
   dataContractId: IdentifierLike,
   query: DocumentsQuery,
   joinProperty: string,
   outerDocumentTypeName: string
 ): Promise<ChainedDocuments> {
-  const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
+  const dataContract = await getDataContractByIdentifier(grpcPool, quorumKeyProvider, dataContractId)
 
   const request = createDocumentsV1Request({
     dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
@@ -50,7 +52,7 @@ export async function queryChained (
     chained: { joinProperty, outerDocumentType: outerDocumentTypeName }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getDocuments', request)
     .mapProof(getDocumentsV1Proof)
     .setProofVerifier(verifyChainedDocumentsProof, dataContract, query, joinProperty, outerDocumentTypeName, LATEST_PLATFORM_VERSION)
@@ -79,11 +81,12 @@ export async function queryChained (
  */
 export async function queryComposite (
   grpcPool: GRPCPool,
+  quorumKeyProvider: QuorumKeyProvider,
   dataContractId: IdentifierLike,
   query: DocumentsQuery & { offset?: number },
   subQueries: CompositeSubQuery[]
 ): Promise<CompositeDocuments> {
-  const dataContract = await getDataContractByIdentifier(grpcPool, dataContractId)
+  const dataContract = await getDataContractByIdentifier(grpcPool, quorumKeyProvider, dataContractId)
   const identifier = new IdentifierWASM(dataContractId)
 
   const request = createDocumentsV1Request({
@@ -97,7 +100,7 @@ export async function queryComposite (
     subQueries: toSubQueries(subQueries, identifier)
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getDocuments', request)
     .mapProof(getDocumentsV1Proof)
     .setProofVerifier(verifyCompositeDocumentsProof, dataContract, query, subQueries, LATEST_PLATFORM_VERSION)

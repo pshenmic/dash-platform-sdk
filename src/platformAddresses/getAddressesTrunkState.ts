@@ -1,11 +1,12 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { verifyAddressesTrunkState } from 'pshenmic-dpp'
 import { GetAddressesTrunkStateRequest } from '../../proto/generated/platform.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import QueryExecutor from '../QueryExecutor.js'
 import { PlatformAddressesTrunkState } from '../../types.js'
 
-export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<PlatformAddressesTrunkState> {
+export async function getAddressesTrunkState (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider): Promise<PlatformAddressesTrunkState> {
   const getAddressesTrunkStateRequest = GetAddressesTrunkStateRequest.create({
     version: {
       oneofKind: 'v0',
@@ -13,7 +14,7 @@ export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<Platf
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getAddressesTrunkState', getAddressesTrunkStateRequest)
     .mapProof(({ version }) => {
       if (version.oneofKind !== 'v0') {

@@ -1,4 +1,5 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetFinalizedEpochInfosRequest } from '../../proto/generated/platform.js'
 import { IdentifierWASM, verifyFinalizedEpochInfosProof } from 'pshenmic-dpp'
 import QueryExecutor from '../QueryExecutor.js'
@@ -23,7 +24,7 @@ export interface FinalizedEpochInfo {
   protocolVersion: number
 }
 
-export default async function getFinalizedEpochsInfo (grpcPool: GRPCPool, startEpochIndex: number, startEpochIndexIncluded: boolean, endEpochIndex: number, endEpochIndexIncluded: boolean): Promise<FinalizedEpochInfo[]> {
+export default async function getFinalizedEpochsInfo (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, startEpochIndex: number, startEpochIndexIncluded: boolean, endEpochIndex: number, endEpochIndexIncluded: boolean): Promise<FinalizedEpochInfo[]> {
   const getEpochsInfoRequest = GetFinalizedEpochInfosRequest.create({
     version: {
       oneofKind: 'v0',
@@ -37,7 +38,7 @@ export default async function getFinalizedEpochsInfo (grpcPool: GRPCPool, startE
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getFinalizedEpochInfos', getEpochsInfoRequest)
     .setProofVerifier(verifyFinalizedEpochInfosProof, startEpochIndex, startEpochIndexIncluded, endEpochIndex, endEpochIndexIncluded, LATEST_PLATFORM_VERSION)
     .mapResponse(data => {

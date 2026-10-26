@@ -1,11 +1,12 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetTokenTotalSupplyRequest } from '../../proto/generated/platform.js'
 import { TokenTotalSupply } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenTotalSupplyProof } from 'pshenmic-dpp'
 import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getTokenTotalSupply (grpcPool: GRPCPool, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
+export default async function getTokenTotalSupply (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
   const tokenId = new IdentifierWASM(tokenIdentifier)
 
   const getTokenTotalSupplyRequest = GetTokenTotalSupplyRequest.create({
@@ -18,7 +19,7 @@ export default async function getTokenTotalSupply (grpcPool: GRPCPool, tokenIden
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getTokenTotalSupply', getTokenTotalSupplyRequest)
     .setProofVerifier(verifyTokenTotalSupplyProof, tokenId, true, LATEST_PLATFORM_VERSION)
     .mapResponse(data => {

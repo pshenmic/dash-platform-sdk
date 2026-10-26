@@ -1,11 +1,12 @@
 import { GetIdentityByPublicKeyHashRequest } from '../../proto/generated/platform.js'
 import { IdentityWASM, verifyIdentityByUniqueKeyHashProof } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
+import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import hexToBytes from '../utils/hexToBytes.js'
 import QueryExecutor from '../QueryExecutor.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-export default async function getIdentityByPublicKeyHash (grpcPool: GRPCPool, hex: string): Promise<IdentityWASM> {
+export default async function getIdentityByPublicKeyHash (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, hex: string): Promise<IdentityWASM> {
   const getIdentityByPublicKeyHashRequest = GetIdentityByPublicKeyHashRequest.create({
     version: {
       oneofKind: 'v0',
@@ -16,7 +17,7 @@ export default async function getIdentityByPublicKeyHash (grpcPool: GRPCPool, he
     }
   })
 
-  return await QueryExecutor.build(grpcPool)
+  return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getIdentityByPublicKeyHash', getIdentityByPublicKeyHashRequest)
     .setProofVerifier(verifyIdentityByUniqueKeyHashProof, hexToBytes(hex), LATEST_PLATFORM_VERSION)
     .mapResponse(data => {
