@@ -89,7 +89,7 @@ export default async function queryAggregate (
 
   const executor = QueryExecutor.build(grpcPool)
     .setGrpcRequest('getDocuments', request)
-    .setProofExtractor(getDocumentsV1Proof)
+    .mapProof(getDocumentsV1Proof)
 
   if (aggregateFunction === 'count') {
     return await executor

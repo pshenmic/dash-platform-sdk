@@ -24,7 +24,7 @@ export interface ResponseProof {
 }
 
 type GrpcRequest<Response> = (client: PlatformClient) => PromiseLike<{ response: Response }>
-type ProofExtractor<Response, P extends ResponseProof = ResponseProof> = (response: Response) => P
+type MapProof<Response, P extends ResponseProof = ResponseProof> = (response: Response) => P
 type GroveDBVerifier<Args extends unknown[], V> = (grovedbProof: Uint8Array, ...args: Args) => V
 
 /**
@@ -119,7 +119,7 @@ export function getResponseProof (response: ProvedResponse): ResponseProof {
  * Sends a GRPC request to a node from the pool and returns the mapped result of the response.
  *
  * Queries are requested with proofs, unless proofs are disabled in the pool (`grpcPool.proofs === false`):
- * - with proofs: request (`prove: true`) -> proof extraction -> GroveDB proof verification -> quorum signature verification -> mapping
+ * - with proofs: request (`prove: true`) -> proof mapping -> GroveDB proof verification -> quorum signature verification -> mapping
  * - without proofs: request (`prove: false`) -> mapping of the response result
  *
  * `mapResponse` handles both cases, the verified data or the response result, see {QueryData}.
@@ -139,7 +139,7 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
   readonly #grpcPool: GRPCPool
   #request?: GrpcRequest<Response>
   #requestMessage?: unknown
-  #extractProof: ProofExtractor<Response, P> = getResponseProof as unknown as ProofExtractor<Response, P>
+  #mapProof: MapProof<Response, P> = getResponseProof as unknown as MapProof<Response, P>
   #verifyProof?: (responseProof: P) => V
   #mapResponse?: MapResponse<Response, V, T>
   #validateProof = true
@@ -189,13 +189,13 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
   }
 
   /**
-   * Overrides the extraction of the proof and the metadata from the response (v0 response by default).
+   * Overrides the mapping of the response to the proof and the metadata (v0 response by default).
    * Additional data of the proof (e.g. a second proof) is passed to the args callback of the proof verifier
    */
-  setProofExtractor<E extends ResponseProof> (extractProof: ProofExtractor<Response, E>): QueryExecutor<Response, V, T, E> {
+  mapProof<E extends ResponseProof> (mapProof: MapProof<Response, E>): QueryExecutor<Response, V, T, E> {
     const executor = this as unknown as QueryExecutor<Response, V, T, E>
 
-    executor.#extractProof = extractProof
+    executor.#mapProof = mapProof
 
     return executor
   }
@@ -322,7 +322,7 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
       try {
         const { response } = await request(client)
 
-        const responseProof = this.#extractProof(response)
+        const responseProof = this.#mapProof(response)
         const verified = verifyProof(responseProof)
 
         if (this.#validateProof) {

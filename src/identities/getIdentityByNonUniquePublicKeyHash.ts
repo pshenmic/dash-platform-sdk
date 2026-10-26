@@ -71,7 +71,7 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
 
   return await QueryExecutor.build(grpcPool)
     .setGrpcRequest('getIdentityByNonUniquePublicKeyHash', getIdentityByNonUniquePublicKeyHashRequest)
-    .setProofExtractor(getNonUniquePublicKeyHashProof)
+    .mapProof(getNonUniquePublicKeyHashProof)
     .setProofVerifier(verifyNonUniquePublicKeyHashProof, ({ metadata, identityProof, twoProofs }) => [
       identityProof,
       twoProofs,

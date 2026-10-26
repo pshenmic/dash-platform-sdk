@@ -31,7 +31,7 @@ export default async function query (
 
   return await QueryExecutor.build(grpcPool)
     .setGrpcRequest('getDocuments', request)
-    .setProofExtractor(getDocumentsV1Proof)
+    .mapProof(getDocumentsV1Proof)
     .setProofVerifier(verifyDocumentsProof, ({ metadata }) => {
       const metadataTimeMs = BigInt(metadata.timeMs)
 

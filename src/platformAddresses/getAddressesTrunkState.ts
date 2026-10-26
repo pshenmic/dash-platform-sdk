@@ -15,7 +15,7 @@ export async function getAddressesTrunkState (grpcPool: GRPCPool): Promise<Platf
 
   return await QueryExecutor.build(grpcPool)
     .setGrpcRequest('getAddressesTrunkState', getAddressesTrunkStateRequest)
-    .setProofExtractor(({ version }) => {
+    .mapProof(({ version }) => {
       if (version.oneofKind !== 'v0') {
         throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
       }

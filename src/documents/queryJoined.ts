@@ -52,7 +52,7 @@ export async function queryChained (
 
   return await QueryExecutor.build(grpcPool)
     .setGrpcRequest('getDocuments', request)
-    .setProofExtractor(getDocumentsV1Proof)
+    .mapProof(getDocumentsV1Proof)
     .setProofVerifier(verifyChainedDocumentsProof, dataContract, query, joinProperty, outerDocumentTypeName, LATEST_PLATFORM_VERSION)
     .mapResponse(data => {
       if (data.proved) {
@@ -99,7 +99,7 @@ export async function queryComposite (
 
   return await QueryExecutor.build(grpcPool)
     .setGrpcRequest('getDocuments', request)
-    .setProofExtractor(getDocumentsV1Proof)
+    .mapProof(getDocumentsV1Proof)
     .setProofVerifier(verifyCompositeDocumentsProof, dataContract, query, subQueries, LATEST_PLATFORM_VERSION)
     .mapResponse(data => {
       if (data.proved) {

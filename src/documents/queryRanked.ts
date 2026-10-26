@@ -62,7 +62,7 @@ export async function queryRanked (grpcPool: GRPCPool, dataContractId: Identifie
 
   return await QueryExecutor.build(grpcPool)
     .setGrpcRequest('getDocuments', request)
-    .setProofExtractor(getDocumentsV1Proof)
+    .mapProof(getDocumentsV1Proof)
     .setProofVerifier(verifyRankedDocumentsProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
     .mapResponse(data => {
       if (data.proved) {
@@ -86,7 +86,7 @@ export async function queryHaving (grpcPool: GRPCPool, dataContractId: Identifie
 
   return await QueryExecutor.build(grpcPool)
     .setGrpcRequest('getDocuments', request)
-    .setProofExtractor(getDocumentsV1Proof)
+    .mapProof(getDocumentsV1Proof)
     .setProofVerifier(verifyHavingDocumentsProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
     .mapResponse(data => data.proved ? data.verified.value : toRankedEntries(getDocumentsV1Data(data.result, 'ranked').entries))
     .execute()

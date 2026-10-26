@@ -20,7 +20,7 @@ export async function getAddressesBranchState (grpcPool: GRPCPool, key: Uint8Arr
   return await QueryExecutor.build(grpcPool)
     .setGrpcRequest('getAddressesBranchState', getAddressesBranchStateRequest)
     // the response has no proof message, only the merk proof
-    .setProofExtractor(({ version }) => {
+    .mapProof(({ version }) => {
       if (version.oneofKind !== 'v0') {
         throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
       }

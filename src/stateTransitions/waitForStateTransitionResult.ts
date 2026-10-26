@@ -51,7 +51,7 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
 
   return await QueryExecutor.build(grpcPool)
     .setGrpcRequest('waitForStateTransitionResult', waitForStateTransitionResultRequest)
-    .setProofExtractor(response => {
+    .mapProof(response => {
       const { version } = response
 
       if (version.oneofKind !== 'v0') {
