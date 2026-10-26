@@ -26,9 +26,9 @@ export default async function getIdentityTokensBalances (grpcPool: GRPCPool, quo
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getIdentityTokenBalances', getIdentityTokenBalancesRequest)
-    .addProofVerifier(verifyTokensBalancesForIdentityProof, tokenIds, id, true, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getIdentityTokenBalances', getIdentityTokenBalancesRequest)
+    .setProofVerifier(verifyTokensBalancesForIdentityProof, tokenIds, id, true, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       const balances = data.proved
         ? data.verified.balances
         : data.result.tokenBalances.tokenBalances

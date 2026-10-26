@@ -23,8 +23,8 @@ export default async function getShieldedNotesCount (
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getShieldedNotesCount', getShieldedNotesCountRequest)
-    .addProofVerifier(verifyShieldedNotesCountProof, true, LATEST_PLATFORM_VERSION, tokenId)
-    .addMapper(data => data.proved ? data.verified.count : BigInt(data.result.totalNotesCount))
+    .setGrpcRequest('getShieldedNotesCount', getShieldedNotesCountRequest)
+    .setProofVerifier(verifyShieldedNotesCountProof, true, LATEST_PLATFORM_VERSION, tokenId)
+    .mapResponse(data => data.proved ? data.verified.count : BigInt(data.result.totalNotesCount))
     .execute()
 }

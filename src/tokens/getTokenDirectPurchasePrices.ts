@@ -20,9 +20,9 @@ export default async function getTokenDirectPurchasePrices (grpcPool: GRPCPool, 
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getTokenDirectPurchasePrices', request)
-    .addProofVerifier(verifyTokenDirectPurchasePrices, tokenIds, true, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getTokenDirectPurchasePrices', request)
+    .setProofVerifier(verifyTokenDirectPurchasePrices, tokenIds, true, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       if (data.proved) {
         if (data.verified.prices == null) {
           throw new Error('Prices not found')

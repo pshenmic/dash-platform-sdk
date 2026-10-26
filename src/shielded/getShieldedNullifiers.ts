@@ -26,9 +26,9 @@ export default async function getShieldedNullifiers (
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getShieldedNullifiers', getShieldedNullifiersRequest)
-    .addProofVerifier(verifyShieldedNullifiersProof, nullifiers, true, LATEST_PLATFORM_VERSION, tokenId)
-    .addMapper(data => {
+    .setGrpcRequest('getShieldedNullifiers', getShieldedNullifiersRequest)
+    .setProofVerifier(verifyShieldedNullifiersProof, nullifiers, true, LATEST_PLATFORM_VERSION, tokenId)
+    .mapResponse(data => {
       const nullifiersStatuses = data.proved ? data.verified.nullifiers : data.result.nullifierStatuses.entries
 
       return nullifiersStatuses.map(entry => ({

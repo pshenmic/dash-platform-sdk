@@ -60,8 +60,8 @@ export default async function getContestedResourceVoteState (
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getContestedResourceVoteState', getContestedResourceVoteStateRequest)
-    .addProofVerifier(
+    .setGrpcRequest('getContestedResourceVoteState', getContestedResourceVoteStateRequest)
+    .setProofVerifier(
       verifyVotePollVoteStateProof,
       contract,
       documentTypeName,
@@ -75,7 +75,7 @@ export default async function getContestedResourceVoteState (
       startAtIdentifierInfo,
       LATEST_PLATFORM_VERSION
     )
-    .addMapper(data => {
+    .mapResponse(data => {
       const toDocument = (bytes?: Uint8Array): DocumentWASM | undefined => bytes != null ? DocumentWASM.fromBytes(bytes, contract, documentTypeName, LATEST_PLATFORM_VERSION) : undefined
 
       if (data.proved) {

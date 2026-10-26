@@ -23,8 +23,8 @@ export default async function getShieldedAnchors (
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getShieldedAnchors', getShieldedAnchorsRequest)
-    .addProofVerifier(verifyShieldedAnchorsProof, true, LATEST_PLATFORM_VERSION, tokenId)
-    .addMapper(data => data.proved ? data.verified.anchors : data.result.anchors.anchors)
+    .setGrpcRequest('getShieldedAnchors', getShieldedAnchorsRequest)
+    .setProofVerifier(verifyShieldedAnchorsProof, true, LATEST_PLATFORM_VERSION, tokenId)
+    .mapResponse(data => data.proved ? data.verified.anchors : data.result.anchors.anchors)
     .execute()
 }

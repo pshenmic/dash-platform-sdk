@@ -36,9 +36,9 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCPool, quorumK
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getIdentityKeys', getIdentityKeysRequest)
-    .addProofVerifier(verifyIdentityKeysByIdentifierProof, id.bytes(), keyIds ?? null, false, false, true, null, null, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getIdentityKeys', getIdentityKeysRequest)
+    .setProofVerifier(verifyIdentityKeysByIdentifierProof, id.bytes(), keyIds ?? null, false, false, true, null, null, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       const keys = data.proved
         ? data.verified.identity?.loadedPublicKeys
         : data.result.keys.keysBytes.map(bytes => IdentityPublicKeyWASM.fromBytes(bytes))

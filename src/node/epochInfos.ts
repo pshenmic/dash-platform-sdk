@@ -29,9 +29,9 @@ export default async function epochInfos (grpcPool: GRPCPool, quorumKeyProvider:
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getEpochsInfo', getEpochsInfoRequest)
-    .addProofVerifier(verifyEpochsInfoProof, ({ metadata }) => [metadata.epoch, start, count, ascending, LATEST_PLATFORM_VERSION])
-    .addMapper(data => {
+    .setGrpcRequest('getEpochsInfo', getEpochsInfoRequest)
+    .setProofVerifier(verifyEpochsInfoProof, ({ metadata }) => [metadata.epoch, start, count, ascending, LATEST_PLATFORM_VERSION])
+    .mapResponse(data => {
       if (data.proved) {
         return data.verified.epochsInfo.map(info => ({
           number: info.index,

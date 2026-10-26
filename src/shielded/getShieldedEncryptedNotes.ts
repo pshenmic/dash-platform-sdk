@@ -28,9 +28,9 @@ export default async function getShieldedEncryptedNotes (
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getShieldedEncryptedNotes', getShieldedEncryptedNotesRequest)
-    .addProofVerifier(verifyShieldedEncryptedNotesProof, startIndex, count, SHIELDED_MAX_NOTES_PER_QUERY, true, LATEST_PLATFORM_VERSION, tokenId)
-    .addMapper(data => {
+    .setGrpcRequest('getShieldedEncryptedNotes', getShieldedEncryptedNotesRequest)
+    .setProofVerifier(verifyShieldedEncryptedNotesProof, startIndex, count, SHIELDED_MAX_NOTES_PER_QUERY, true, LATEST_PLATFORM_VERSION, tokenId)
+    .mapResponse(data => {
       const notes = data.proved ? data.verified.notes : data.result.encryptedNotes.entries
 
       return notes.map(note => ({

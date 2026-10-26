@@ -20,9 +20,9 @@ export async function getAddressesInfos (grpcPool: GRPCPool, quorumKeyProvider: 
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getAddressesInfos', getAddressInfoRequest)
-    .addProofVerifier(verifyPlatformAddressesInfos, platformAddressesWASM, true, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getAddressesInfos', getAddressInfoRequest)
+    .setProofVerifier(verifyPlatformAddressesInfos, platformAddressesWASM, true, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       const infos = data.proved
         ? data.verified.infos
         : data.result.addressInfoEntries.addressInfoEntries

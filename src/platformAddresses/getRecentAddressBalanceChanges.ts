@@ -18,9 +18,9 @@ export async function getRecentAddressBalanceChanges (grpcPool: GRPCPool, quorum
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getRecentAddressBalanceChanges', getRecentAddressBalanceChangesRequest)
-    .addProofVerifier(verifyRecentAddressBalanceChanges, startHeight, startHeightExclusive, RECENT_ADDRESS_BALANCE_CHANGES_LIMIT, true, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getRecentAddressBalanceChanges', getRecentAddressBalanceChangesRequest)
+    .setProofVerifier(verifyRecentAddressBalanceChanges, startHeight, startHeightExclusive, RECENT_ADDRESS_BALANCE_CHANGES_LIMIT, true, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       if (data.proved) {
         return data.verified.blocks
       }

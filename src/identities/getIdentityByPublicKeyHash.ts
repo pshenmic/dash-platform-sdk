@@ -18,9 +18,9 @@ export default async function getIdentityByPublicKeyHash (grpcPool: GRPCPool, qu
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getIdentityByPublicKeyHash', getIdentityByPublicKeyHashRequest)
-    .addProofVerifier(verifyIdentityByUniqueKeyHashProof, hexToBytes(hex), LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setGrpcRequest('getIdentityByPublicKeyHash', getIdentityByPublicKeyHashRequest)
+    .setProofVerifier(verifyIdentityByUniqueKeyHashProof, hexToBytes(hex), LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       const identity = data.proved ? data.verified.identity : IdentityWASM.fromBytes(data.result.identity)
 
       if (identity == null) {

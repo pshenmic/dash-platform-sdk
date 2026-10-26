@@ -15,8 +15,8 @@ export async function getAddressesTrunkState (grpcPool: GRPCPool, quorumKeyProvi
   })
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
-    .addGrpcRequest('getAddressesTrunkState', getAddressesTrunkStateRequest)
-    .setProofExtractor(({ version }) => {
+    .setGrpcRequest('getAddressesTrunkState', getAddressesTrunkStateRequest)
+    .mapProof(({ version }) => {
       if (version.oneofKind !== 'v0') {
         throw new Error('Unexpected oneOf type returned from DAPI (must be v0)')
       }
@@ -33,8 +33,8 @@ export async function getAddressesTrunkState (grpcPool: GRPCPool, quorumKeyProvi
 
       return { proof, metadata }
     })
-    .addProofVerifier(verifyAddressesTrunkState, LATEST_PLATFORM_VERSION)
-    .addMapper(data => {
+    .setProofVerifier(verifyAddressesTrunkState, LATEST_PLATFORM_VERSION)
+    .mapResponse(data => {
       if (!data.proved) {
         throw new Error('Addresses trunk state can only be requested with proof')
       }
