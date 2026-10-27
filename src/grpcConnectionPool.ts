@@ -17,6 +17,12 @@ export interface GRPCOptions {
   poolLimit?: number
   dapiUrl?: string | string[]
   retries?: number
+  /**
+   * Minimal protocol version of the nodes, nodes with the protocol version from `minProtocolVersion` up to the latest
+   * version supported by the SDK are used. By default, only nodes with the latest protocol version are used.
+   * Proofs of the older nodes are still verified with the latest platform version of the SDK
+   */
+  minProtocolVersion?: number
   /** Custom connection pool, if set, `poolLimit`, `dapiUrl` and `retries` are ignored **/
   pool?: GRPCPool
 }
@@ -143,7 +149,7 @@ const withTimeout = async <T>(request: (abortController: AbortController) => Pro
   }
 }
 
-const isNodeHealthy = async (url: string): Promise<boolean> => {
+const isNodeHealthy = async (url: string, minProtocolVersion?: number): Promise<boolean> => {
   try {
     const response = await withTimeout(async abortController => {
       const { response } = await createClient(url, abortController).getStatus(GetStatusRequest.create({}))
@@ -166,7 +172,15 @@ const isNodeHealthy = async (url: string): Promise<boolean> => {
     // (e.g. newer software with incompatible proofs / responses)
     const protocol = version?.protocol?.drive
 
-    if (protocol == null || protocol.current !== Number(LATEST_PLATFORM_VERSION) || protocol.latest !== Number(LATEST_PLATFORM_VERSION)) {
+    if (protocol == null) {
+      return false
+    }
+
+    if (minProtocolVersion == null) {
+      if (protocol.current !== Number(LATEST_PLATFORM_VERSION) || protocol.latest !== Number(LATEST_PLATFORM_VERSION)) {
+        return false
+      }
+    } else if (protocol.current < minProtocolVersion || protocol.current > Number(LATEST_PLATFORM_VERSION)) {
       return false
     }
 
@@ -200,6 +214,7 @@ export default class GRPCConnectionPool implements GRPCPool {
   network: Network
   #poolLimit: number
   #dapiUrl?: string | string[]
+  #minProtocolVersion?: number
   readonly retries: number
   proofs?: boolean
   #nodeIndex = 0
@@ -216,6 +231,13 @@ export default class GRPCConnectionPool implements GRPCPool {
       throw new Error(`GRPC retries must be a non-negative integer, got ${String(retries)}`)
     }
 
+    const minProtocolVersion = grpcOptions?.minProtocolVersion
+
+    if (minProtocolVersion != null && (!Number.isInteger(minProtocolVersion) || minProtocolVersion < 1 || minProtocolVersion > Number(LATEST_PLATFORM_VERSION))) {
+      throw new Error(`GRPC minProtocolVersion must be an integer from 1 to ${Number(LATEST_PLATFORM_VERSION)}, got ${String(minProtocolVersion)}`)
+    }
+
+    this.#minProtocolVersion = minProtocolVersion
     this.network = network
     this.#poolLimit = grpcOptions?.poolLimit ?? GRPC_DEFAULT_POOL_LIMIT
     this.#dapiUrl = grpcOptions?.dapiUrl
@@ -273,7 +295,7 @@ export default class GRPCConnectionPool implements GRPCPool {
 
     for (let i = 0; i < networkDAPIUrls.length && dapiUrls.length < this.#poolLimit; i += this.#poolLimit) {
       const batch = networkDAPIUrls.slice(i, i + this.#poolLimit)
-      const healthy = await Promise.all(batch.map(isNodeHealthy))
+      const healthy = await Promise.all(batch.map(async url => await isNodeHealthy(url, this.#minProtocolVersion)))
 
       dapiUrls.push(...batch.filter((_, j) => healthy[j]))
     }
@@ -281,7 +303,7 @@ export default class GRPCConnectionPool implements GRPCPool {
     // fail the initialization, so it is retried on the next request
     if (dapiUrls.length === 0) {
       throw new Error(`None of the ${network} evonodes are available (${networkDAPIUrls.length} checked, ` +
-        `nodes must be synced and run protocol version ${Number(LATEST_PLATFORM_VERSION)})`)
+        `nodes must be synced and run protocol version ${this.#minProtocolVersion != null ? `${this.#minProtocolVersion}-` : ''}${Number(LATEST_PLATFORM_VERSION)})`)
     }
 
     this.dapiUrls = dapiUrls.slice(0, this.#poolLimit)
