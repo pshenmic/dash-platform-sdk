@@ -1,8 +1,9 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { ContestedResourceVoteState, ContestedStateResultType } from '../../types.js'
-import { DataContractWASM } from 'pshenmic-dpp'
+import { DataContractWASM, VotePollsAtEndDate, VotePollsByEndDateTimeBound } from 'pshenmic-dpp'
 import getContestedResourceVoteState, { StartAtIdentifierInfo } from './getContestedResourceVoteState.js'
+import getVotePollsByEndDate from './getVotePollsByEndDate.js'
 
 /**
  * Contested Resources controller for requesting information about contested resources
@@ -45,5 +46,24 @@ export class ContestedResourcesController {
     count?: number
   ): Promise<ContestedResourceVoteState> {
     return await getContestedResourceVoteState(this.grpcPool, this.quorumKeyProvider, contract, documentTypeName, indexName, indexValuesBytes, resultType, allowIncludeLockedAndAbstainingVoteTally, startAtIdentifierInfo, count)
+  }
+
+  /**
+   * Retrieves vote polls grouped by their end time
+   *
+   * @param startTime {VotePollsByEndDateTimeBound=} - lower bound of the end time in milliseconds
+   * @param endTime {VotePollsByEndDateTimeBound=} - upper bound of the end time in milliseconds
+   * @param limit {number=}
+   * @param ascending {boolean=} - order by end time, ascending by default
+   *
+   * @return {Promise<VotePollsAtEndDate[]>}
+   */
+  async getVotePollsByEndDate (
+    startTime?: VotePollsByEndDateTimeBound,
+    endTime?: VotePollsByEndDateTimeBound,
+    limit?: number,
+    ascending: boolean = true
+  ): Promise<VotePollsAtEndDate[]> {
+    return await getVotePollsByEndDate(this.grpcPool, this.quorumKeyProvider, startTime, endTime, limit, ascending)
   }
 }
