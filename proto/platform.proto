@@ -33,6 +33,8 @@ service Platform {
       returns (GetFinalizedEpochInfosResponse);
   rpc getContestedResourceVoteState(GetContestedResourceVoteStateRequest)
       returns (GetContestedResourceVoteStateResponse);
+  rpc getVotePollsByEndDate(GetVotePollsByEndDateRequest)
+      returns (GetVotePollsByEndDateResponse);
   rpc getTotalCreditsInPlatform(GetTotalCreditsInPlatformRequest)
       returns (GetTotalCreditsInPlatformResponse);
   rpc getStatus(GetStatusRequest)
@@ -861,6 +863,49 @@ message GetFinalizedEpochInfosResponse {
   }
 
   oneof version { GetFinalizedEpochInfosResponseV0 v0 = 1; }
+}
+
+message GetVotePollsByEndDateRequest {
+  message GetVotePollsByEndDateRequestV0 {
+    message StartAtTimeInfo {
+      uint64 start_time_ms = 1 [ jstype = JS_STRING ];
+      bool start_time_included = 2;
+    }
+    message EndAtTimeInfo {
+      uint64 end_time_ms = 1 [ jstype = JS_STRING ];
+      bool end_time_included = 2;
+    }
+    optional StartAtTimeInfo start_time_info = 1;
+    optional EndAtTimeInfo end_time_info = 2;
+    optional uint32 limit = 3;
+    optional uint32 offset = 4;
+    bool ascending = 5;
+    bool prove = 6;
+  }
+
+  oneof version { GetVotePollsByEndDateRequestV0 v0 = 1; }
+}
+
+message GetVotePollsByEndDateResponse {
+  message GetVotePollsByEndDateResponseV0 {
+    message SerializedVotePollsByTimestamp {
+      uint64 timestamp = 1 [ jstype = JS_STRING ];
+      repeated bytes serialized_vote_polls = 2;
+    }
+
+    message SerializedVotePollsByTimestamps {
+      repeated SerializedVotePollsByTimestamp vote_polls_by_timestamps = 1;
+      bool finished_results = 2;
+    }
+
+    oneof result {
+      SerializedVotePollsByTimestamps vote_polls_by_timestamps = 1;
+      Proof proof = 2;
+    }
+    ResponseMetadata metadata = 3;
+  }
+
+  oneof version { GetVotePollsByEndDateResponseV0 v0 = 1; }
 }
 
 message GetContestedResourceVoteStateRequest {
