@@ -2,7 +2,7 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetShieldedAnchorsRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyShieldedAnchorsProof } from 'pshenmic-dpp'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
+import { SHIELDED_PLATFORM_VERSION } from '../constants.js'
 import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getShieldedAnchors (
@@ -24,7 +24,7 @@ export default async function getShieldedAnchors (
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getShieldedAnchors', getShieldedAnchorsRequest)
-    .setProofVerifier(verifyShieldedAnchorsProof, true, LATEST_PLATFORM_VERSION, tokenId)
+    .setProofVerifier(verifyShieldedAnchorsProof, true, SHIELDED_PLATFORM_VERSION, tokenId)
     .mapResponse(data => data.proved ? data.verified.anchors : data.result.anchors.anchors)
     .execute()
 }

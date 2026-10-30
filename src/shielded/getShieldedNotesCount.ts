@@ -2,7 +2,7 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetShieldedNotesCountRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyShieldedNotesCountProof } from 'pshenmic-dpp'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
+import { SHIELDED_PLATFORM_VERSION } from '../constants.js'
 import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getShieldedNotesCount (
@@ -24,7 +24,7 @@ export default async function getShieldedNotesCount (
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getShieldedNotesCount', getShieldedNotesCountRequest)
-    .setProofVerifier(verifyShieldedNotesCountProof, true, LATEST_PLATFORM_VERSION, tokenId)
+    .setProofVerifier(verifyShieldedNotesCountProof, true, SHIELDED_PLATFORM_VERSION, tokenId)
     .mapResponse(data => data.proved ? data.verified.count : BigInt(data.result.totalNotesCount))
     .execute()
 }
