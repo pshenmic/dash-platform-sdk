@@ -3,7 +3,7 @@ import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetShieldedEncryptedNotesRequest } from '../../proto/generated/platform.js'
 import { ShieldedEncryptedNote } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyShieldedEncryptedNotesProof } from 'pshenmic-dpp'
-import { LATEST_PLATFORM_VERSION, SHIELDED_MAX_NOTES_PER_QUERY } from '../constants.js'
+import { SHIELDED_PLATFORM_VERSION, SHIELDED_MAX_NOTES_PER_QUERY } from '../constants.js'
 import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getShieldedEncryptedNotes (
@@ -29,7 +29,7 @@ export default async function getShieldedEncryptedNotes (
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getShieldedEncryptedNotes', getShieldedEncryptedNotesRequest)
-    .setProofVerifier(verifyShieldedEncryptedNotesProof, startIndex, count, SHIELDED_MAX_NOTES_PER_QUERY, true, LATEST_PLATFORM_VERSION, tokenId)
+    .setProofVerifier(verifyShieldedEncryptedNotesProof, startIndex, count, SHIELDED_MAX_NOTES_PER_QUERY, true, SHIELDED_PLATFORM_VERSION, tokenId)
     .mapResponse(data => {
       const notes = data.proved ? data.verified.notes : data.result.encryptedNotes.entries
 
