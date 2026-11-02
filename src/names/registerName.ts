@@ -1,5 +1,5 @@
 import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js'
-import { IdentityWASM, PrefundedVotingBalanceWASM, PrivateKeyWASM } from 'pshenmic-dpp'
+import { IdentityWASM, PlatformVersionLike, PrefundedVotingBalanceWASM, PrivateKeyWASM } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import getRandomBytes from '../utils/getRandomBytes.js'
@@ -12,7 +12,7 @@ import waitForStateTransitionResult from '../stateTransitions/waitForStateTransi
 import testNameContested from './testNameContested.js'
 import { DPNS_DATA_CONTRACT_ID } from '../constants.js'
 
-export default async function registerName (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM, preorderSalt?: Uint8Array): Promise<Uint8Array> {
+export default async function registerName (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM, preorderSalt?: Uint8Array, platformVersion?: PlatformVersionLike): Promise<Uint8Array> {
   const [identityPublicKey] = identity.getPublicKeys().filter(identityPublicKey => identityPublicKey.getPublicKeyHash() === privateKey.getPublicKeyHash())
 
   if (identityPublicKey == null) {
@@ -59,7 +59,7 @@ export default async function registerName (grpcPool: GRPCPool, quorumKeyProvide
         saltedDomainHash
       }
 
-      const preorderDocument = createDocument(DPNS_DATA_CONTRACT_ID, 'preorder', preorderData, identity.id.base58(), identityContractNonce + BigInt(1))
+      const preorderDocument = createDocument(DPNS_DATA_CONTRACT_ID, 'preorder', preorderData, identity.id.base58(), identityContractNonce + BigInt(1), undefined, undefined, platformVersion)
       const preorderStateTransition = createStateTransition(preorderDocument, 'create', { identityContractNonce: identityContractNonce + BigInt(1) })
       await preorderStateTransition.sign(privateKey, identityPublicKey)
 
@@ -85,7 +85,7 @@ export default async function registerName (grpcPool: GRPCPool, quorumKeyProvide
       }
     }
 
-    const domainDocument = createDocument(DPNS_DATA_CONTRACT_ID, 'domain', domainData, identity.id.base58(), domainNonce)
+    const domainDocument = createDocument(DPNS_DATA_CONTRACT_ID, 'domain', domainData, identity.id.base58(), domainNonce, undefined, undefined, platformVersion)
     const domainStateTransition = createStateTransition(domainDocument, 'create', {
       identityContractNonce: domainNonce,
       // @ts-expect-error
