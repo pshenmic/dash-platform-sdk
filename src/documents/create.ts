@@ -1,4 +1,4 @@
-import { DocumentWASM, IdentifierLike } from 'pshenmic-dpp'
+import { DocumentWASM, IdentifierLike, PlatformVersionLike } from 'pshenmic-dpp'
 
 export default function createDocument (
   dataContractId: IdentifierLike,
@@ -7,7 +7,8 @@ export default function createDocument (
   owner: IdentifierLike,
   identityContractNonce: bigint,
   revision?: bigint,
-  documentId?: IdentifierLike
+  documentId?: IdentifierLike,
+  platformVersion?: PlatformVersionLike
 ): DocumentWASM {
   return new DocumentWASM(
     data,
@@ -17,6 +18,7 @@ export default function createDocument (
     owner,
     documentId,
     owner,
-    identityContractNonce
+    identityContractNonce,
+    platformVersion
   )
 }

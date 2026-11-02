@@ -1,6 +1,6 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
-import { DocumentWASM, IdentifierLike, IdentifierWASM, PrivateKeyWASM } from 'pshenmic-dpp'
+import { DocumentWASM, IdentifierLike, IdentifierWASM, PlatformVersionLike, PrivateKeyWASM } from 'pshenmic-dpp'
 import searchByName from './searchByName.js'
 import searchByIdentity from './searchByIdentity.js'
 import registerName from './registerName.js'
@@ -85,10 +85,11 @@ export class NamesController {
    * @param identityId {IdentifierLike} identity identifier
    * @param privateKey {PrivateKeyWASM} Authentication / High private key from your identity
    * @param preorderSalt {Uint8Array=} Optional 32 bytes salt of already existing preorder document. If provided, preorder step is skipped
+   * @param platformVersion {PlatformVersionLike=} Optional platform version used to create preorder and domain documents (latest by default)
    *
    * @return {Promise<Uint8Array>} preorder salt (also attached as `preorderSalt` to the error if domain broadcast fails)
    */
-  async registerName (name: string, identityId: IdentifierLike, privateKey: PrivateKeyWASM, preorderSalt?: Uint8Array): Promise<Uint8Array> {
+  async registerName (name: string, identityId: IdentifierLike, privateKey: PrivateKeyWASM, preorderSalt?: Uint8Array, platformVersion?: PlatformVersionLike): Promise<Uint8Array> {
     const validation = validateName(name)
 
     if (validation != null) {
@@ -97,7 +98,7 @@ export class NamesController {
 
     const identity = await getIdentityByIdentifier(this.grpcPool, this.quorumKeyProvider, identityId)
 
-    return await registerName(this.grpcPool, this.quorumKeyProvider, name, identity, privateKey, preorderSalt)
+    return await registerName(this.grpcPool, this.quorumKeyProvider, name, identity, privateKey, preorderSalt, platformVersion)
   }
 
   /**
