@@ -1,4 +1,4 @@
-import { DocumentWASM, GasFeesPaidByWASM, StateTransitionWASM } from 'pshenmic-dpp'
+import { DocumentWASM, GasFeesPaidByWASM, PlatformVersionWASM, StateTransitionWASM } from 'pshenmic-dpp'
 import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 
 let sdk: DashPlatformSDK
@@ -25,6 +25,12 @@ describe('Document', () => {
 
   test('should be able to create document', async () => {
     const document = sdk.documents.create(dataContract, documentType, data, identity, BigInt(1), revision)
+
+    expect(document).toEqual(expect.any(DocumentWASM))
+  })
+
+  test('should be able to create document with custom platform version', async () => {
+    const document = sdk.documents.create(dataContract, documentType, data, identity, BigInt(1), revision, PlatformVersionWASM.PLATFORM_V13)
 
     expect(document).toEqual(expect.any(DocumentWASM))
   })

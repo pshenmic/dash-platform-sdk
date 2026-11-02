@@ -9,6 +9,7 @@ import {
   DocumentsQuery,
   DocumentWASM, HavingClause, IdentifierLike,
   IdentifierWASM,
+  PlatformVersionLike,
   PrefundedVotingBalanceWASM,
   ProvenRankedEntry,
   ProvenRankedPage,
@@ -49,11 +50,12 @@ export class DocumentsController {
    * @param owner {IdentifierLike} Identifier of the document's owner
    * @param identityContractNonce {bigint} Identity contract nonce of the transition that will create the document, used for document id generation
    * @param revision {bigint=} revision (optional)
+   * @param platformVersion {PlatformVersionLike=} platform version used to create the document (optional, latest by default)
    *
    * @return {DataContractWASM}
    */
-  create (dataContractId: IdentifierLike, documentType: string, data: object, owner: IdentifierLike, identityContractNonce: bigint, revision?: bigint): DocumentWASM {
-    return createDocument(new IdentifierWASM(dataContractId), documentType, data, new IdentifierWASM(owner), identityContractNonce, revision)
+  create (dataContractId: IdentifierLike, documentType: string, data: object, owner: IdentifierLike, identityContractNonce: bigint, revision?: bigint, platformVersion?: PlatformVersionLike): DocumentWASM {
+    return createDocument(new IdentifierWASM(dataContractId), documentType, data, new IdentifierWASM(owner), identityContractNonce, revision, undefined, platformVersion)
   }
 
   /**
