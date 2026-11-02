@@ -77,7 +77,7 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
         epoch
       }
 
-      return [stateTransition, blockInfo, knownContracts, LATEST_PLATFORM_VERSION]
+      return [stateTransition, blockInfo, knownContracts, Math.min(metadata.protocolVersion, LATEST_PLATFORM_VERSION)]
     })
     .mapResponse(data => {
       if (data.proved) {
