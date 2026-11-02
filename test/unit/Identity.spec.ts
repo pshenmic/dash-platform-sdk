@@ -1,5 +1,6 @@
 import {
   CoreScriptWASM,
+  IdentityCreditWithdrawalTransitionWASM,
   IdentityPublicKeyWASM,
   IdentityWASM, KeyType,
   PrivateKeyWASM, Purpose, SecurityLevel, StateTransitionWASM
@@ -322,13 +323,28 @@ describe('Identity', () => {
 
     test('should be able create credit withdrawal with no withdrawal address', async () => {
       const identityId = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
-      const recipientId = 'HT3pUBM1Uv2mKgdPEN1gxa7A4PdsvNY89aJbdSKQb5wR'
       const amount = 100000n
       const identityNonce = await sdk.identities.getIdentityNonce(identityId)
 
-      const stateTransition = sdk.identities.createStateTransition('withdrawal', { identityId, recipientId, amount, identityNonce })
+      const stateTransition = sdk.identities.createStateTransition('withdrawal', { identityId, amount, identityNonce })
+      const withdrawalTransition = IdentityCreditWithdrawalTransitionWASM.fromStateTransition(stateTransition)
 
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
+      expect(withdrawalTransition.outputScript).toBeUndefined()
+    })
+
+    test('should create credit withdrawal as V1 transition', async () => {
+      const identityId = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+      const amount = 100000n
+      const identityNonce = 1n
+      const withdrawalAddress = 'yjHVQ3dj37UJwXFmvMTKR9ZVfoJSc3opTD'
+
+      const withScript = sdk.identities.createStateTransition('withdrawal', { identityId, identityNonce, amount, withdrawalAddress })
+      const withoutScript = sdk.identities.createStateTransition('withdrawal', { identityId, identityNonce, amount })
+
+      // first byte is state transition type (5 - IdentityCreditWithdrawal), second is transition version
+      expect(withScript.hex().slice(0, 4)).toEqual('0501')
+      expect(withoutScript.hex().slice(0, 4)).toEqual('0501')
     })
   })
 })

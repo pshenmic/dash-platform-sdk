@@ -126,6 +126,11 @@ export class IdentitiesController {
    * all necessary AssetLockProof data to make the transaction.
    * Both InstantSend and ChainLock AssetLock proofs supported
    *
+   * Withdrawals are created as IdentityCreditWithdrawalTransition V1. Destination can be set
+   * with params.withdrawalAddress (P2PKH) or params.outputScript. If both are omitted,
+   * the transition is created without output script and platform pays out to the address
+   * of the identity's withdrawal key (see getPurposeRequirement() for the signing key purpose)
+   *
    * Please refer to Identity.spec.js or README for example commands
    *
    * @param type {string} type of transition, must be a one of ('create' | 'update' | 'topUp' | 'creditTransfer' | 'withdrawal')
