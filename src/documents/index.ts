@@ -20,6 +20,7 @@ import createStateTransition from './createStateTransition.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import query from './query.js'
+import { getPoolProtocolVersion } from '../QueryExecutor.js'
 import getActionFeeAgreement from './getActionFeeAgreement.js'
 import queryAggregate, { DocumentsAggregate } from './queryAggregate.js'
 import { queryHaving, queryRanked } from './queryRanked.js'
@@ -50,12 +51,15 @@ export class DocumentsController {
    * @param owner {IdentifierLike} Identifier of the document's owner
    * @param identityContractNonce {bigint} Identity contract nonce of the transition that will create the document, used for document id generation
    * @param revision {bigint=} revision (optional)
-   * @param platformVersion {PlatformVersionLike=} platform version used to create the document (optional, latest by default)
+   * @param platformVersion {PlatformVersionLike=} platform version used to create the document (optional).
+   * By default, the protocol version of the network learned from the verified responses is used, it determines
+   * the document id generation (v13 and v14 generate different ids). If no response was verified yet,
+   * call {NodeController.getProtocolVersion} first
    *
    * @return {DataContractWASM}
    */
   create (dataContractId: IdentifierLike, documentType: string, data: object, owner: IdentifierLike, identityContractNonce: bigint, revision?: bigint, platformVersion?: PlatformVersionLike): DocumentWASM {
-    return createDocument(new IdentifierWASM(dataContractId), documentType, data, new IdentifierWASM(owner), identityContractNonce, revision, undefined, platformVersion)
+    return createDocument(new IdentifierWASM(dataContractId), documentType, data, new IdentifierWASM(owner), identityContractNonce, revision, undefined, platformVersion ?? getPoolProtocolVersion(this.grpcPool))
   }
 
   /**

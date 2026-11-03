@@ -60,7 +60,10 @@ export type QueryData<Response, V> = {
   proved: false
   result: ResponseResult<Response>
   metadata: ResponseMetadata
-  /** Protocol version of the pool, the response is not verified, so its protocol version is not used **/
+  /**
+   * Platform version to parse the response with, the protocol version of the response is used to parse it
+   * (like the response itself, it is not verified), but it is not learned by the pool
+   */
   platformVersion: PlatformVersionWASM
 }
 
@@ -84,6 +87,17 @@ function getVersionBody (message: unknown): Record<string, unknown> | undefined 
   }
 
   return version[version.oneofKind] as Record<string, unknown> | undefined
+}
+
+// highest protocol version of the verified responses of the pool, unlike `grpcPool.protocolVersion` it is never seeded
+const verifiedProtocolVersions = new WeakMap<GRPCPool, number>()
+
+/**
+ * Returns the highest protocol version of the responses of the pool whose proof and quorum signature were verified,
+ * or undefined if no response was verified yet
+ */
+export function getVerifiedProtocolVersion (grpcPool: GRPCPool): number | undefined {
+  return verifiedProtocolVersions.get(grpcPool)
 }
 
 /**
@@ -110,6 +124,8 @@ export function getVerifierVersion (protocolVersion: number, signedProtocolVersi
  * The version is never lowered, versions unknown to the SDK are ignored
  */
 function updateProtocolVersion (grpcPool: GRPCPool, signedProtocolVersion: number): void {
+  verifiedProtocolVersions.set(grpcPool, Math.max(verifiedProtocolVersions.get(grpcPool) ?? 0, signedProtocolVersion))
+
   if (signedProtocolVersion > getPoolProtocolVersion(grpcPool) && signedProtocolVersion <= LATEST_PLATFORM_VERSION) {
     grpcPool.protocolVersion = signedProtocolVersion
   }
@@ -183,6 +199,7 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
   #verifyProof?: (responseProof: P, platformVersion: PlatformVersionWASM) => V
   #mapResponse?: MapResponse<Response, V, T>
   #validateProof = true
+  #requireProof = false
 
   private constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.#grpcPool = grpcPool
@@ -298,6 +315,16 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
     return this
   }
 
+  /**
+   * Requests and verifies the proof even if proofs are disabled in the pool,
+   * e.g. to learn the protocol version of the network from a verified response
+   */
+  setRequireProof (requireProof: boolean): this {
+    this.#requireProof = requireProof
+
+    return this
+  }
+
   async execute (): Promise<T> {
     const request = this.#request
     const mapResponse = this.#mapResponse
@@ -316,7 +343,7 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
 
     const requestBody = getVersionBody(this.#requestMessage)
     const canSkipProof = requestBody != null && 'prove' in requestBody
-    const prove = this.#grpcPool.proofs !== false || !canSkipProof
+    const prove = this.#requireProof || this.#grpcPool.proofs !== false || !canSkipProof
 
     if (canSkipProof) {
       requestBody.prove = prove
@@ -341,7 +368,7 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
       throw new Error('Metadata not found')
     }
 
-    return { proved: false, result: result as ResponseResult<Response>, metadata, platformVersion: getPoolProtocolVersion(this.#grpcPool) }
+    return { proved: false, result: result as ResponseResult<Response>, metadata, platformVersion: getVerifierVersion(getPoolProtocolVersion(this.#grpcPool), metadata.protocolVersion) }
   }
 
   async #executeWithProof (request: GrpcRequest<Response>): Promise<QueryData<Response, V>> {

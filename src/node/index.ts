@@ -6,6 +6,8 @@ import getEpochsInfo, { EpochInfo } from './epochInfos.js'
 import getFinalizedEpochsInfo, { FinalizedEpochInfo } from './finalizedEpochInfos.js'
 import getTotalCredits from './totalCredits.js'
 import getCurrentQuorumsInfo, { CurrentQuorumsInfo } from './getCurrentQuorumsInfo.js'
+import getProtocolVersion from './getProtocolVersion.js'
+import { PlatformVersionWASM } from 'pshenmic-dpp'
 
 /**
  * Node controller for requesting information about DAPI node
@@ -40,6 +42,17 @@ export class NodeController {
    */
   async totalCredits (): Promise<bigint> {
     return await getTotalCredits(this.grpcPool, this.quorumKeyProvider)
+  }
+
+  /**
+   * Returns the protocol version of the network, used by default to verify proofs and to create documents.
+   * It is learned from the verified responses, if no response was verified yet, one proved request is made
+   * (even if proofs are disabled)
+   *
+   * @return {Promise<PlatformVersionWASM>}
+   */
+  async getProtocolVersion (): Promise<PlatformVersionWASM> {
+    return await getProtocolVersion(this.grpcPool, this.quorumKeyProvider)
   }
 
   /**
