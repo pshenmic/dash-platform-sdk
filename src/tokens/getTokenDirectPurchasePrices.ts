@@ -4,7 +4,6 @@ import { TokenDirectPurchasePrices } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenDirectPurchasePrices, TokenPricingScheduleWASM } from 'pshenmic-dpp'
 import QueryExecutor from '../QueryExecutor.js'
 import { GetTokenDirectPurchasePricesRequest } from '../../proto/generated/platform.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getTokenDirectPurchasePrices (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, tokenIdentifiers: IdentifierLike[]): Promise<TokenDirectPurchasePrices[]> {
   const tokenIds = tokenIdentifiers.map(tokenId => new IdentifierWASM(tokenId).bytes())
@@ -21,7 +20,7 @@ export default async function getTokenDirectPurchasePrices (grpcPool: GRPCPool, 
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getTokenDirectPurchasePrices', request)
-    .setProofVerifier(verifyTokenDirectPurchasePrices, tokenIds, true, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyTokenDirectPurchasePrices, (_, platformVersion) => [tokenIds, true, platformVersion])
     .mapResponse(data => {
       if (data.proved) {
         if (data.verified.prices == null) {

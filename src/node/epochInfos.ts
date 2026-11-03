@@ -4,7 +4,6 @@ import { GetEpochsInfoRequest } from '../../proto/generated/platform.js'
 import { verifyEpochsInfoProof } from 'pshenmic-dpp'
 import QueryExecutor from '../QueryExecutor.js'
 import { UInt32Value } from '../../proto/generated/google/protobuf/wrappers.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface EpochInfo {
   number: number
@@ -30,7 +29,7 @@ export default async function epochInfos (grpcPool: GRPCPool, quorumKeyProvider:
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getEpochsInfo', getEpochsInfoRequest)
-    .setProofVerifier(verifyEpochsInfoProof, ({ metadata }) => [metadata.epoch, start, count, ascending, LATEST_PLATFORM_VERSION])
+    .setProofVerifier(verifyEpochsInfoProof, ({ metadata }, platformVersion) => [metadata.epoch, start, count, ascending, platformVersion])
     .mapResponse(data => {
       if (data.proved) {
         return data.verified.epochsInfo.map(info => ({

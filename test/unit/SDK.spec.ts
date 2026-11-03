@@ -1,5 +1,7 @@
 import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 import { PlatformExplorerQuorumKeyProvider, QuorumKeyProvider } from '../../src/quorumKeyProvider.js'
+import { getVerifierVersion } from '../../src/QueryExecutor.js'
+import { LATEST_PLATFORM_VERSION, MIN_PROTOCOL_VERSION } from '../../src/constants.js'
 
 let sdk: DashPlatformSDK
 
@@ -68,6 +70,34 @@ describe('DashPlatformSDK', () => {
     customSdk.setQuorumKeyProvider()
 
     expect(customSdk.quorumKeyProvider).toEqual(expect.any(PlatformExplorerQuorumKeyProvider))
+  })
+
+  test('should learn protocol version of the network from verified responses', async () => {
+    const customSdk = new DashPlatformSDK({ network: 'testnet' })
+
+    expect(customSdk.grpcPool.protocolVersion).toEqual(MIN_PROTOCOL_VERSION.testnet)
+
+    await customSdk.identities.getIdentityBalance(identifier)
+
+    expect(customSdk.grpcPool.protocolVersion).toEqual(LATEST_PLATFORM_VERSION)
+  })
+
+  test('should not learn protocol version from unverified responses', async () => {
+    const customSdk = new DashPlatformSDK({ network: 'testnet', proofs: false })
+
+    await customSdk.identities.getIdentityBalance(identifier)
+
+    expect(customSdk.grpcPool.protocolVersion).toEqual(MIN_PROTOCOL_VERSION.testnet)
+  })
+
+  test('should select platform version to verify proofs with', () => {
+    // newer signed version is used
+    expect(getVerifierVersion(13, 14)).toEqual(14)
+    // older signed version is not
+    expect(getVerifierVersion(14, 13)).toEqual(14)
+    expect(getVerifierVersion(13, 0)).toEqual(13)
+    // unknown version falls back to the latest known one
+    expect(getVerifierVersion(13, LATEST_PLATFORM_VERSION + 1)).toEqual(LATEST_PLATFORM_VERSION)
   })
 
   test('should be able to deserialize consensus error', () => {

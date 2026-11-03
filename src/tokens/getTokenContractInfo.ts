@@ -3,7 +3,6 @@ import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetTokenContractInfoRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenContractInfoProof } from 'pshenmic-dpp'
 import QueryExecutor from '../QueryExecutor.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface TokenContractInfo {
   dataContractId: IdentifierWASM
@@ -25,7 +24,7 @@ export default async function getTokenContractInfo (grpcPool: GRPCPool, quorumKe
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getTokenContractInfo', getTokenContractInfoRequest)
-    .setProofVerifier(verifyTokenContractInfoProof, tokenId, true, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyTokenContractInfoProof, (_, platformVersion) => [tokenId, true, platformVersion])
     .mapResponse(data => {
       const contractInfo = data.proved ? data.verified.contractInfo : data.result.data
 

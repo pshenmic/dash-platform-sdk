@@ -29,12 +29,12 @@ import {
   IdentifierLike,
   IdentifierWASM,
   IntegerRangeSelection,
+  PlatformVersionWASM,
   ProvenDocumentRemovalEntry,
   TimeRangeSelection,
   WhereClause
 } from 'pshenmic-dpp'
 import { ResponseResult } from '../QueryExecutor.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 type DocumentFieldValue = GetDocumentsRequest_DocumentFieldValue
 
@@ -324,8 +324,8 @@ export function getDocumentsV1Data<K extends DocumentsV1Kind> (result: ResponseR
 /**
  * Deserializes the documents of a getDocuments response requested without proof
  */
-export function toDocuments (documents: Uint8Array[], dataContract: DataContractWASM, documentTypeName: string): DocumentWASM[] {
-  return documents.map(bytes => DocumentWASM.fromBytes(bytes, dataContract, documentTypeName, LATEST_PLATFORM_VERSION))
+export function toDocuments (documents: Uint8Array[], dataContract: DataContractWASM, documentTypeName: string, platformVersion: PlatformVersionWASM): DocumentWASM[] {
+  return documents.map(bytes => DocumentWASM.fromBytes(bytes, dataContract, documentTypeName, platformVersion))
 }
 
 /**

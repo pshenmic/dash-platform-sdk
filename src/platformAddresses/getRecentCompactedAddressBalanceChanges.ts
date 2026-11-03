@@ -2,7 +2,7 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { verifyRecentCompactedAddressBalanceChanges, CompactedBlockAddressBalanceChanges, PlatformAddressWASM } from 'pshenmic-dpp'
 import { GetRecentCompactedAddressBalanceChangesRequest } from '../../proto/generated/platform.js'
-import { LATEST_PLATFORM_VERSION, RECENT_COMPACTED_ADDRESS_BALANCE_CHANGES_LIMIT } from '../constants.js'
+import { RECENT_COMPACTED_ADDRESS_BALANCE_CHANGES_LIMIT } from '../constants.js'
 import QueryExecutor from '../QueryExecutor.js'
 
 export async function getRecentCompactedAddressBalanceChanges (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, startBlockHeight: bigint): Promise<CompactedBlockAddressBalanceChanges[]> {
@@ -18,7 +18,7 @@ export async function getRecentCompactedAddressBalanceChanges (grpcPool: GRPCPoo
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getRecentCompactedAddressBalanceChanges', getRecentCompactedAddressBalanceChangesRequest)
-    .setProofVerifier(verifyRecentCompactedAddressBalanceChanges, startBlockHeight, RECENT_COMPACTED_ADDRESS_BALANCE_CHANGES_LIMIT, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyRecentCompactedAddressBalanceChanges, (_, platformVersion) => [startBlockHeight, RECENT_COMPACTED_ADDRESS_BALANCE_CHANGES_LIMIT, platformVersion])
     .mapResponse(data => {
       if (data.proved) {
         return data.verified.ranges

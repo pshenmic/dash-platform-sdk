@@ -3,7 +3,7 @@ import { GetDataContractRequest } from '../../proto/generated/platform.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import QueryExecutor from '../QueryExecutor.js'
-import { DPNS_DATA_CONTRACT_BYTES, DPNS_DATA_CONTRACT_ID, LATEST_PLATFORM_VERSION } from '../constants.js'
+import { DPNS_DATA_CONTRACT_BYTES, DPNS_DATA_CONTRACT_ID } from '../constants.js'
 
 export default async function getByIdentifier (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifier: IdentifierLike): Promise<DataContractWASM> {
   const id = new IdentifierWASM(identifier)
@@ -24,11 +24,11 @@ export default async function getByIdentifier (grpcPool: GRPCPool, quorumKeyProv
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getDataContract', getDataContractRequest)
-    .setProofVerifier(verifyContractProof, undefined, false, false, id.bytes(), LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyContractProof, (_, platformVersion) => [undefined, false, false, id.bytes(), platformVersion])
     .mapResponse(data => {
       const dataContract = data.proved
         ? data.verified.dataContract
-        : DataContractWASM.fromBytes(data.result.dataContract, false, LATEST_PLATFORM_VERSION)
+        : DataContractWASM.fromBytes(data.result.dataContract, false, data.platformVersion)
 
       if (dataContract == null) {
         throw new Error(`Data Contract with identifier ${id.base58()} not found`)

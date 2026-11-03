@@ -6,6 +6,8 @@ import bytesToHex from './utils/bytesToHex.js'
 import verifyTenderdashProof from './utils/verifyTenderdashProof.js'
 import ProofError from './utils/ProofError.js'
 import sleep from './utils/sleep.js'
+import { PlatformVersionWASM } from 'pshenmic-dpp'
+import { LATEST_PLATFORM_VERSION, MIN_PROTOCOL_VERSION } from './constants.js'
 
 const RETRY_DELAY_MS = 10
 
@@ -26,6 +28,7 @@ export interface ResponseProof {
 type GrpcRequest<Response> = (client: PlatformClient) => PromiseLike<{ response: Response }>
 type MapProof<Response, P extends ResponseProof = ResponseProof> = (response: Response) => P
 type GroveDBVerifier<Args extends unknown[], V> = (grovedbProof: Uint8Array, ...args: Args) => V
+type GetVerifierArgs<P, Args> = (responseProof: P, platformVersion: PlatformVersionWASM) => Args
 
 /**
  * Body of the version (e.g. `v0`) of a versioned response, distributed over all versions
@@ -51,10 +54,14 @@ export type QueryData<Response, V> = {
   proved: true
   verified: V
   metadata: ResponseMetadata
+  /** Platform version the proof was verified with, see {getVerifierVersion} **/
+  platformVersion: PlatformVersionWASM
 } | {
   proved: false
   result: ResponseResult<Response>
   metadata: ResponseMetadata
+  /** Protocol version of the pool, the response is not verified, so its protocol version is not used **/
+  platformVersion: PlatformVersionWASM
 }
 
 type MapResponse<Response, V, T> = (data: QueryData<Response, V>) => T | Promise<T>
@@ -77,6 +84,35 @@ function getVersionBody (message: unknown): Record<string, unknown> | undefined 
   }
 
   return version[version.oneofKind] as Record<string, unknown> | undefined
+}
+
+/**
+ * Returns the protocol version of the pool, the lowest version the network runs if it was not learned yet
+ */
+export function getPoolProtocolVersion (grpcPool: GRPCPool): PlatformVersionWASM {
+  return Math.min(grpcPool.protocolVersion ?? MIN_PROTOCOL_VERSION[grpcPool.network], LATEST_PLATFORM_VERSION)
+}
+
+/**
+ * Returns the platform version to verify a response signed with the given protocol version.
+ * A newer signed version is used (up to the latest version known to the SDK), an older one is not,
+ * so a node behind the network fails the verification and the request is sent to another node.
+ *
+ * Choosing the version before the quorum signature is verified is safe:
+ * the signature covers the protocol version, so a false version fails the verification
+ */
+export function getVerifierVersion (protocolVersion: number, signedProtocolVersion: number): PlatformVersionWASM {
+  return Math.min(Math.max(protocolVersion, signedProtocolVersion), LATEST_PLATFORM_VERSION)
+}
+
+/**
+ * Raises the protocol version of the pool to the one of a response whose proof and quorum signature were verified.
+ * The version is never lowered, versions unknown to the SDK are ignored
+ */
+function updateProtocolVersion (grpcPool: GRPCPool, signedProtocolVersion: number): void {
+  if (signedProtocolVersion > getPoolProtocolVersion(grpcPool) && signedProtocolVersion <= LATEST_PLATFORM_VERSION) {
+    grpcPool.protocolVersion = signedProtocolVersion
+  }
 }
 
 /**
@@ -119,8 +155,11 @@ export function getResponseProof (response: ProvedResponse): ResponseProof {
  * Sends a GRPC request to a node from the pool and returns the mapped result of the response.
  *
  * Queries are requested with proofs, unless proofs are disabled in the pool (`grpcPool.proofs === false`):
- * - with proofs: request (`prove: true`) -> proof mapping -> GroveDB proof verification -> quorum signature verification -> mapping
+ * - with proofs: request (`prove: true`) -> proof mapping -> GroveDB proof verification -> quorum signature verification -> protocol version update -> mapping
  * - without proofs: request (`prove: false`) -> mapping of the response result
+ *
+ * The protocol version of the pool is raised to the protocol version of the verified responses,
+ * the platform version to verify the proof with is passed to the args callback of the proof verifier, see {getVerifierVersion}
  *
  * `mapResponse` handles both cases, the verified data or the response result, see {QueryData}.
  * Requests without the `prove` field are always proved
@@ -131,7 +170,7 @@ export function getResponseProof (response: ProvedResponse): ResponseProof {
  * @example
  * const balance = await QueryExecutor.build(grpcPool, quorumKeyProvider)
  *   .setGrpcRequest('getIdentityBalance', request)
- *   .setProofVerifier(verifyIdentityBalanceProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
+ *   .setProofVerifier(verifyIdentityBalanceProof, (_, platformVersion) => [id.bytes(), true, platformVersion])
  *   .mapResponse(data => data.proved ? data.verified.balance : BigInt(data.result.balance))
  *   .execute()
  */
@@ -141,7 +180,7 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
   #request?: GrpcRequest<Response>
   #requestMessage?: unknown
   #mapProof: MapProof<Response, P> = getResponseProof as unknown as MapProof<Response, P>
-  #verifyProof?: (responseProof: P) => V
+  #verifyProof?: (responseProof: P, platformVersion: PlatformVersionWASM) => V
   #mapResponse?: MapResponse<Response, V, T>
   #validateProof = true
 
@@ -204,12 +243,13 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
 
   /**
    * Sets the GroveDB proof verification function, which is called with the GroveDB proof of the response
-   * followed by the given args. Args depending on the response (e.g. metadata) can be passed as a callback.
+   * followed by the given args. Args depending on the response (e.g. metadata) or the platform version
+   * to verify the proof with can be passed as a callback.
    * Failure of the verification is thrown as ProofError, so the request is retried on another node
    */
   setProofVerifier<Args extends unknown[] | [], U> (
     verify: GroveDBVerifier<Args, U>,
-    getArgs: (responseProof: P) => NoInfer<Args>
+    getArgs: GetVerifierArgs<P, NoInfer<Args>>
   ): QueryExecutor<Response, U, T, P>
   setProofVerifier<Args extends unknown[] | [], U> (
     verify: GroveDBVerifier<Args, U>,
@@ -217,17 +257,17 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
   ): QueryExecutor<Response, U, T, P>
   setProofVerifier<Args extends unknown[] | [], U> (
     verify: GroveDBVerifier<Args, U>,
-    ...args: Args | [(responseProof: P) => Args]
+    ...args: Args | [GetVerifierArgs<P, Args>]
   ): QueryExecutor<Response, U, T, P> {
     const executor = this as unknown as QueryExecutor<Response, U, T, P>
 
     const getArgs = args.length === 1 && typeof args[0] === 'function'
-      ? args[0] as (responseProof: P) => Args
+      ? args[0] as GetVerifierArgs<P, Args>
       : () => args as Args
 
-    executor.#verifyProof = (responseProof) => {
+    executor.#verifyProof = (responseProof, platformVersion) => {
       try {
-        return verify(responseProof.proof.grovedbProof, ...getArgs(responseProof))
+        return verify(responseProof.proof.grovedbProof, ...getArgs(responseProof, platformVersion))
       } catch (e) {
         throw new ProofError(`Failed to verify GroveDB proof: ${String(e)}`, { cause: e })
       }
@@ -301,11 +341,11 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
       throw new Error('Metadata not found')
     }
 
-    return { proved: false, result: result as ResponseResult<Response>, metadata }
+    return { proved: false, result: result as ResponseResult<Response>, metadata, platformVersion: getPoolProtocolVersion(this.#grpcPool) }
   }
 
   async #executeWithProof (request: GrpcRequest<Response>): Promise<QueryData<Response, V>> {
-    const verifyProof = this.#verifyProof as (responseProof: P) => V
+    const verifyProof = this.#verifyProof as (responseProof: P, platformVersion: PlatformVersionWASM) => V
     const grpcPool = this.#grpcPool
     // custom pools without retries are not retried
     const retries = grpcPool.retries ?? 0
@@ -325,15 +365,20 @@ export default class QueryExecutor<Response = unknown, V = unknown, T = unknown,
         const { response } = await request(client)
 
         const responseProof = this.#mapProof(response)
-        const verified = verifyProof(responseProof)
+        const { metadata } = responseProof
+        const platformVersion = getVerifierVersion(getPoolProtocolVersion(grpcPool), metadata.protocolVersion)
+        const verified = verifyProof(responseProof, platformVersion)
 
         if (this.#validateProof) {
           await this.#verifySignature(responseProof, (verified as { rootHash?: Uint8Array }).rootHash)
 
+          // protocol version is learned only from the responses with verified quorum signature
+          updateProtocolVersion(grpcPool, metadata.protocolVersion)
+
           grpcPool.unbanNode?.(client)
         }
 
-        return { proved: true, verified, metadata: responseProof.metadata }
+        return { proved: true, verified, metadata, platformVersion }
       } catch (e) {
         if (!(e instanceof ProofError)) {
           throw e

@@ -3,7 +3,6 @@ import { IdentifierLike, IdentifierWASM, IdentityPublicKeyWASM, verifyIdentityKe
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import QueryExecutor from '../QueryExecutor.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getIdentityPublicKeys (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifier: IdentifierLike, keyIds?: number[]): Promise<IdentityPublicKeyWASM[]> {
   const id = new IdentifierWASM(identifier)
@@ -37,7 +36,7 @@ export default async function getIdentityPublicKeys (grpcPool: GRPCPool, quorumK
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getIdentityKeys', getIdentityKeysRequest)
-    .setProofVerifier(verifyIdentityKeysByIdentifierProof, id.bytes(), keyIds ?? null, false, false, true, null, null, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyIdentityKeysByIdentifierProof, (_, platformVersion) => [id.bytes(), keyIds ?? null, false, false, true, null, null, platformVersion])
     .mapResponse(data => {
       const keys = data.proved
         ? data.verified.identity?.loadedPublicKeys

@@ -3,7 +3,6 @@ import { IdentifierLike, IdentifierWASM, verifyIdentityBalanceProof } from 'pshe
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import QueryExecutor from '../QueryExecutor.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getIdentityBalance (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, identifier: IdentifierLike): Promise<bigint> {
   const id = new IdentifierWASM(identifier)
@@ -20,7 +19,7 @@ export default async function getIdentityBalance (grpcPool: GRPCPool, quorumKeyP
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getIdentityBalance', getIdentityBalanceRequest)
-    .setProofVerifier(verifyIdentityBalanceProof, id.bytes(), true, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyIdentityBalanceProof, (_, platformVersion) => [id.bytes(), true, platformVersion])
     .mapResponse(data => {
       const balance = data.proved ? data.verified.balance : BigInt(data.result.balance)
 

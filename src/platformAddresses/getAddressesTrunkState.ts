@@ -2,7 +2,6 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { verifyAddressesTrunkState } from 'pshenmic-dpp'
 import { GetAddressesTrunkStateRequest } from '../../proto/generated/platform.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import QueryExecutor from '../QueryExecutor.js'
 import { PlatformAddressesTrunkState } from '../../types.js'
 
@@ -33,7 +32,7 @@ export async function getAddressesTrunkState (grpcPool: GRPCPool, quorumKeyProvi
 
       return { proof, metadata }
     })
-    .setProofVerifier(verifyAddressesTrunkState, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyAddressesTrunkState, (_, platformVersion) => [platformVersion])
     .mapResponse(data => {
       if (!data.proved) {
         throw new Error('Addresses trunk state can only be requested with proof')

@@ -3,7 +3,6 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetVotePollsByEndDateRequest } from '../../proto/generated/platform.js'
 import QueryExecutor from '../QueryExecutor.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getVotePollsByEndDate (
   grpcPool: GRPCPool,
@@ -32,14 +31,13 @@ export default async function getVotePollsByEndDate (
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getVotePollsByEndDate', getVotePollsByEndDateRequest)
-    .setProofVerifier(
-      verifyVotePollsByEndDateProof,
+    .setProofVerifier(verifyVotePollsByEndDateProof, (_, platformVersion) => [
       startTime,
       endTime,
       limit,
       ascending,
-      LATEST_PLATFORM_VERSION
-    )
+      platformVersion
+    ])
     .mapResponse(data => {
       if (data.proved) {
         return data.verified.votePolls

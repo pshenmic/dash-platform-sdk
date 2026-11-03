@@ -8,7 +8,6 @@ import {
   verifyDocumentsCountProof,
   verifyDocumentsSumProof
 } from 'pshenmic-dpp'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
@@ -95,7 +94,7 @@ export default async function queryAggregate (
 
   if (aggregateFunction === 'count') {
     return await executor
-      .setProofVerifier(verifyDocumentsCountProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
+      .setProofVerifier(verifyDocumentsCountProof, ({ metadata }, platformVersion) => [dataContract, query, platformVersion, BigInt(metadata.timeMs)])
       .mapResponse(data => data.proved ? data.verified.value : toDocumentsAggregate(data.result, aggregateFunction))
       .execute()
   }
@@ -103,7 +102,7 @@ export default async function queryAggregate (
   const verify = aggregateFunction === 'sum' ? verifyDocumentsSumProof : verifyDocumentsAverageProof
 
   return await executor
-    .setProofVerifier(verify, ({ metadata }) => [dataContract, query, field as string, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
+    .setProofVerifier(verify, ({ metadata }, platformVersion) => [dataContract, query, field as string, platformVersion, BigInt(metadata.timeMs)])
     .mapResponse(data => data.proved ? data.verified.value : toDocumentsAggregate(data.result, aggregateFunction))
     .execute()
 }

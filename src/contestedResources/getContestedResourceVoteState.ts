@@ -12,7 +12,6 @@ import {
 } from '../../proto/generated/platform.js'
 import { DataContractWASM, DocumentWASM, IdentifierWASM, verifyVotePollVoteStateProof } from 'pshenmic-dpp'
 import QueryExecutor from '../QueryExecutor.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 // winner types of the proof verification by finished vote outcome of the response
 const FINISHED_VOTE_OUTCOMES: Record<FinishedVoteOutcome, string> = {
@@ -61,8 +60,7 @@ export default async function getContestedResourceVoteState (
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getContestedResourceVoteState', getContestedResourceVoteStateRequest)
-    .setProofVerifier(
-      verifyVotePollVoteStateProof,
+    .setProofVerifier(verifyVotePollVoteStateProof, (_, platformVersion) => [
       contract,
       documentTypeName,
       indexName,
@@ -73,10 +71,10 @@ export default async function getContestedResourceVoteState (
       allowIncludeLockedAndAbstainingVoteTally,
       count,
       startAtIdentifierInfo,
-      LATEST_PLATFORM_VERSION
-    )
+      platformVersion
+    ])
     .mapResponse(data => {
-      const toDocument = (bytes?: Uint8Array): DocumentWASM | undefined => bytes != null ? DocumentWASM.fromBytes(bytes, contract, documentTypeName, LATEST_PLATFORM_VERSION) : undefined
+      const toDocument = (bytes?: Uint8Array): DocumentWASM | undefined => bytes != null ? DocumentWASM.fromBytes(bytes, contract, documentTypeName, data.platformVersion) : undefined
 
       if (data.proved) {
         const { result: voteState } = data.verified
