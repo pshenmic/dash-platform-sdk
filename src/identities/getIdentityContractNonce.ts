@@ -3,7 +3,6 @@ import { IdentifierLike, IdentifierWASM, verifyIdentityContractNonceProof } from
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import QueryExecutor from '../QueryExecutor.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 const IDENTITY_CONTRACT_NONCE_VALUE_FILTER = BigInt(0xFFFFFFFFFF)
 
@@ -24,7 +23,7 @@ export default async function getIdentityContractNonce (grpcPool: GRPCPool, quor
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getIdentityContractNonce', getIdentityContractNonceRequest)
-    .setProofVerifier(verifyIdentityContractNonceProof, identityIdentifier.bytes(), dataContractIdentifier.bytes(), true, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyIdentityContractNonceProof, (_, platformVersion) => [identityIdentifier.bytes(), dataContractIdentifier.bytes(), true, platformVersion])
     .mapResponse(data => {
       const contractNonce = data.proved ? data.verified.contractNonce : BigInt(data.result.identityContractNonce)
 

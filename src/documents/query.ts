@@ -1,5 +1,5 @@
 import { DocumentWASM, IdentifierLike, IdentifierWASM, verifyDocumentsProof, WhereClause } from 'pshenmic-dpp'
-import { DAPI_DEFAULT_LIMIT, LATEST_PLATFORM_VERSION } from '../constants.js'
+import { DAPI_DEFAULT_LIMIT } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
@@ -34,13 +34,13 @@ export default async function query (
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getDocuments', request)
     .mapProof(getDocumentsV1Proof)
-    .setProofVerifier(verifyDocumentsProof, ({ metadata }) => {
+    .setProofVerifier(verifyDocumentsProof, ({ metadata }, platformVersion) => {
       const metadataTimeMs = BigInt(metadata.timeMs)
 
-      return [dataContract, documentTypeName, where, orderBy, limit, startIdentifier?.bytes(), startAtIncluded, metadataTimeMs, LATEST_PLATFORM_VERSION, metadataTimeMs]
+      return [dataContract, documentTypeName, where, orderBy, limit, startIdentifier?.bytes(), startAtIncluded, metadataTimeMs, platformVersion, metadataTimeMs]
     })
     .mapResponse(data => data.proved
       ? data.verified.documents ?? []
-      : toDocuments(getDocumentsV1Data(data.result, 'documents').documents, dataContract, documentTypeName))
+      : toDocuments(getDocumentsV1Data(data.result, 'documents').documents, dataContract, documentTypeName, data.platformVersion))
     .execute()
 }

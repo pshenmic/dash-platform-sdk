@@ -8,7 +8,6 @@ import {
   VerifiedChainedDocuments,
   VerifiedCompositeDocuments
 } from 'pshenmic-dpp'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
@@ -55,7 +54,7 @@ export async function queryChained (
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getDocuments', request)
     .mapProof(getDocumentsV1Proof)
-    .setProofVerifier(verifyChainedDocumentsProof, dataContract, query, joinProperty, outerDocumentTypeName, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyChainedDocumentsProof, (_, platformVersion) => [dataContract, query, joinProperty, outerDocumentTypeName, platformVersion])
     .mapResponse(data => {
       if (data.proved) {
         const { rootHash, ...result } = data.verified
@@ -66,8 +65,8 @@ export async function queryChained (
       const { innerDocuments, outerDocuments, missingOuterIds, removedOuterDocuments } = getDocumentsV1Data(data.result, 'chained')
 
       return {
-        innerDocuments: toDocuments(innerDocuments, dataContract, query.documentTypeName),
-        outerDocuments: toDocuments(outerDocuments, dataContract, outerDocumentTypeName),
+        innerDocuments: toDocuments(innerDocuments, dataContract, query.documentTypeName, data.platformVersion),
+        outerDocuments: toDocuments(outerDocuments, dataContract, outerDocumentTypeName, data.platformVersion),
         missingOuterIds: missingOuterIds.map(id => new IdentifierWASM(id)),
         removedOuterDocuments: removedOuterDocuments.map(toDocumentRemovalEntry)
       }
@@ -103,7 +102,7 @@ export async function queryComposite (
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getDocuments', request)
     .mapProof(getDocumentsV1Proof)
-    .setProofVerifier(verifyCompositeDocumentsProof, dataContract, query, subQueries, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyCompositeDocumentsProof, (_, platformVersion) => [dataContract, query, subQueries, platformVersion])
     .mapResponse(data => {
       if (data.proved) {
         const { rootHash, ...result } = data.verified
@@ -114,13 +113,13 @@ export async function queryComposite (
       const { pageDocuments, subResults } = getDocumentsV1Data(data.result, 'composite')
 
       return {
-        pageDocuments: toDocuments(pageDocuments, dataContract, query.documentTypeName),
+        pageDocuments: toDocuments(pageDocuments, dataContract, query.documentTypeName, data.platformVersion),
         subResults: subResults.map(({ result, missingIds, removed }, index) => {
           const subQuery = subQueries[index]
 
           return {
             documents: result.oneofKind === 'documents'
-              ? toDocuments(result.documents.documents, subQuery.dataContract ?? dataContract, subQuery.documentTypeName)
+              ? toDocuments(result.documents.documents, subQuery.dataContract ?? dataContract, subQuery.documentTypeName, data.platformVersion)
               : undefined,
             counts: result.oneofKind === 'counts'
               ? result.counts.entries.map(({ inKey, key, count }) => ({ inKey: inKey ?? null, key, count: BigInt(count) }))

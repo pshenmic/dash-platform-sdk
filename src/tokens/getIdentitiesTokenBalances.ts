@@ -3,7 +3,6 @@ import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetIdentitiesTokenBalancesRequest } from '../../proto/generated/platform.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenBalancesForIdentitiesProof } from 'pshenmic-dpp'
 import QueryExecutor from '../QueryExecutor.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface IdentitiesTokenBalances {
   identityId: IdentifierWASM
@@ -27,7 +26,7 @@ export default async function getIdentitiesTokenBalances (grpcPool: GRPCPool, qu
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getIdentitiesTokenBalances', getIdentitiesTokenBalancesRequest)
-    .setProofVerifier(verifyTokenBalancesForIdentitiesProof, tokenId, true, ids, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyTokenBalancesForIdentitiesProof, (_, platformVersion) => [tokenId, true, ids, platformVersion])
     .mapResponse(data => {
       const balances = data.proved
         ? data.verified.balances

@@ -8,7 +8,6 @@ import {
   verifyHavingDocumentsProof,
   verifyRankedDocumentsProof
 } from 'pshenmic-dpp'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import { GetDocumentsRequest, GetDocumentsResponse_GetDocumentsResponseV1_RankedEntry } from '../../proto/generated/platform.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
@@ -64,7 +63,7 @@ export async function queryRanked (grpcPool: GRPCPool, quorumKeyProvider: Quorum
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getDocuments', request)
     .mapProof(getDocumentsV1Proof)
-    .setProofVerifier(verifyRankedDocumentsProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
+    .setProofVerifier(verifyRankedDocumentsProof, ({ metadata }, platformVersion) => [dataContract, query, platformVersion, BigInt(metadata.timeMs)])
     .mapResponse(data => {
       if (data.proved) {
         return data.verified.value
@@ -88,7 +87,7 @@ export async function queryHaving (grpcPool: GRPCPool, quorumKeyProvider: Quorum
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getDocuments', request)
     .mapProof(getDocumentsV1Proof)
-    .setProofVerifier(verifyHavingDocumentsProof, ({ metadata }) => [dataContract, query, LATEST_PLATFORM_VERSION, BigInt(metadata.timeMs)])
+    .setProofVerifier(verifyHavingDocumentsProof, ({ metadata }, platformVersion) => [dataContract, query, platformVersion, BigInt(metadata.timeMs)])
     .mapResponse(data => data.proved ? data.verified.value : toRankedEntries(getDocumentsV1Data(data.result, 'ranked').entries))
     .execute()
 }

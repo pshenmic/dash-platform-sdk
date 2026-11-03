@@ -11,7 +11,6 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import hexToBytes from '../utils/hexToBytes.js'
 import QueryExecutor, { ResponseProof } from '../QueryExecutor.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 /**
  * Proof of a v0 response, nodes since platform v5.0.0-rc.8 return separate index and identity proofs,
@@ -73,12 +72,12 @@ export default async function getIdentityByNonUniquePublicKeyHash (grpcPool: GRP
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getIdentityByNonUniquePublicKeyHash', getIdentityByNonUniquePublicKeyHashRequest)
     .mapProof(getNonUniquePublicKeyHashProof)
-    .setProofVerifier(verifyNonUniquePublicKeyHashProof, ({ metadata, identityProof, twoProofs }) => [
+    .setProofVerifier(verifyNonUniquePublicKeyHashProof, ({ metadata, identityProof, twoProofs }, platformVersion) => [
       identityProof,
       twoProofs,
       hexToBytes(hex),
       metadata.protocolVersion as PlatformVersionWASM,
-      LATEST_PLATFORM_VERSION
+      platformVersion
     ])
     .mapResponse(data => {
       if (data.proved) {

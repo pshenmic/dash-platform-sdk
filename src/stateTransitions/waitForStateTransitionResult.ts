@@ -12,7 +12,7 @@ import hexToBytes from '../utils/hexToBytes.js'
 import { StateTransitionBroadcastError, WaitForStateTransitionResultRequest } from '../../proto/generated/platform.js'
 import QueryExecutor, { getResponseProof } from '../QueryExecutor.js'
 import { base64 } from '@scure/base'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
+import { LATEST_PLATFORM_VERSION, WITHDRAWALS_DATA_CONTRACT_ID } from '../constants.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
 
 function toStateTransitionError (txHash: string, { code, message, data }: StateTransitionBroadcastError): Error {
@@ -28,8 +28,7 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
       v0: {
         stateTransitionHash: hexToBytes(txHash),
         prove: true,
-        // without proof the owner balance is returned only if requested
-        requestUserBalance: grpcPool.proofs === false
+        requestUserBalance: false
       }
     }
   })
@@ -50,8 +49,15 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
     knownContracts.push(await getDataContractByIdentifier(grpcPool, quorumKeyProvider, masternodeVote.vote.votePoll.contractId))
   }
 
+  // withdrawal documents of the shielded pool are created in the withdrawals system contract
+  if (stateTransition.getActionType() === 'SHIELDED_WITHDRAWAL') {
+    knownContracts.push(await getDataContractByIdentifier(grpcPool, quorumKeyProvider, WITHDRAWALS_DATA_CONTRACT_ID))
+  }
+
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('waitForStateTransitionResult', waitForStateTransitionResultRequest)
+    // the result is always verified, also if proofs are disabled in the pool
+    .setRequireProof(true)
     .mapProof(response => {
       const { version } = response
 
@@ -80,19 +86,15 @@ export default async function waitForStateTransitionResult (grpcPool: GRPCPool, 
       return [stateTransition, blockInfo, knownContracts, Math.min(metadata.protocolVersion, LATEST_PLATFORM_VERSION)]
     })
     .mapResponse(data => {
-      if (data.proved) {
-        if (data.verified.result == null) {
-          throw new Error('State transition result was null')
-        }
-
-        return data.verified.ownerBalance
+      if (!data.proved) {
+        throw new Error('State transition result must be proved')
       }
 
-      if (data.result.oneofKind === 'error') {
-        throw toStateTransitionError(txHash, data.result.error)
+      if (data.verified.result == null) {
+        throw new Error('State transition result was null')
       }
 
-      return BigInt(data.result.successWithOwnerBalance.ownerBalance)
+      return data.verified.ownerBalance
     })
     .execute()
 }

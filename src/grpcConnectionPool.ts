@@ -4,7 +4,7 @@ import { GetStatusRequest } from '../proto/generated/platform.js'
 import getCurrentQuorumsInfo, { CurrentQuorumsInfo } from './node/getCurrentQuorumsInfo.js'
 import { Network } from '../types.js'
 import { fetchWithDetails } from './utils/fetchWithDetails.js'
-import { LATEST_PLATFORM_VERSION } from './constants.js'
+import { LATEST_PLATFORM_VERSION, MIN_PROTOCOL_VERSION } from './constants.js'
 import sleep from './utils/sleep.js'
 
 const GRPC_DEFAULT_POOL_LIMIT = 15
@@ -19,8 +19,8 @@ export interface GRPCOptions {
   retries?: number
   /**
    * Minimal protocol version of the nodes, nodes with the protocol version from `minProtocolVersion` up to the latest
-   * version supported by the SDK are used. By default, only nodes with the latest protocol version are used.
-   * Proofs of the older nodes are still verified with the latest platform version of the SDK
+   * version supported by the SDK are used. By default, nodes with any protocol version up to the latest one are used.
+   * The SDK starts with the higher of it and the lowest version the network runs, see {GRPCPool.protocolVersion}
    */
   minProtocolVersion?: number
   /** Custom connection pool, if set, `poolLimit`, `dapiUrl` and `retries` are ignored **/
@@ -42,6 +42,12 @@ export interface GRPCPool {
   unbanNode?: (client: PlatformClient) => void
   /** Requests and verifies proofs of the queries, `true` if not set **/
   proofs?: boolean
+  /**
+   * Protocol version used to verify proofs and to parse responses, the lowest version the network runs if not set.
+   * Raised by the SDK to the protocol version of the responses whose proof and quorum signature were verified,
+   * it is never lowered and versions unknown to the SDK are ignored
+   */
+  protocolVersion?: number
 }
 
 export interface MasternodeInfo {
@@ -176,11 +182,8 @@ const isNodeHealthy = async (url: string, minProtocolVersion?: number): Promise<
       return false
     }
 
-    if (minProtocolVersion == null) {
-      if (protocol.current !== Number(LATEST_PLATFORM_VERSION) || protocol.latest !== Number(LATEST_PLATFORM_VERSION)) {
-        return false
-      }
-    } else if (protocol.current < minProtocolVersion || protocol.current > Number(LATEST_PLATFORM_VERSION)) {
+    // the protocol version of the network is learned from the verified responses, so nodes of any supported version are used
+    if (protocol.current < (minProtocolVersion ?? 1) || protocol.current > Number(LATEST_PLATFORM_VERSION)) {
       return false
     }
 
@@ -217,6 +220,7 @@ export default class GRPCConnectionPool implements GRPCPool {
   #minProtocolVersion?: number
   readonly retries: number
   proofs?: boolean
+  protocolVersion: number
   #nodeIndex = 0
   #initialization?: Promise<void>
   // ban state of nodes that failed with a retryable error, banned nodes are skipped on node selection
@@ -238,6 +242,8 @@ export default class GRPCConnectionPool implements GRPCPool {
     }
 
     this.#minProtocolVersion = minProtocolVersion
+    // nodes run at least `minProtocolVersion`, but the SDK never starts below the lowest version the network runs
+    this.protocolVersion = Math.max(minProtocolVersion ?? 0, MIN_PROTOCOL_VERSION[network])
     this.network = network
     this.#poolLimit = grpcOptions?.poolLimit ?? GRPC_DEFAULT_POOL_LIMIT
     this.#dapiUrl = grpcOptions?.dapiUrl
@@ -303,7 +309,7 @@ export default class GRPCConnectionPool implements GRPCPool {
     // fail the initialization, so it is retried on the next request
     if (dapiUrls.length === 0) {
       throw new Error(`None of the ${network} evonodes are available (${networkDAPIUrls.length} checked, ` +
-        `nodes must be synced and run protocol version ${this.#minProtocolVersion != null ? `${this.#minProtocolVersion}-` : ''}${Number(LATEST_PLATFORM_VERSION)})`)
+        `nodes must be synced and run protocol version ${this.#minProtocolVersion ?? 1}-${Number(LATEST_PLATFORM_VERSION)})`)
     }
 
     this.dapiUrls = dapiUrls.slice(0, this.#poolLimit)

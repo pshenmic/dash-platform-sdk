@@ -4,7 +4,6 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import hexToBytes from '../utils/hexToBytes.js'
 import QueryExecutor from '../QueryExecutor.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getIdentityByPublicKeyHash (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, hex: string): Promise<IdentityWASM> {
   const getIdentityByPublicKeyHashRequest = GetIdentityByPublicKeyHashRequest.create({
@@ -19,7 +18,7 @@ export default async function getIdentityByPublicKeyHash (grpcPool: GRPCPool, qu
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getIdentityByPublicKeyHash', getIdentityByPublicKeyHashRequest)
-    .setProofVerifier(verifyIdentityByUniqueKeyHashProof, hexToBytes(hex), LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyIdentityByUniqueKeyHashProof, (_, platformVersion) => [hexToBytes(hex), platformVersion])
     .mapResponse(data => {
       const identity = data.proved ? data.verified.identity : IdentityWASM.fromBytes(data.result.identity)
 

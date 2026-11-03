@@ -10,6 +10,7 @@ import getIdentityContractNonce from '../identities/getIdentityContractNonce.js'
 import broadcast from '../stateTransitions/broadcast.js'
 import waitForStateTransitionResult from '../stateTransitions/waitForStateTransitionResult.js'
 import testNameContested from './testNameContested.js'
+import getProtocolVersion from '../node/getProtocolVersion.js'
 import { DPNS_DATA_CONTRACT_ID } from '../constants.js'
 
 export default async function registerName (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, name: string, identity: IdentityWASM, privateKey: PrivateKeyWASM, preorderSalt?: Uint8Array, platformVersion?: PlatformVersionLike): Promise<Uint8Array> {
@@ -45,6 +46,9 @@ export default async function registerName (grpcPool: GRPCPool, quorumKeyProvide
 
   const identityContractNonce = await getIdentityContractNonce(grpcPool, quorumKeyProvider, identity.id, DPNS_DATA_CONTRACT_ID)
 
+  // document ids are generated differently by the protocol versions, so the documents are created with the one of the network
+  const documentPlatformVersion = platformVersion ?? await getProtocolVersion(grpcPool, quorumKeyProvider)
+
   // skip preorder if salt of existing preorder is provided
   const domainNonce = identityContractNonce + BigInt(preorderSalt == null ? 2 : 1)
 
@@ -59,7 +63,7 @@ export default async function registerName (grpcPool: GRPCPool, quorumKeyProvide
         saltedDomainHash
       }
 
-      const preorderDocument = createDocument(DPNS_DATA_CONTRACT_ID, 'preorder', preorderData, identity.id.base58(), identityContractNonce + BigInt(1), undefined, undefined, platformVersion)
+      const preorderDocument = createDocument(DPNS_DATA_CONTRACT_ID, 'preorder', preorderData, identity.id.base58(), identityContractNonce + BigInt(1), undefined, undefined, documentPlatformVersion)
       const preorderStateTransition = createStateTransition(preorderDocument, 'create', { identityContractNonce: identityContractNonce + BigInt(1) })
       await preorderStateTransition.sign(privateKey, identityPublicKey)
 
@@ -85,7 +89,7 @@ export default async function registerName (grpcPool: GRPCPool, quorumKeyProvide
       }
     }
 
-    const domainDocument = createDocument(DPNS_DATA_CONTRACT_ID, 'domain', domainData, identity.id.base58(), domainNonce, undefined, undefined, platformVersion)
+    const domainDocument = createDocument(DPNS_DATA_CONTRACT_ID, 'domain', domainData, identity.id.base58(), domainNonce, undefined, undefined, documentPlatformVersion)
     const domainStateTransition = createStateTransition(domainDocument, 'create', {
       identityContractNonce: domainNonce,
       // @ts-expect-error

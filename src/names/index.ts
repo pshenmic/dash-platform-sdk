@@ -85,7 +85,7 @@ export class NamesController {
    * @param identityId {IdentifierLike} identity identifier
    * @param privateKey {PrivateKeyWASM} Authentication / High private key from your identity
    * @param preorderSalt {Uint8Array=} Optional 32 bytes salt of already existing preorder document. If provided, preorder step is skipped
-   * @param platformVersion {PlatformVersionLike=} Optional platform version used to create preorder and domain documents (latest by default)
+   * @param platformVersion {PlatformVersionLike=} Optional platform version used to create preorder and domain documents (protocol version of the network by default)
    *
    * @return {Promise<Uint8Array>} preorder salt (also attached as `preorderSalt` to the error if domain broadcast fails)
    */

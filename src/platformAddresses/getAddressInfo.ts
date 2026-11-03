@@ -6,7 +6,6 @@ import {
   verifyPlatformAddressInfo
 } from 'pshenmic-dpp'
 import { GetAddressInfoRequest } from '../../proto/generated/platform.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import QueryExecutor from '../QueryExecutor.js'
 import { PlatformAddressInfo } from '../../types.js'
 
@@ -25,7 +24,7 @@ export async function getAddressInfo (grpcPool: GRPCPool, quorumKeyProvider: Quo
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getAddressInfo', getAddressInfoRequest)
-    .setProofVerifier(verifyPlatformAddressInfo, platformAddressWASM, true, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyPlatformAddressInfo, (_, platformVersion) => [platformAddressWASM, true, platformVersion])
     .mapResponse(data => {
       const balanceAndNonce = data.proved ? data.verified : data.result.addressInfoEntry.balanceAndNonce
 

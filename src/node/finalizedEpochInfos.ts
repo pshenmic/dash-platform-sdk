@@ -3,7 +3,6 @@ import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetFinalizedEpochInfosRequest } from '../../proto/generated/platform.js'
 import { IdentifierWASM, verifyFinalizedEpochInfosProof } from 'pshenmic-dpp'
 import QueryExecutor from '../QueryExecutor.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export interface FinalizedEpochInfo {
   epochIndex: number
@@ -40,7 +39,7 @@ export default async function getFinalizedEpochsInfo (grpcPool: GRPCPool, quorum
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getFinalizedEpochInfos', getEpochsInfoRequest)
-    .setProofVerifier(verifyFinalizedEpochInfosProof, startEpochIndex, startEpochIndexIncluded, endEpochIndex, endEpochIndexIncluded, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyFinalizedEpochInfosProof, (_, platformVersion) => [startEpochIndex, startEpochIndexIncluded, endEpochIndex, endEpochIndexIncluded, platformVersion])
     .mapResponse(data => {
       if (data.proved) {
         return data.verified.epochInfos.map(info => ({

@@ -3,7 +3,6 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import {
   HALVING_INTERVAL,
-  LATEST_PLATFORM_VERSION,
   MAINNET_ACTIVATION_HEIGHT,
   TESTNET_ACTIVATION_HEIGHT
 } from '../constants.js'
@@ -20,10 +19,10 @@ export default async function totalCredits (grpcPool: GRPCPool, quorumKeyProvide
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getTotalCreditsInPlatform', getTotalCreditsInPlatformRequest)
-    .setProofVerifier(verifyTotalCreditsProof, ({ metadata }) => {
+    .setProofVerifier(verifyTotalCreditsProof, ({ metadata }, platformVersion) => {
       const activationHeight = grpcPool.network === 'testnet' ? TESTNET_ACTIVATION_HEIGHT : MAINNET_ACTIVATION_HEIGHT
 
-      return [HALVING_INTERVAL, activationHeight, metadata.coreChainLockedHeight, LATEST_PLATFORM_VERSION]
+      return [HALVING_INTERVAL, activationHeight, metadata.coreChainLockedHeight, platformVersion]
     })
     .mapResponse(data => data.proved ? data.verified.totalCredits : BigInt(data.result.credits))
     .execute()

@@ -3,7 +3,6 @@ import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetShieldedNullifiersRequest } from '../../proto/generated/platform.js'
 import { ShieldedNullifierStatus } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyShieldedNullifiersProof } from 'pshenmic-dpp'
-import { SHIELDED_PLATFORM_VERSION } from '../constants.js'
 import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getShieldedNullifiers (
@@ -27,7 +26,7 @@ export default async function getShieldedNullifiers (
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getShieldedNullifiers', getShieldedNullifiersRequest)
-    .setProofVerifier(verifyShieldedNullifiersProof, nullifiers, true, SHIELDED_PLATFORM_VERSION, tokenId)
+    .setProofVerifier(verifyShieldedNullifiersProof, (_, platformVersion) => [nullifiers, true, platformVersion, tokenId])
     .mapResponse(data => {
       const nullifiersStatuses = data.proved ? data.verified.nullifiers : data.result.nullifierStatuses.entries
 

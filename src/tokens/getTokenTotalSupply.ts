@@ -4,7 +4,6 @@ import { GetTokenTotalSupplyRequest } from '../../proto/generated/platform.js'
 import { TokenTotalSupply } from '../../types.js'
 import { IdentifierLike, IdentifierWASM, verifyTokenTotalSupplyProof } from 'pshenmic-dpp'
 import QueryExecutor from '../QueryExecutor.js'
-import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
 export default async function getTokenTotalSupply (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, tokenIdentifier: IdentifierLike): Promise<TokenTotalSupply> {
   const tokenId = new IdentifierWASM(tokenIdentifier)
@@ -21,7 +20,7 @@ export default async function getTokenTotalSupply (grpcPool: GRPCPool, quorumKey
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getTokenTotalSupply', getTokenTotalSupplyRequest)
-    .setProofVerifier(verifyTokenTotalSupplyProof, tokenId, true, LATEST_PLATFORM_VERSION)
+    .setProofVerifier(verifyTokenTotalSupplyProof, (_, platformVersion) => [tokenId, true, platformVersion])
     .mapResponse(data => {
       const [totalSystemAmount, totalAggregatedAmountInUserAccounts] = data.proved
         ? [data.verified.totalBalance.tokenSupply, data.verified.totalBalance.aggregatedTokenAccountBalances]
