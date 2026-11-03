@@ -19,8 +19,8 @@ export interface GRPCOptions {
   retries?: number
   /**
    * Minimal protocol version of the nodes, nodes with the protocol version from `minProtocolVersion` up to the latest
-   * version supported by the SDK are used. By default, only nodes with the latest protocol version are used.
-   * Also the protocol version the SDK starts with, see {GRPCPool.protocolVersion}
+   * version supported by the SDK are used. By default, nodes with any protocol version up to the latest one are used.
+   * The SDK starts with the higher of it and the lowest version the network runs, see {GRPCPool.protocolVersion}
    */
   minProtocolVersion?: number
   /** Custom connection pool, if set, `poolLimit`, `dapiUrl` and `retries` are ignored **/
@@ -182,11 +182,8 @@ const isNodeHealthy = async (url: string, minProtocolVersion?: number): Promise<
       return false
     }
 
-    if (minProtocolVersion == null) {
-      if (protocol.current !== Number(LATEST_PLATFORM_VERSION) || protocol.latest !== Number(LATEST_PLATFORM_VERSION)) {
-        return false
-      }
-    } else if (protocol.current < minProtocolVersion || protocol.current > Number(LATEST_PLATFORM_VERSION)) {
+    // the protocol version of the network is learned from the verified responses, so nodes of any supported version are used
+    if (protocol.current < (minProtocolVersion ?? 1) || protocol.current > Number(LATEST_PLATFORM_VERSION)) {
       return false
     }
 
@@ -245,7 +242,8 @@ export default class GRPCConnectionPool implements GRPCPool {
     }
 
     this.#minProtocolVersion = minProtocolVersion
-    this.protocolVersion = minProtocolVersion ?? MIN_PROTOCOL_VERSION[network]
+    // nodes run at least `minProtocolVersion`, but the SDK never starts below the lowest version the network runs
+    this.protocolVersion = Math.max(minProtocolVersion ?? 0, MIN_PROTOCOL_VERSION[network])
     this.network = network
     this.#poolLimit = grpcOptions?.poolLimit ?? GRPC_DEFAULT_POOL_LIMIT
     this.#dapiUrl = grpcOptions?.dapiUrl
@@ -311,7 +309,7 @@ export default class GRPCConnectionPool implements GRPCPool {
     // fail the initialization, so it is retried on the next request
     if (dapiUrls.length === 0) {
       throw new Error(`None of the ${network} evonodes are available (${networkDAPIUrls.length} checked, ` +
-        `nodes must be synced and run protocol version ${this.#minProtocolVersion != null ? `${this.#minProtocolVersion}-` : ''}${Number(LATEST_PLATFORM_VERSION)})`)
+        `nodes must be synced and run protocol version ${this.#minProtocolVersion ?? 1}-${Number(LATEST_PLATFORM_VERSION)})`)
     }
 
     this.dapiUrls = dapiUrls.slice(0, this.#poolLimit)
