@@ -1,3 +1,4 @@
+import { base58 } from '@scure/base'
 import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 
 let sdk: DashPlatformSDK
@@ -107,5 +108,27 @@ describe('Node', () => {
         expect(member.isBanned).toEqual(expect.any(Boolean))
       }
     }
+  })
+
+  test('should be able to call getPathElements', async () => {
+    // root tree key of identity balances
+    const balancesKey = new Uint8Array([96])
+    const missingKey = new Uint8Array([255])
+
+    const rootElements = await sdk.node.getPathElements([], [balancesKey, missingKey])
+
+    // absence of the missing key is proven, but it is not returned
+    expect(rootElements.length).toEqual(1)
+    expect(rootElements[0].key).toEqual(balancesKey)
+    expect(rootElements[0].element?.type).toEqual('SumTree')
+    expect(rootElements[0].element?.sum).toEqual(expect.any(BigInt))
+
+    const identifier = 'QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv'
+
+    const [balanceElement] = await sdk.node.getPathElements([balancesKey], [base58.decode(identifier)])
+    const balance = await sdk.identities.getIdentityBalance(identifier)
+
+    expect(balanceElement.element?.type).toEqual('SumItem')
+    expect(balanceElement.element?.sum).toEqual(balance)
   })
 })

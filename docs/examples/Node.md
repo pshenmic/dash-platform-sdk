@@ -42,3 +42,22 @@ epochs.forEach(epoch => {
   console.log(epoch.feeMultiplier)  // BigInt permille
 })
 ```
+
+## Path Elements
+
+Returns GroveDB elements stored under the given keys of a path in the platform state, in key order.
+Keys with nothing stored under them are omitted (their absence is still proven). Always requested with proof, even if proofs are disabled
+
+```javascript
+const path = [new Uint8Array([96])] // path segments of the subtree (identity balances)
+const keys = [sdk.utils.base58ToBytes('QMfCRPcjXoTnZa9sA9JR2KWgGxZXMRJ4akgS3Uia1Qv')] // keys of the elements in the subtree
+
+const elements = await sdk.node.getPathElements(path, keys)
+
+elements.forEach(({ key, element }) => {
+  console.log(key) // Uint8Array
+  console.log(element?.type) // e.g. 'SumItem', 'Item', 'SumTree'
+  console.log(element?.value) // item payload or subtree root key
+  console.log(element?.sum, element?.count) // bigint, for sum / count bearing elements
+})
+```
