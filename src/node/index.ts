@@ -7,7 +7,8 @@ import getFinalizedEpochsInfo, { FinalizedEpochInfo } from './finalizedEpochInfo
 import getTotalCredits from './totalCredits.js'
 import getCurrentQuorumsInfo, { CurrentQuorumsInfo } from './getCurrentQuorumsInfo.js'
 import getProtocolVersion from './getProtocolVersion.js'
-import { PlatformVersionWASM } from 'pshenmic-dpp'
+import getPathElements from './getPathElements.js'
+import { PlatformVersionWASM, VerifiedPathElement } from 'pshenmic-dpp'
 
 /**
  * Node controller for requesting information about DAPI node
@@ -83,5 +84,19 @@ export class NodeController {
    */
   async getCurrentQuorumsInfo (): Promise<CurrentQuorumsInfo> {
     return await getCurrentQuorumsInfo(this.grpcPool)
+  }
+
+  /**
+   * Retrieves GroveDB elements stored under the given keys of a path in the platform state
+   * Returns the found elements in key order, keys with nothing stored under them are omitted (their absence is still proven).
+   * Always requested with proof, even if proofs are disabled
+   *
+   * @param path {Uint8Array[]} - path of the subtree, as a list of path segments
+   * @param keys {Uint8Array[]} - keys of the elements in the subtree
+   *
+   * @return {Promise<VerifiedPathElement[]>}
+   */
+  async getPathElements (path: Uint8Array[], keys: Uint8Array[]): Promise<VerifiedPathElement[]> {
+    return await getPathElements(this.grpcPool, this.quorumKeyProvider, path, keys)
   }
 }

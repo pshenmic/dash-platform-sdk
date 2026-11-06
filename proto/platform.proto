@@ -75,6 +75,8 @@ service Platform {
       returns (GetShieldedNotesCountResponse);
   rpc getShieldedNullifiers(GetShieldedNullifiersRequest)
       returns (GetShieldedNullifiersResponse);
+  rpc getPathElements(GetPathElementsRequest)
+      returns (GetPathElementsResponse);
 }
 
 message Proof {
@@ -1589,4 +1591,29 @@ message CanonicalVote {
     bytes block_id = 4;
     bytes state_id = 5;
     string chain_id = 99;
+}
+
+message GetPathElementsRequest {
+  message GetPathElementsRequestV0 {
+    repeated bytes path = 1;
+    repeated bytes keys = 2;
+    bool prove = 3;
+  }
+
+  oneof version { GetPathElementsRequestV0 v0 = 1; }
+}
+
+message GetPathElementsResponse {
+  message GetPathElementsResponseV0 {
+    message Elements { repeated bytes elements = 1; }
+
+    oneof result {
+      Elements elements = 1;
+
+      Proof proof = 2;
+    }
+    ResponseMetadata metadata = 3;
+  }
+
+  oneof version { GetPathElementsResponseV0 v0 = 1; }
 }
