@@ -1,6 +1,6 @@
 {
   "name": "dash-platform-sdk",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "main": "index.js",
   "description": "Lightweight SDK for accessing Dash Platform blockchain",
   "repository": {
@@ -16,7 +16,7 @@
     "defaults"
   ],
   "engines": {
-    "node": ">=20.19.0 <=24"
+    "node": ">=20.19.0 <=26"
   },
   "type": "module",
   "devDependencies": {
