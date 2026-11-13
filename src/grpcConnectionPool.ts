@@ -111,6 +111,13 @@ const HEALTHCHECK_TIMEOUT_MS = 5000
 // platform produces empty blocks every 3 minutes, so a healthy chain is never older than that
 const HEALTHCHECK_MAX_BLOCK_AGE_MS = 10 * 60 * 1000
 
+// Per-client concurrency × clients initializing at once is the instantaneous load on nodes,
+// so healthchecks run a small window at a time to avoid a fleet-wide request burst.
+const HEALTHCHECK_CONCURRENCY = 2
+// Init resolves at this many healthy nodes; seeds only bootstrap the pool and are replaced
+// by discovered validators, so they never stay in the long-lived pool.
+const HEALTHCHECK_MIN_HEALTHY_NODES = 2
+
 const isAbortError = (error: unknown): boolean => error instanceof Error && error.name === 'AbortError'
 
 // errors raised before the request is sent to the node, so it is always safe to send it to another node
@@ -272,47 +279,97 @@ export default class GRPCConnectionPool implements GRPCPool {
       return
     }
 
-    let quorumsInfo: CurrentQuorumsInfo | undefined
-    const errors: unknown[] = []
+    // Discovery runs in parallel with the bootstrap so it adds no latency, but is awaited
+    // so a failure still rejects init with "no peers" (the original contract).
+    const quorumsInfoPromise = (async (): Promise<CurrentQuorumsInfo> => {
+      const errors: unknown[] = []
 
-    for (const seed of seedNodes[network]) {
-      try {
-        quorumsInfo = await withTimeout(async abortController =>
-          await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed, abortController) }))
-
-        break
-      } catch (e) {
-        errors.push(e)
+      for (const seed of seedNodes[network]) {
+        try {
+          return await withTimeout(async abortController =>
+            await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed, abortController) }))
+        } catch (e) {
+          errors.push(e)
+        }
       }
-    }
 
-    if (quorumsInfo == null) {
       throw new AggregateError(errors, `None of the ${network} seed nodes are available: ${errors.map(String).join('; ')}`)
-    }
+    })()
 
-    // map it to array of dapiUrls
-    const networkDAPIUrls = shuffle([...new Set(quorumsInfo.validatorSets
-      .flatMap(validatorSet => validatorSet.members)
-      .filter(member => !member.isBanned)
-      .map(member => `https://${member.nodeIp}:${DAPI_PORTS[network]}`))])
+    // Bootstrap the pool from seeds, healthchecking a small window at a time so the
+    // instantaneous request rate stays low even when many clients initialize at once.
+    const seeds = shuffle(seedNodes[network])
+    const healthySeeds: string[] = []
+    let seedIndex = 0
 
-    // healthcheck nodes in parallel batches until the pool is full
-    const dapiUrls: string[] = []
+    // Resolve as soon as enough seeds are healthy, without waiting for a worker still
+    // probing a slow/dead seed: its 5s timeout must not stall initialization.
+    const bootstrapPromise = new Promise<void>((resolve, reject) => {
+      let running = HEALTHCHECK_CONCURRENCY
 
-    for (let i = 0; i < networkDAPIUrls.length && dapiUrls.length < this.#poolLimit; i += this.#poolLimit) {
-      const batch = networkDAPIUrls.slice(i, i + this.#poolLimit)
-      const healthy = await Promise.all(batch.map(async url => await isNodeHealthy(url, this.#minProtocolVersion)))
+      const checkSeed = async (): Promise<void> => {
+        while (seedIndex < seeds.length && healthySeeds.length < HEALTHCHECK_MIN_HEALTHY_NODES) {
+          const url = seeds[seedIndex++]
 
-      dapiUrls.push(...batch.filter((_, j) => healthy[j]))
-    }
+          if (await isNodeHealthy(url, this.#minProtocolVersion)) {
+            healthySeeds.push(url)
 
-    // fail the initialization, so it is retried on the next request
-    if (dapiUrls.length === 0) {
-      throw new Error(`None of the ${network} evonodes are available (${networkDAPIUrls.length} checked, ` +
-        `nodes must be synced and run protocol version ${this.#minProtocolVersion ?? 1}-${Number(LATEST_PLATFORM_VERSION)})`)
-    }
+            if (healthySeeds.length >= HEALTHCHECK_MIN_HEALTHY_NODES) {
+              resolve()
+              return
+            }
+          }
+        }
 
-    this.dapiUrls = dapiUrls.slice(0, this.#poolLimit)
+        if (--running === 0) {
+          if (healthySeeds.length === 0) {
+            reject(new Error(`None of the ${network} seed nodes are available ` +
+              `(nodes must be synced and run protocol version ${this.#minProtocolVersion ?? 1}-${Number(LATEST_PLATFORM_VERSION)})`))
+          } else {
+            resolve()
+          }
+        }
+      }
+
+      for (let i = 0; i < HEALTHCHECK_CONCURRENCY; i++) {
+        void checkSeed()
+      }
+    })
+
+    // Discovery failure fails initialization with "no peers", exactly as before.
+    const [, quorumsInfo] = await Promise.all([bootstrapPromise, quorumsInfoPromise])
+
+    this.dapiUrls = [...healthySeeds]
+
+    // Replace the bootstrap seeds with discovered validators in the background.
+    void (async () => {
+      const validators = shuffle([...new Set(quorumsInfo.validatorSets
+        .flatMap(validatorSet => validatorSet.members)
+        .filter(member => !member.isBanned)
+        .map(member => `https://${member.nodeIp}:${DAPI_PORTS[network]}`))])
+
+      const healthyValidators: string[] = []
+      let validatorIndex = 0
+
+      const checkValidator = async (): Promise<void> => {
+        while (validatorIndex < validators.length && healthyValidators.length < this.#poolLimit) {
+          const url = validators[validatorIndex++]
+
+          if (await isNodeHealthy(url, this.#minProtocolVersion)) {
+            healthyValidators.push(url)
+
+            // Evict the bootstrap seeds once enough validators are healthy.
+            if (healthyValidators.length >= HEALTHCHECK_MIN_HEALTHY_NODES) {
+              this.dapiUrls = healthyValidators.slice(0, this.#poolLimit)
+            }
+          }
+        }
+      }
+
+      await Promise.all(Array.from({ length: HEALTHCHECK_CONCURRENCY }, async () => await checkValidator()))
+    })().catch(() => {
+      // keep the bootstrap seeds if validator discovery or healthchecks fail
+    })
   }
 
   /**
