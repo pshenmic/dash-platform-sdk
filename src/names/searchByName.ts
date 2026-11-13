@@ -1,12 +1,11 @@
 import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js'
-import { DocumentWASM, WhereClause } from 'pshenmic-dpp'
+import {DataContractWASM, DocumentWASM, IdentifierLike, WhereClause} from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import query from '../documents/query.js'
 
-const DPNS_DATA_CONTRACT_ID = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec'
 
-export default async function search (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, name: string): Promise<DocumentWASM[]> {
+export default async function search (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, name: string, contract: IdentifierLike | DataContractWASM): Promise<DocumentWASM[]> {
   const [label, parentDomainName] = name.split('.')
 
   const normalizedParentDomainName = convertToHomographSafeChars(parentDomainName)
@@ -21,5 +20,5 @@ export default async function search (grpcPool: GRPCPool, quorumKeyProvider: Quo
     ['normalizedLabel', 'asc']
   ]
 
-  return await query(grpcPool, quorumKeyProvider, DPNS_DATA_CONTRACT_ID, 'domain', where, orderBy)
+  return await query(grpcPool, quorumKeyProvider, contract, 'domain', where, orderBy)
 }
