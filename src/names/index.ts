@@ -1,6 +1,13 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
-import { DocumentWASM, IdentifierLike, IdentifierWASM, PlatformVersionLike, PrivateKeyWASM } from 'pshenmic-dpp'
+import {
+  DataContractWASM,
+  DocumentWASM,
+  IdentifierLike,
+  IdentifierWASM,
+  PlatformVersionLike,
+  PrivateKeyWASM
+} from 'pshenmic-dpp'
 import searchByName from './searchByName.js'
 import searchByIdentity from './searchByIdentity.js'
 import registerName from './registerName.js'
@@ -8,6 +15,8 @@ import validateName from './validateName.js'
 import getIdentityByIdentifier from '../identities/getIdentityByIdentifier.js'
 import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js'
 import testNameContested from './testNameContested.js'
+import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
+import {DPNS_DATA_CONTRACT_ID} from "../constants.js";
 
 /**
  * Functions related to DPNS names (usernames)
@@ -19,6 +28,8 @@ export class NamesController {
   grpcPool: GRPCPool
   /** @ignore **/
   quorumKeyProvider: QuorumKeyProvider
+
+  private dataContract: DataContractWASM
 
   constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
     this.grpcPool = grpcPool
@@ -46,7 +57,9 @@ export class NamesController {
       throw new Error(validation)
     }
 
-    return await searchByName(this.grpcPool, this.quorumKeyProvider, name)
+    const contract = await this.getDataContract()
+
+    return await searchByName(this.grpcPool, this.quorumKeyProvider, name, contract)
   }
 
   /**
@@ -73,7 +86,9 @@ export class NamesController {
   }
 
   async searchByIdentity (identifier: IdentifierLike): Promise<DocumentWASM[]> {
-    return await searchByIdentity(this.grpcPool, this.quorumKeyProvider, new IdentifierWASM(identifier))
+    const contract = await this.getDataContract()
+
+    return await searchByIdentity(this.grpcPool, this.quorumKeyProvider, new IdentifierWASM(identifier), contract)
   }
 
   /**
@@ -124,5 +139,13 @@ export class NamesController {
    */
   validateName (fullName: string): null | string {
     return validateName(fullName)
+  }
+
+  private async getDataContract(): Promise<DataContractWASM> {
+    if(this.dataContract == null) {
+      this.dataContract = await getDataContractByIdentifier(this.grpcPool, this.quorumKeyProvider, DPNS_DATA_CONTRACT_ID)
+    }
+
+    return this.dataContract
   }
 }
