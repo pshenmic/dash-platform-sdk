@@ -56,7 +56,7 @@ describe('Document', () => {
 
     expect(document.createdAtBlockHeight).toEqual(undefined)
 
-    expect(document.dataContractId.base58()).toEqual(dataContract)
+    expect(document.dataContractId.base58()).toEqual(dataContract.id.base58())
     expect(document).toEqual(expect.any(DocumentWASM))
   })
 
