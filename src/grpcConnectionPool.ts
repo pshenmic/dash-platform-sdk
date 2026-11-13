@@ -111,6 +111,13 @@ const HEALTHCHECK_TIMEOUT_MS = 5000
 // platform produces empty blocks every 3 minutes, so a healthy chain is never older than that
 const HEALTHCHECK_MAX_BLOCK_AGE_MS = 10 * 60 * 1000
 
+// Per-client concurrency × clients initializing at once is the instantaneous load on nodes,
+// so healthchecks run a small window at a time to avoid a fleet-wide request burst.
+const HEALTHCHECK_CONCURRENCY = 2
+// Init resolves at this many healthy nodes; seeds only bootstrap the pool and are replaced
+// by discovered validators, so they never stay in the long-lived pool.
+const HEALTHCHECK_MIN_HEALTHY_NODES = 2
+
 const isAbortError = (error: unknown): boolean => error instanceof Error && error.name === 'AbortError'
 
 // errors raised before the request is sent to the node, so it is always safe to send it to another node
@@ -155,9 +162,11 @@ const withTimeout = async <T>(request: (abortController: AbortController) => Pro
   }
 }
 
-const isNodeHealthy = async (url: string, minProtocolVersion?: number): Promise<boolean> => {
+const isNodeHealthy = async (url: string, minProtocolVersion?: number, signal?: AbortSignal): Promise<boolean> => {
   try {
     const response = await withTimeout(async abortController => {
+      signal?.addEventListener('abort', () => abortController.abort())
+
       const { response } = await createClient(url, abortController).getStatus(GetStatusRequest.create({}))
 
       return response
@@ -272,47 +281,93 @@ export default class GRPCConnectionPool implements GRPCPool {
       return
     }
 
-    let quorumsInfo: CurrentQuorumsInfo | undefined
-    const errors: unknown[] = []
+    // Race all seeds for discovery; the first successful response wins and the losers are
+    // aborted. If every seed fails, init rejects with "no peers" (the original contract).
+    const quorumsInfoPromise = async (): Promise<CurrentQuorumsInfo> => {
+      const winner = new AbortController()
 
-    for (const seed of seedNodes[network]) {
       try {
-        quorumsInfo = await withTimeout(async abortController =>
-          await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed, abortController) }))
+        return await Promise.any(seedNodes[network].map(async seed =>
+          await withTimeout(async abortController => {
+            winner.signal.addEventListener('abort', () => abortController.abort())
 
-        break
+            return await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed, abortController) })
+          })))
       } catch (e) {
-        errors.push(e)
+        const errors = (e as AggregateError).errors
+        throw new AggregateError(errors, `None of the ${network} seed nodes are available: ${errors.map(String).join('; ')}`)
+      } finally {
+        winner.abort()
       }
     }
 
-    if (quorumsInfo == null) {
-      throw new AggregateError(errors, `None of the ${network} seed nodes are available: ${errors.map(String).join('; ')}`)
-    }
+    // Bootstrap the pool by racing all seed healthchecks; resolve at the first K healthy
+    // and abort the rest, so a slow/dead seed never stalls initialization.
+    const seeds = seedNodes[network]
+    const healthySeeds: string[] = []
 
-    // map it to array of dapiUrls
-    const networkDAPIUrls = shuffle([...new Set(quorumsInfo.validatorSets
-      .flatMap(validatorSet => validatorSet.members)
-      .filter(member => !member.isBanned)
-      .map(member => `https://${member.nodeIp}:${DAPI_PORTS[network]}`))])
+    const bootstrapPromise = new Promise<void>((resolve, reject) => {
+      const race = new AbortController()
+      let pending = seeds.length
 
-    // healthcheck nodes in parallel batches until the pool is full
-    const dapiUrls: string[] = []
+      seeds.forEach(seed => {
+        void isNodeHealthy(seed, this.#minProtocolVersion, race.signal).then(healthy => {
+          if (healthy) {
+            healthySeeds.push(seed)
 
-    for (let i = 0; i < networkDAPIUrls.length && dapiUrls.length < this.#poolLimit; i += this.#poolLimit) {
-      const batch = networkDAPIUrls.slice(i, i + this.#poolLimit)
-      const healthy = await Promise.all(batch.map(async url => await isNodeHealthy(url, this.#minProtocolVersion)))
+            if (healthySeeds.length >= HEALTHCHECK_MIN_HEALTHY_NODES) {
+              race.abort()
+              resolve()
+            }
+          }
 
-      dapiUrls.push(...batch.filter((_, j) => healthy[j]))
-    }
+          pending -= 1
+          if (pending === 0) {
+            if (healthySeeds.length === 0) {
+              reject(new Error(`None of the ${network} seed nodes are available ` +
+                `(nodes must be synced and run protocol version ${this.#minProtocolVersion ?? 1}-${Number(LATEST_PLATFORM_VERSION)})`))
+            } else {
+              resolve()
+            }
+          }
+        })
+      })
+    })
 
-    // fail the initialization, so it is retried on the next request
-    if (dapiUrls.length === 0) {
-      throw new Error(`None of the ${network} evonodes are available (${networkDAPIUrls.length} checked, ` +
-        `nodes must be synced and run protocol version ${this.#minProtocolVersion ?? 1}-${Number(LATEST_PLATFORM_VERSION)})`)
-    }
+    // Discovery failure fails initialization with "no peers", exactly as before.
+    const [, quorumsInfo] = await Promise.all([bootstrapPromise, quorumsInfoPromise()])
 
-    this.dapiUrls = dapiUrls.slice(0, this.#poolLimit)
+    this.dapiUrls = [...healthySeeds]
+
+    // Replace the bootstrap seeds with discovered validators in the background.
+    void (async () => {
+      const validators = shuffle([...new Set(quorumsInfo.validatorSets
+        .flatMap(validatorSet => validatorSet.members)
+        .filter(member => !member.isBanned)
+        .map(member => `https://${member.nodeIp}:${DAPI_PORTS[network]}`))])
+
+      const healthyValidators: string[] = []
+      let validatorIndex = 0
+
+      const checkValidator = async (): Promise<void> => {
+        while (validatorIndex < validators.length && healthyValidators.length < this.#poolLimit) {
+          const url = validators[validatorIndex++]
+
+          if (await isNodeHealthy(url, this.#minProtocolVersion)) {
+            healthyValidators.push(url)
+
+            // Evict the bootstrap seeds once enough validators are healthy.
+            if (healthyValidators.length >= HEALTHCHECK_MIN_HEALTHY_NODES) {
+              this.dapiUrls = healthyValidators.slice(0, this.#poolLimit)
+            }
+          }
+        }
+      }
+
+      await Promise.all(Array.from({ length: HEALTHCHECK_CONCURRENCY }, async () => await checkValidator()))
+    })().catch(() => {
+      // keep the bootstrap seeds if validator discovery or healthchecks fail
+    })
   }
 
   /**
