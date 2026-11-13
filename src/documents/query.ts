@@ -1,4 +1,11 @@
-import { DocumentWASM, IdentifierLike, IdentifierWASM, verifyDocumentsProof, WhereClause } from 'pshenmic-dpp'
+import {
+  DataContractWASM,
+  DocumentWASM,
+  IdentifierLike,
+  IdentifierWASM,
+  verifyDocumentsProof,
+  WhereClause
+} from 'pshenmic-dpp'
 import { DAPI_DEFAULT_LIMIT } from '../constants.js'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
@@ -9,21 +16,24 @@ import { createDocumentsV1Request, getDocumentsV1Data, getDocumentsV1Proof, toDo
 export default async function query (
   grpcPool: GRPCPool,
   quorumKeyProvider: QuorumKeyProvider,
-  dataContractId: IdentifierLike,
+  dataContractLike: IdentifierLike | DataContractWASM,
   documentTypeName: string,
   where?: WhereClause[],
   orderBy?: string[][],
   limit: number | undefined = 100,
   startAt?: IdentifierWASM,
   startAfter?: IdentifierWASM
+
 ): Promise<DocumentWASM[]> {
-  const dataContract = await getDataContractByIdentifier(grpcPool, quorumKeyProvider, dataContractId)
+  const dataContract = dataContractLike instanceof DataContractWASM
+    ? dataContractLike
+    : await getDataContractByIdentifier(grpcPool, quorumKeyProvider, dataContractLike)
 
   const startIdentifier = startAt ?? startAfter
   const startAtIncluded = startAt != null
 
   const request = createDocumentsV1Request({
-    dataContractId: (new IdentifierWASM(dataContractId)).bytes(),
+    dataContractId: dataContract.id.bytes(),
     documentType: documentTypeName,
     whereClauses: toWhereClauses(where),
     orderBy: toOrderClauses(orderBy),
