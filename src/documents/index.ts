@@ -4,7 +4,7 @@ import {
   AggregateDocumentsQuery,
   AggregateProofQuery,
   AgreedFeeMultiplierWASM,
-  CompositeSubQuery,
+  CompositeSubQuery, DataContractWASM,
   DocumentActionFeeAgreementWASM,
   DocumentsQuery,
   DocumentWASM, HavingClause, IdentifierLike,
@@ -65,7 +65,7 @@ export class DocumentsController {
   /**
    * Make a query for documents retrieval from the network.
    *
-   * @param dataContractId {IdentifierLike} Identifier of the Data Contract where fetch documents from
+   * @param dataContractLike {IdentifierLike | DataContractWASM} Identifier of the Data Contract where fetch documents from or Data contract instance
    * @param documentType {string} Document type of the data contract
    * @param where {object=} Where query clauses according syntax https://docs.dash.org/projects/platform/en/stable/docs/reference/query-syntax.html
    * @param orderBy {object=} Order by clauses according syntax https://docs.dash.org/projects/platform/en/stable/docs/reference/query-syntax.html
@@ -73,12 +73,12 @@ export class DocumentsController {
    * @param startAt {IdentifierLike=} Optional offset, where startAt is an identifier of the document. Use identifier of last item in previous response
    * @param startAfter {IdentifierLike=} Same as previous, but with exclusion. Cannot be set if startAt already provided
    */
-  async query (dataContractId: IdentifierLike, documentType: string, where?: WhereClause[], orderBy?: string[][], limit?: number, startAt?: IdentifierWASM, startAfter?: IdentifierWASM): Promise<DocumentWASM[]> {
+  async query (dataContractLike: IdentifierLike | DataContractWASM, documentType: string, where?: WhereClause[], orderBy?: string[][], limit?: number, startAt?: IdentifierWASM, startAfter?: IdentifierWASM): Promise<DocumentWASM[]> {
     if (startAfter != null && startAt != null) {
       throw new Error('You may only set either startAfter or startAt at once')
     }
 
-    return await query(this.grpcPool, this.quorumKeyProvider, new IdentifierWASM(dataContractId), documentType, where, orderBy, limit ?? 100, startAt, startAfter)
+    return await query(this.grpcPool, this.quorumKeyProvider, dataContractLike, documentType, where, orderBy, limit ?? 100, startAt, startAfter)
   }
 
   /**

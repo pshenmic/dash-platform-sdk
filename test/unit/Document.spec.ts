@@ -47,6 +47,19 @@ describe('Document', () => {
     expect(document).toEqual(expect.any(DocumentWASM))
   })
 
+  test('should be able to get documents with data contract instance', async () => {
+    const dataContract = await sdk.dataContracts.getDataContractByIdentifier('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec')
+    const documentType = 'domain'
+
+
+    const [document] = await sdk.documents.query(dataContract, documentType)
+
+    expect(document.createdAtBlockHeight).toEqual(undefined)
+
+    expect(document.dataContractId.base58()).toEqual(dataContract.id.base58())
+    expect(document).toEqual(expect.any(DocumentWASM))
+  })
+
   test('should be able to get document', async () => {
     const dataContract = '6hVQW16jyvZyGSQk2YVty4ND6bgFXozizYWnPt753uW5'
     const documentType = 'torrent'
