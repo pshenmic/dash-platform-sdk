@@ -20,6 +20,12 @@ export type { GRPCOptions, GRPCPool, QuorumKeyProvider }
 export interface SDKOptions {
   network: Network
   grpc?: GRPCOptions
+  /**
+   * Deadline of a single request attempt in milliseconds, the request is aborted and retried on another node when it expires.
+   * Shorthand for `grpc.requestTimeout`, which takes precedence. Streams and long-polling requests are not limited by it.
+   * Default is 10 seconds
+   */
+  requestTimeout?: number
   /** Custom source of quorum public keys for proof verification, Platform Explorer is used if not set **/
   quorumKeyProvider?: QuorumKeyProvider
   /**
@@ -86,7 +92,10 @@ export class DashPlatformSDK {
       throw new Error(`Custom GRPC pool network (${customPool.network}) does not match SDK network (${this.network})`)
     }
 
-    this._initialize(customPool ?? new GRPCConnectionPool(this.network, this.options?.grpc))
+    this._initialize(customPool ?? new GRPCConnectionPool(this.network, {
+      ...this.options?.grpc,
+      requestTimeout: this.options?.grpc?.requestTimeout ?? this.options?.requestTimeout
+    }))
   }
 
   /**
@@ -148,7 +157,10 @@ export class DashPlatformSDK {
 
     this.network = network
 
-    this._initialize(customPool ?? new GRPCConnectionPool(this.network, this.options?.grpc))
+    this._initialize(customPool ?? new GRPCConnectionPool(this.network, {
+      ...this.options?.grpc,
+      requestTimeout: this.options?.grpc?.requestTimeout ?? this.options?.requestTimeout
+    }))
   }
 
   /**
