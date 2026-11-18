@@ -14,6 +14,8 @@ import { Network } from '../types.js'
 import { PlatformAddressesController } from './platformAddresses/index.js'
 import { ShieldedController } from './shielded/index.js'
 import { PlatformExplorerQuorumKeyProvider, QuorumKeyProvider } from './quorumKeyProvider.js'
+import { setShielded } from 'pshenmic-dpp'
+import type { ShieldedProtocol } from 'pshenmic-dpp'
 
 export type { GRPCOptions, GRPCPool, QuorumKeyProvider }
 
@@ -36,6 +38,9 @@ export interface SDKOptions {
   proofs?: boolean
   /** @deprecated Use {GRPCOptions} instead, will be removed in next major version **/
   dapiUrl?: string | string[]
+
+  /**Instance of dash-platform-shielded module **/
+  shielded?: ShieldedProtocol
 }
 
 /**
@@ -73,6 +78,10 @@ export class DashPlatformSDK {
   constructor (options?: SDKOptions) {
     if (options != null && (options.network == null || !['testnet', 'mainnet'].includes(options.network))) {
       throw new Error('If options is passed, network must be set (either mainnet or testnet)')
+    }
+
+    if(options?.shielded) {
+      setShielded(options.shielded)
     }
 
     this.network = options?.network ?? 'mainnet'

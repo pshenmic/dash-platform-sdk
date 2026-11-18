@@ -41,7 +41,8 @@
     "ts-standard": "^12.0.2",
     "tsx": "^4.20.5",
     "typedoc": "^0.28.7",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "dash-platform-shielded": "https://github.com/owl352/dash-platform-shielded#433dd3dd117296c9ffe769092e641ea90c6baf80"
   },
   "scripts": {
     "build": "tsc && rollup -c rollup.config.js",
@@ -59,6 +60,6 @@
     "@scure/bip32": "^2.0.0",
     "@scure/bip39": "^2.0.0",
     "@scure/btc-signer": "^2.0.1",
-    "pshenmic-dpp": "2.0.1-dev.6"
+    "pshenmic-dpp": "https://github.com/owl352/pshenmic-dpp#b47decf83dd93effedae4c5bbfadcf245d4f5d52"
   }
 }

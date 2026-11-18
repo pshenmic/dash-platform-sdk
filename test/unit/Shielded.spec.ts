@@ -18,6 +18,7 @@ import {
 } from 'pshenmic-dpp'
 import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 import { IdentityPublicKeyInCreation } from '../../types.js'
+import {shielded} from 'dash-platform-shielded'
 
 let sdk: DashPlatformSDK
 
@@ -69,7 +70,9 @@ function makeSpendableNote (seed: Uint8Array, value: bigint): {
 
 describe('Shielded', () => {
   beforeAll(async () => {
-    sdk = new DashPlatformSDK({ network: 'testnet' })
+
+    sdk = new DashPlatformSDK({ network: 'testnet', shielded })
+
     await sdk.shielded.init()
   }, 60000)
 
