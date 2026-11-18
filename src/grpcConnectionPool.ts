@@ -80,29 +80,15 @@ const seedNodes = {
     // seed-1.pshenmic.dev
     'https://153.80.206.232:1443',
     // DCG seed
-    'https://34.209.12.72:1443',
-    // Testnet validators (hp-masternode-1 -> hp-masternode-15)
-    'https://68.67.122.1:1443',
-    'https://68.67.122.2:1443',
-    'https://68.67.122.3:1443',
-    'https://68.67.122.4:1443',
-    'https://68.67.122.5:1443',
-    'https://68.67.122.6:1443',
-    'https://68.67.122.7:1443',
-    'https://68.67.122.8:1443',
-    'https://68.67.122.9:1443',
-    'https://68.67.122.10:1443',
-    'https://68.67.122.11:1443',
-    'https://68.67.122.12:1443',
-    'https://68.67.122.13:1443',
-    'https://68.67.122.14:1443',
-    'https://68.67.122.15:1443'
+    'https://seed-1.testnet.networks.dash.org:1443',
+    // Testnet validator
+    'https://68.67.122.1:1443'
   ],
   mainnet: [
     // seed-1.pshenmic.dev
     'https://153.80.206.97:443',
     // DCG seed
-    'https://34.211.174.194:443',
+    'https://seed-1.mainnet.networks.dash.org:443',
     // validator
     'https://95.216.146.18:443'
   ]
@@ -279,6 +265,8 @@ export default class GRPCConnectionPool implements GRPCPool {
   #nodeIndex = 0
   #initialization?: Promise<void>
   #discoveryScheduled = false
+  // Known seeds that are not in the active pool yet, used only when the active nodes fail
+  #fallbackUrls: string[] = []
   // ban state of nodes that failed with a retryable error, banned nodes are skipped on node selection
   #bans = new Map<string, { bannedTimes: number, bannedUntil: number }>()
   // node that served (or is serving) the request of the client
@@ -335,16 +323,22 @@ export default class GRPCConnectionPool implements GRPCPool {
       return
     }
 
-    // Check a small window of seeds instead of all of them. The first two healthy nodes are
-    // enough to serve the first parallel batch; validators are discovered in the background.
+    // Start with the primary seed right away. The first request doubles as the healthcheck and
+    // failing nodes are retried from the fallback list below, so init never waits for a network
+    // round trip. Healthy seeds are appended in the background to give the pool some fan-out.
     const seeds = [seedNodes[network][0], ...shuffle(seedNodes[network].slice(1))]
-    const healthySeeds = await this.#bootstrapSeeds(seeds.slice(0, BOOTSTRAP_SEED_COUNT))
+    this.dapiUrls = [seeds[0]]
+    this.#fallbackUrls = seeds.slice(1)
 
-    // A single bootstrap node has no failover, so only use the checked seeds when at least two
-    // are healthy. Otherwise keep them in front and fall back to the full seed list.
-    this.dapiUrls = healthySeeds.length >= BOOTSTRAP_MIN_HEALTHY
-      ? healthySeeds
-      : [...new Set([...healthySeeds, ...seeds])]
+    void this.#bootstrapSeeds(seeds.slice(0, BOOTSTRAP_SEED_COUNT)).then(healthySeeds => {
+      for (const url of healthySeeds) {
+        if (!this.dapiUrls.includes(url)) {
+          this.dapiUrls.push(url)
+        }
+      }
+    }).catch(() => {
+      // keep serving from the primary seed and the fallback list
+    })
   }
 
   /**
@@ -562,7 +556,7 @@ export default class GRPCConnectionPool implements GRPCPool {
 
   #ban (url: string): void {
     // a single node is never banned, otherwise the pool would have no nodes to send requests to
-    if (this.dapiUrls.length <= 1) {
+    if (this.dapiUrls.length + this.#fallbackUrls.length <= 1) {
       return
     }
 
@@ -592,6 +586,16 @@ export default class GRPCConnectionPool implements GRPCPool {
       if (!exclude.includes(url) && !this.#isBanned(url)) {
         return url
       }
+    }
+
+    // Every active node is banned or already tried: promote a fallback seed into the pool.
+    // This keeps the first batch on the primary node while preserving failover.
+    const fallback = this.#fallbackUrls.find(url => !exclude.includes(url) && !this.#isBanned(url))
+
+    if (fallback != null) {
+      this.#fallbackUrls = this.#fallbackUrls.filter(url => url !== fallback)
+      this.dapiUrls.push(fallback)
+      return fallback
     }
 
     return undefined
