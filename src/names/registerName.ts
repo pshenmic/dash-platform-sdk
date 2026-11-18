@@ -2,7 +2,6 @@ import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js
 import {
   IdentityWASM,
   PlatformVersionLike,
-  PlatformVersionWASM,
   PrefundedVotingBalanceWASM,
   PrivateKeyWASM
 } from 'pshenmic-dpp'
