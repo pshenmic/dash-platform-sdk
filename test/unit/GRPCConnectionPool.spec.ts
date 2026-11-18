@@ -22,6 +22,23 @@ jest.mock('../../proto/generated/platform.client.js', () => ({
       this.fetch = transport.options.fetch
       this.signal = transport.options.abort
     }
+
+    async getStatus (): Promise<{ response: Record<string, unknown> }> {
+      await this.fetch(`${this.url}/org.dash.platform.dapi.v0.Platform/getStatus`)
+
+      return {
+        response: {
+          version: {
+            oneofKind: 'v0',
+            v0: {
+              version: { protocol: { drive: { current: 14 } } },
+              chain: { catchingUp: false },
+              time: { local: BigInt(Math.floor(Date.now() / 1000)), block: BigInt(Date.now() - 1000) }
+            }
+          }
+        }
+      }
+    }
   }
 }))
 
@@ -40,6 +57,20 @@ const STREAM_PATH = '/org.dash.platform.dapi.v0.Platform/subscribeToBlockHeaders
 const LONG_POLL_PATH = '/org.dash.platform.dapi.v0.Platform/waitForStateTransitionResult'
 
 const OK_RESPONSE = { ok: true } as unknown as Response
+
+const TESTNET_SEED_A = 'https://153.80.206.232:1443'
+
+const waitFor = async (condition: () => boolean): Promise<void> => {
+  for (let i = 0; i < 100; i++) {
+    if (condition()) {
+      return
+    }
+
+    await new Promise(resolve => setImmediate(resolve))
+  }
+
+  throw new Error('Condition was not met')
+}
 
 const abortError = (): Error => Object.assign(new Error('The operation was aborted'), { name: 'AbortError' })
 
@@ -83,6 +114,46 @@ describe('GRPCConnectionPool', () => {
       const client = await pool.getClient(abortController) as unknown as MockClient
 
       expect(client.signal).toBe(abortController.signal)
+    })
+  })
+
+  describe('seed bootstrap', () => {
+    it('should resolve immediately with the primary seed and healthcheck in the background', async () => {
+      let release: () => void = () => {}
+      const gate = new Promise<Response>(resolve => { release = () => resolve(OK_RESPONSE) })
+      fetchSpy.mockImplementation(async () => await gate)
+
+      const pool = new GRPCConnectionPool('testnet')
+      await pool.getClient()
+
+      // no waiting for a healthcheck: the first request can start right away
+      expect(pool.dapiUrls).toEqual([TESTNET_SEED_A])
+      expect(fetchSpy).toHaveBeenCalled()
+
+      release()
+      await waitFor(() => pool.dapiUrls.length >= 2)
+      expect(pool.dapiUrls[0]).toBe(TESTNET_SEED_A)
+    })
+
+    it('should promote a fallback seed when the active node is banned', async () => {
+      let release: () => void = () => {}
+      const gate = new Promise<Response>(resolve => { release = () => resolve(OK_RESPONSE) })
+      fetchSpy.mockImplementation(async () => await gate)
+
+      const pool = new GRPCConnectionPool('testnet')
+      const client = await pool.getClient()
+
+      expect(pool.dapiUrls).toEqual([TESTNET_SEED_A])
+
+      pool.banNode(client)
+
+      const next = await pool.getClient() as unknown as MockClient
+
+      expect(next.url).not.toBe(TESTNET_SEED_A)
+      expect(pool.dapiUrls).toContain(next.url)
+
+      release()
+      await new Promise(resolve => setImmediate(resolve))
     })
   })
 
