@@ -95,20 +95,13 @@ export default async function registerName (grpcPool: GRPCPool, quorumKeyProvide
       }
     }
 
-    // extract number from string with platform version data
-    // "platform_v14" -> 14
-    // "14" -> 14
-    const protocolVersion = Number(
-      String(documentPlatformVersion).match(/\d+$/)?.[0]
-    )
-
     const domainDocument = createDocument(DPNS_DATA_CONTRACT_ID, 'domain', domainData, identity.id.base58(), domainNonce, undefined, undefined, documentPlatformVersion)
     const domainStateTransition = createStateTransition(domainDocument, 'create', {
       identityContractNonce: domainNonce,
       // @ts-expect-error
       prefundedVotingBalance:
         testNameContested(normalizedLabel)
-          ? new PrefundedVotingBalanceWASM('parentNameAndLabel', protocolVersion >= PlatformVersionWASM.PLATFORM_V14 ? 10_000_000_000n : 20_000_000_000n)
+          ? new PrefundedVotingBalanceWASM('parentNameAndLabel', 10_000_000_000n)
           : undefined
     })
     await domainStateTransition.sign(privateKey, identityPublicKey)
