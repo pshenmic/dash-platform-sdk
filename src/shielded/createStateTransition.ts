@@ -7,6 +7,11 @@ import {
 import { IdentityCreateFromShieldedPoolParams, ShieldedTransitionParamsMap, ShieldedTransitionType } from '../../types.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
+// Arguments the builder takes by position and accepts as undefined. They sit in the
+// middle of the token signatures, so an omitted one is passed through as undefined
+// instead of being left off the end of the call.
+const NULLABLE_ARGUMENTS = new Set(['senderOvk', 'publicNote', 'usingGroupInfo', 'claimUpTo'])
+
 const shieldedTransitionsMap = {
   shield: {
     method: ShieldedBuilderWASM.prototype.shield,
@@ -42,6 +47,56 @@ const shieldedTransitionsMap = {
     method: ShieldedBuilderWASM.prototype.identityCreateFromShieldedPool,
     arguments: ['publicKeys', 'privateKeys', 'denomination', 'sendToAddressOnCreationFailure', 'spends', 'changeAddress', 'seed', 'coinType', 'account', 'anchor', 'memo'],
     optionalArguments: []
+  },
+  tokenShield: {
+    method: ShieldedBuilderWASM.prototype.tokenShield,
+    arguments: ['tokenId', 'ownerId', 'dataContractId', 'tokenContractPosition', 'recipient', 'amount', 'memo', 'senderOvk', 'identityPublicKey', 'privateKey', 'identityContractNonce', 'userFeeIncrease'],
+    optionalArguments: []
+  },
+  tokenUnshield: {
+    method: ShieldedBuilderWASM.prototype.tokenUnshield,
+    arguments: ['tokenId', 'ownerId', 'dataContractId', 'tokenContractPosition', 'spends', 'recipientId', 'amount', 'changeAddress', 'seed', 'coinType', 'account', 'anchor', 'memo', 'identityPublicKey', 'privateKey', 'identityContractNonce', 'userFeeIncrease'],
+    optionalArguments: []
+  },
+  tokenShieldedTransfer: {
+    method: ShieldedBuilderWASM.prototype.tokenShieldedTransfer,
+    arguments: ['tokenId', 'ownerId', 'dataContractId', 'tokenContractPosition', 'spends', 'recipient', 'transferAmount', 'changeAddress', 'seed', 'coinType', 'account', 'anchor', 'memo', 'identityPublicKey', 'privateKey', 'identityContractNonce', 'userFeeIncrease'],
+    optionalArguments: []
+  },
+  tokenMintToPool: {
+    method: ShieldedBuilderWASM.prototype.tokenMintToPool,
+    arguments: ['tokenId', 'ownerId', 'dataContractId', 'tokenContractPosition', 'recipient', 'amount', 'memo', 'senderOvk', 'publicNote', 'usingGroupInfo', 'identityPublicKey', 'privateKey', 'identityContractNonce', 'userFeeIncrease'],
+    optionalArguments: []
+  },
+  tokenBurnFromPool: {
+    method: ShieldedBuilderWASM.prototype.tokenBurnFromPool,
+    arguments: ['tokenId', 'ownerId', 'dataContractId', 'tokenContractPosition', 'spends', 'amount', 'changeAddress', 'seed', 'coinType', 'account', 'anchor', 'memo', 'publicNote', 'usingGroupInfo', 'identityPublicKey', 'privateKey', 'identityContractNonce', 'userFeeIncrease'],
+    optionalArguments: []
+  },
+  tokenClaimToPool: {
+    method: ShieldedBuilderWASM.prototype.tokenClaimToPool,
+    arguments: ['tokenId', 'ownerId', 'dataContractId', 'tokenContractPosition', 'recipient', 'amount', 'distributionType', 'claimUpTo', 'memo', 'senderOvk', 'publicNote', 'identityPublicKey', 'privateKey', 'identityContractNonce', 'userFeeIncrease'],
+    optionalArguments: []
+  },
+  tokenDirectPurchaseToPool: {
+    method: ShieldedBuilderWASM.prototype.tokenDirectPurchaseToPool,
+    arguments: ['tokenId', 'ownerId', 'dataContractId', 'tokenContractPosition', 'recipient', 'tokenCount', 'totalAgreedPrice', 'memo', 'senderOvk', 'identityPublicKey', 'privateKey', 'identityContractNonce', 'userFeeIncrease'],
+    optionalArguments: []
+  },
+  tokenShieldedTransferWithShieldedFee: {
+    method: ShieldedBuilderWASM.prototype.tokenShieldedTransferWithShieldedFee,
+    arguments: ['tokenId', 'dataContractId', 'tokenContractPosition', 'tokenSpends', 'tokenChangeAddress', 'tokenAnchor', 'recipient', 'transferAmount', 'feeSpends', 'feeChangeAddress', 'feeAnchor', 'seed', 'coinType', 'account', 'memo'],
+    optionalArguments: []
+  },
+  tokenUnshieldWithShieldedFee: {
+    method: ShieldedBuilderWASM.prototype.tokenUnshieldWithShieldedFee,
+    arguments: ['tokenId', 'dataContractId', 'tokenContractPosition', 'tokenSpends', 'tokenChangeAddress', 'tokenAnchor', 'recipientId', 'amount', 'feeSpends', 'feeChangeAddress', 'feeAnchor', 'seed', 'coinType', 'account', 'memo'],
+    optionalArguments: []
+  },
+  tokenPurchaseFromShieldedPool: {
+    method: ShieldedBuilderWASM.prototype.tokenPurchaseFromShieldedPool,
+    arguments: ['tokenId', 'dataContractId', 'tokenContractPosition', 'recipient', 'tokenCount', 'totalAgreedPrice', 'feeSpends', 'feeChangeAddress', 'feeAnchor', 'seed', 'coinType', 'account', 'memo'],
+    optionalArguments: []
   }
 }
 
@@ -57,6 +112,7 @@ export default async function createStateTransition<K extends ShieldedTransition
   }
 
   const [missingArgument] = classArguments
+    .filter((classArgument: string) => !NULLABLE_ARGUMENTS.has(classArgument))
     .filter((classArgument: string) => params[classArgument as keyof ShieldedTransitionParamsMap[K]] == null)
 
   if (missingArgument != null) {

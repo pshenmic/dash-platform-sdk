@@ -220,7 +220,9 @@ export class ShieldedController {
 
   /**
    * Helper function for building and proving shielded (Orchard) transitions.
-   * It may be used to create any of 7 shielded transition actions:
+   * It may be used to create any of 17 shielded transition actions.
+   *
+   * Credit pool:
    *
    * 1) shield - transparent platform addresses -> pool (deposit)
    * 2) shieldFromAssetLock - asset lock -> pool (deposit)
@@ -230,9 +232,28 @@ export class ShieldedController {
    * 6) shieldedTransferMulti - pool -> pool, several recipients, each with its own memo (spend)
    * 7) identityCreateFromShieldedPool - pool -> new identity (spend)
    *
-   * Spends require a {SpendableNoteWASM} witnessed against an on-chain anchor.
+   * Token pool of a data contract, signed by the owner identity:
    *
-   * @param type {string} Type of the shielded transition, must be one of ('shield' | 'shieldFromAssetLock' | 'shieldedWithdrawal' | 'unshield' | 'shieldedTransfer' | 'shieldedTransferMulti' | 'identityCreateFromShieldedPool')
+   * 8) tokenShield - owner token balance -> token pool (deposit)
+   * 9) tokenUnshield - token pool -> a token balance (spend)
+   * 10) tokenShieldedTransfer - token pool -> token pool (spend)
+   * 11) tokenMintToPool - newly minted tokens -> token pool
+   * 12) tokenBurnFromPool - tokens burned out of the token pool (spend)
+   * 13) tokenClaimToPool - a claimed token distribution -> token pool
+   * 14) tokenDirectPurchaseToPool - tokens bought at their direct purchase price -> token pool
+   *
+   * Token pool of a data contract, fee paid from the credit pool, no identity signs:
+   *
+   * 15) tokenShieldedTransferWithShieldedFee - token pool -> token pool (spend)
+   * 16) tokenUnshieldWithShieldedFee - token pool -> a token balance (spend)
+   * 17) tokenPurchaseFromShieldedPool - tokens bought at their direct purchase price -> token pool
+   *
+   * Spends require a {SpendableNoteWASM} witnessed against an on-chain anchor. A token
+   * spend is witnessed against the token pool anchor, which {@link getMostRecentShieldedAnchor}
+   * returns for the token id, and the actions of 15-17 spend token and credit notes at once,
+   * each against its own pool anchor.
+   *
+   * @param type {string} Type of the shielded transition, must be one of ('shield' | 'shieldFromAssetLock' | 'shieldedWithdrawal' | 'unshield' | 'shieldedTransfer' | 'shieldedTransferMulti' | 'identityCreateFromShieldedPool' | 'tokenShield' | 'tokenUnshield' | 'tokenShieldedTransfer' | 'tokenMintToPool' | 'tokenBurnFromPool' | 'tokenClaimToPool' | 'tokenDirectPurchaseToPool' | 'tokenShieldedTransferWithShieldedFee' | 'tokenUnshieldWithShieldedFee' | 'tokenPurchaseFromShieldedPool')
    * @param params {ShieldedTransitionParams} params
    *
    * @return {StateTransitionWASM}
