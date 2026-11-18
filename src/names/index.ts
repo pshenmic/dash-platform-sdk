@@ -93,7 +93,8 @@ export class NamesController {
 
   /**
    * Performs a DPNS name registration sequence
-   * Contested names are include additional fee of 0.2 Dash
+   * Contested names include an additional fee of 0.1 Dash on protocol v14+,
+   * or 0.2 Dash on earlier protocol versions.
    * Check your name is contested with .testNameContested(name) method to check if additional fee will be charged
    *
    * @param name {string} username (ex. pshenmic.dash)

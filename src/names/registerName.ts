@@ -1,5 +1,10 @@
 import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js'
-import { IdentityWASM, PlatformVersionLike, PrefundedVotingBalanceWASM, PrivateKeyWASM } from 'pshenmic-dpp'
+import {
+  IdentityWASM,
+  PlatformVersionLike,
+  PrefundedVotingBalanceWASM,
+  PrivateKeyWASM
+} from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import getRandomBytes from '../utils/getRandomBytes.js'
@@ -93,7 +98,10 @@ export default async function registerName (grpcPool: GRPCPool, quorumKeyProvide
     const domainStateTransition = createStateTransition(domainDocument, 'create', {
       identityContractNonce: domainNonce,
       // @ts-expect-error
-      prefundedVotingBalance: testNameContested(normalizedLabel) ? new PrefundedVotingBalanceWASM('parentNameAndLabel', BigInt(20000000000)) : undefined
+      prefundedVotingBalance:
+        testNameContested(normalizedLabel)
+          ? new PrefundedVotingBalanceWASM('parentNameAndLabel', 10_000_000_000n)
+          : undefined
     })
     await domainStateTransition.sign(privateKey, identityPublicKey)
 
