@@ -113,16 +113,34 @@ const DAPI_PORTS = {
   mainnet: 443
 }
 
-const HEALTHCHECK_TIMEOUT_MS = 5000
+// Initialization is optimistic: the seeds are used right away and the first real request is the
+// healthcheck. A failed node is banned and the request is retried on another one by the fetch
+// wrapper, so there is no need to probe every seed before serving a query.
+//
+// Validator discovery runs in small waves after the first successful request, so it never delays
+// or competes with the first queries. Discovered validators are still healthchecked before they
+// replace the seeds, so the long-lived pool does not fill up with slow or lagging nodes.
+const SEED_DISCOVERY_BATCH = 4
+const SEED_DISCOVERY_WAVES = 2
+const SEED_DISCOVERY_TIMEOUT_MS = 3000
+const SEED_DISCOVERY_DELAY_MS = 2500
+
+// Only a handful of seeds is checked before the first request. Resolving at the first two
+// healthy nodes keeps the initial pool small and known-good, instead of spraying the first
+// parallel batch over every seed (including dead or slow ones).
+const BOOTSTRAP_SEED_COUNT = 6
+const BOOTSTRAP_TIMEOUT_MS = 2500
+const BOOTSTRAP_MIN_HEALTHY = 2
+
+const VALIDATOR_CHECK_TIMEOUT_MS = 5000
 // platform produces empty blocks every 3 minutes, so a healthy chain is never older than that
-const HEALTHCHECK_MAX_BLOCK_AGE_MS = 10 * 60 * 1000
+const VALIDATOR_CHECK_MAX_BLOCK_AGE_MS = 10 * 60 * 1000
 
 // Per-client concurrency × clients initializing at once is the instantaneous load on nodes,
 // so healthchecks run a small window at a time to avoid a fleet-wide request burst.
-const HEALTHCHECK_CONCURRENCY = 2
-// Init resolves at this many healthy nodes; seeds only bootstrap the pool and are replaced
-// by discovered validators, so they never stay in the long-lived pool.
-const HEALTHCHECK_MIN_HEALTHY_NODES = 2
+const VALIDATOR_CHECK_CONCURRENCY = 2
+// The pool keeps serving requests with the seeds until this many validators are healthy.
+const VALIDATOR_CHECK_MIN_HEALTHY = 2
 
 const isAbortError = (error: unknown): boolean => error instanceof Error && error.name === 'AbortError'
 
@@ -157,18 +175,39 @@ export const createClient = (url: string, abortController?: AbortController, fet
 /**
  * Runs a request with an AbortController that is aborted after the given timeout
  */
-const withTimeout = async <T>(request: (abortController: AbortController) => Promise<T>, timeoutMs = HEALTHCHECK_TIMEOUT_MS): Promise<T> => {
+const withTimeout = async <T>(request: (abortController: AbortController) => Promise<T>, timeoutMs = SEED_DISCOVERY_TIMEOUT_MS): Promise<T> => {
   const abortController = new AbortController()
-  const timeout = setTimeout(() => abortController.abort(), timeoutMs)
+  let timeout: ReturnType<typeof setTimeout> | undefined
 
   try {
-    return await request(abortController)
+    // Race with a rejection as well: aborting a fetch is not guaranteed to settle the
+    // promise, e.g. while the TLS handshake is stuck, and init must never hang.
+    return await Promise.race([
+      request(abortController),
+      new Promise<never>((_resolve, reject) => {
+        timeout = setTimeout(() => {
+          abortController.abort()
+          reject(new Error(`Request timed out after ${timeoutMs}ms`))
+        }, timeoutMs)
+      })
+    ])
   } finally {
-    clearTimeout(timeout)
+    if (timeout != null) {
+      clearTimeout(timeout)
+    }
   }
 }
 
-const isNodeHealthy = async (url: string, minProtocolVersion?: number, signal?: AbortSignal): Promise<boolean> => {
+/**
+ * Runs the callback after a short delay, without blocking the first requests.
+ * A timer is used (instead of requestIdleCallback) so discovery still happens when the
+ * page keeps making requests and never goes idle.
+ */
+const later = (callback: () => void): void => {
+  setTimeout(callback, SEED_DISCOVERY_DELAY_MS)
+}
+
+const isNodeHealthy = async (url: string, minProtocolVersion?: number, signal?: AbortSignal, timeoutMs = VALIDATOR_CHECK_TIMEOUT_MS): Promise<boolean> => {
   try {
     const response = await withTimeout(async abortController => {
       signal?.addEventListener('abort', () => abortController.abort())
@@ -176,7 +215,7 @@ const isNodeHealthy = async (url: string, minProtocolVersion?: number, signal?: 
       const { response } = await createClient(url, abortController).getStatus(GetStatusRequest.create({}))
 
       return response
-    })
+    }, timeoutMs)
 
     if (response.version.oneofKind !== 'v0') {
       return false
@@ -204,7 +243,7 @@ const isNodeHealthy = async (url: string, minProtocolVersion?: number, signal?: 
 
     // chain is stalled, last block is too old relative to the node's own clock
     // (local time is in seconds, block time is in milliseconds)
-    if (time?.block == null || Number(time.local) * 1000 - Number(time.block) > HEALTHCHECK_MAX_BLOCK_AGE_MS) {
+    if (time?.block == null || Number(time.local) * 1000 - Number(time.block) > VALIDATOR_CHECK_MAX_BLOCK_AGE_MS) {
       return false
     }
 
@@ -239,6 +278,7 @@ export default class GRPCConnectionPool implements GRPCPool {
   protocolVersion: number
   #nodeIndex = 0
   #initialization?: Promise<void>
+  #discoveryScheduled = false
   // ban state of nodes that failed with a retryable error, banned nodes are skipped on node selection
   #bans = new Map<string, { bannedTimes: number, bannedUntil: number }>()
   // node that served (or is serving) the request of the client
@@ -295,93 +335,168 @@ export default class GRPCConnectionPool implements GRPCPool {
       return
     }
 
-    // Race all seeds for discovery; the first successful response wins and the losers are
-    // aborted. If every seed fails, init rejects with "no peers" (the original contract).
-    const quorumsInfoPromise = async (): Promise<CurrentQuorumsInfo> => {
+    // Check a small window of seeds instead of all of them. The first two healthy nodes are
+    // enough to serve the first parallel batch; validators are discovered in the background.
+    const seeds = [seedNodes[network][0], ...shuffle(seedNodes[network].slice(1))]
+    const healthySeeds = await this.#bootstrapSeeds(seeds.slice(0, BOOTSTRAP_SEED_COUNT))
+
+    // A single bootstrap node has no failover, so only use the checked seeds when at least two
+    // are healthy. Otherwise keep them in front and fall back to the full seed list.
+    this.dapiUrls = healthySeeds.length >= BOOTSTRAP_MIN_HEALTHY
+      ? healthySeeds
+      : [...new Set([...healthySeeds, ...seeds])]
+  }
+
+  /**
+   * Races a small set of seeds and resolves at the first two healthy ones.
+   * A slow seed cannot hold initialization: the race aborts as soon as enough nodes are found.
+   */
+  async #bootstrapSeeds (candidates: string[]): Promise<string[]> {
+    const healthySeeds: string[] = []
+
+    if (candidates.length === 0) {
+      return healthySeeds
+    }
+
+    const race = new AbortController()
+    let deadline: ReturnType<typeof setTimeout> | undefined
+    // Once the race is decided, late responses must not change the bootstrap set
+    let settled = false
+
+    try {
+      await Promise.race([
+        new Promise<void>(resolve => {
+          let pending = candidates.length
+
+          for (const seed of candidates) {
+            void isNodeHealthy(seed, this.#minProtocolVersion, race.signal, BOOTSTRAP_TIMEOUT_MS).then(healthy => {
+              if (settled) {
+                return
+              }
+
+              if (healthy) {
+                healthySeeds.push(seed)
+
+                if (healthySeeds.length >= BOOTSTRAP_MIN_HEALTHY) {
+                  settled = true
+                  race.abort()
+                  resolve()
+                  return
+                }
+              }
+
+              pending -= 1
+              if (pending === 0) {
+                settled = true
+                resolve()
+              }
+            })
+          }
+        }),
+        // Hard deadline: init resolves with whatever healthy seeds were found, even if a
+        // node connection never settles after the abort.
+        new Promise<void>(resolve => {
+          deadline = setTimeout(resolve, BOOTSTRAP_TIMEOUT_MS + 500)
+        })
+      ])
+    } finally {
+      settled = true
+      race.abort()
+
+      if (deadline != null) {
+        clearTimeout(deadline)
+      }
+    }
+
+    return [...healthySeeds]
+  }
+
+  /**
+   * Starts validator discovery once, after the first request had a chance to complete.
+   * It is a background job: the pool keeps serving requests from the seeds meanwhile.
+   */
+  #scheduleDiscovery (): void {
+    if (this.#discoveryScheduled || this.#dapiUrl != null) {
+      return
+    }
+
+    this.#discoveryScheduled = true
+
+    later(() => {
+      void this.#discoverValidators().catch(() => {
+        // keep using the seeds if discovery fails
+      })
+    })
+  }
+
+  /**
+   * Fetches the current validator set, healthchecks its nodes and replaces the seeds with
+   * the healthy validators. The checks run here, off the critical path, so the first requests
+   * are never delayed by them and the long-lived pool does not fill up with lagging nodes.
+   */
+  async #discoverValidators (): Promise<void> {
+    const { network } = this
+    const quorumsInfo = await this.#fetchQuorumsInfo()
+    const validators = shuffle([...new Set(quorumsInfo.validatorSets
+      .flatMap(validatorSet => validatorSet.members)
+      .filter(member => !member.isBanned)
+      .map(member => `https://${member.nodeIp}:${DAPI_PORTS[network]}`))])
+
+    if (validators.length === 0) {
+      return
+    }
+
+    const healthyValidators: string[] = []
+    let validatorIndex = 0
+
+    const checkValidator = async (): Promise<void> => {
+      while (validatorIndex < validators.length && healthyValidators.length < this.#poolLimit) {
+        const url = validators[validatorIndex++]
+
+        if (await isNodeHealthy(url, this.#minProtocolVersion)) {
+          healthyValidators.push(url)
+
+          // Replace the seeds once enough validators are healthy, so a single slow node
+          // cannot hold the whole pool. Otherwise the seeds stay as a fallback.
+          if (healthyValidators.length >= VALIDATOR_CHECK_MIN_HEALTHY) {
+            this.dapiUrls = healthyValidators.slice(0, this.#poolLimit)
+          }
+        }
+      }
+    }
+
+    await Promise.all(Array.from({ length: VALIDATOR_CHECK_CONCURRENCY }, async () => await checkValidator()))
+  }
+
+  /**
+   * Reads the current quorums info from the first responding seed. Seeds are tried in small
+   * waves, so a single round of discovery does not send a request to every seed at once.
+   */
+  async #fetchQuorumsInfo (): Promise<CurrentQuorumsInfo> {
+    const seeds = shuffle([...seedNodes[this.network]])
+    const maxSeeds = Math.min(seeds.length, SEED_DISCOVERY_BATCH * SEED_DISCOVERY_WAVES)
+    let lastError: unknown
+
+    for (let i = 0; i < maxSeeds; i += SEED_DISCOVERY_BATCH) {
+      const batch = seeds.slice(i, i + SEED_DISCOVERY_BATCH)
       const winner = new AbortController()
 
       try {
-        return await Promise.any(seedNodes[network].map(async seed =>
+        return await Promise.any(batch.map(async seed =>
           await withTimeout(async abortController => {
             winner.signal.addEventListener('abort', () => abortController.abort())
 
-            return await getCurrentQuorumsInfo({ network, getClient: () => createClient(seed, abortController) })
+            return await getCurrentQuorumsInfo({ network: this.network, getClient: () => createClient(seed, abortController) })
           })))
       } catch (e) {
-        const errors = (e as AggregateError).errors
-        throw new AggregateError(errors, `None of the ${network} seed nodes are available: ${errors.map(String).join('; ')}`)
+        lastError = e
       } finally {
         winner.abort()
       }
     }
 
-    // Bootstrap the pool by racing all seed healthchecks; resolve at the first K healthy
-    // and abort the rest, so a slow/dead seed never stalls initialization.
-    const seeds = seedNodes[network]
-    const healthySeeds: string[] = []
-
-    const bootstrapPromise = new Promise<void>((resolve, reject) => {
-      const race = new AbortController()
-      let pending = seeds.length
-
-      seeds.forEach(seed => {
-        void isNodeHealthy(seed, this.#minProtocolVersion, race.signal).then(healthy => {
-          if (healthy) {
-            healthySeeds.push(seed)
-
-            if (healthySeeds.length >= HEALTHCHECK_MIN_HEALTHY_NODES) {
-              race.abort()
-              resolve()
-            }
-          }
-
-          pending -= 1
-          if (pending === 0) {
-            if (healthySeeds.length === 0) {
-              reject(new Error(`None of the ${network} seed nodes are available ` +
-                `(nodes must be synced and run protocol version ${this.#minProtocolVersion ?? 1}-${Number(LATEST_PLATFORM_VERSION)})`))
-            } else {
-              resolve()
-            }
-          }
-        })
-      })
-    })
-
-    // Discovery failure fails initialization with "no peers", exactly as before.
-    const [, quorumsInfo] = await Promise.all([bootstrapPromise, quorumsInfoPromise()])
-
-    this.dapiUrls = [...healthySeeds]
-
-    // Replace the bootstrap seeds with discovered validators in the background.
-    void (async () => {
-      const validators = shuffle([...new Set(quorumsInfo.validatorSets
-        .flatMap(validatorSet => validatorSet.members)
-        .filter(member => !member.isBanned)
-        .map(member => `https://${member.nodeIp}:${DAPI_PORTS[network]}`))])
-
-      const healthyValidators: string[] = []
-      let validatorIndex = 0
-
-      const checkValidator = async (): Promise<void> => {
-        while (validatorIndex < validators.length && healthyValidators.length < this.#poolLimit) {
-          const url = validators[validatorIndex++]
-
-          if (await isNodeHealthy(url, this.#minProtocolVersion)) {
-            healthyValidators.push(url)
-
-            // Evict the bootstrap seeds once enough validators are healthy.
-            if (healthyValidators.length >= HEALTHCHECK_MIN_HEALTHY_NODES) {
-              this.dapiUrls = healthyValidators.slice(0, this.#poolLimit)
-            }
-          }
-        }
-      }
-
-      await Promise.all(Array.from({ length: HEALTHCHECK_CONCURRENCY }, async () => await checkValidator()))
-    })().catch(() => {
-      // keep the bootstrap seeds if validator discovery or healthchecks fail
-    })
+    const errors = (lastError as AggregateError | undefined)?.errors ?? [lastError]
+    throw new AggregateError(errors, `None of the ${this.network} seed nodes are available: ${errors.map(String).join('; ')}`)
   }
 
   /**
@@ -515,6 +630,10 @@ export default class GRPCConnectionPool implements GRPCPool {
 
           // a successful request resets the ban escalation of the node
           this.#bans.delete(nodeUrl)
+
+          // The first served request doubles as the seed healthcheck; start the
+          // background validator discovery only after it succeeded.
+          this.#scheduleDiscovery()
 
           return response
         } catch (e) {

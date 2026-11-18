@@ -22,6 +22,23 @@ jest.mock('../../proto/generated/platform.client.js', () => ({
       this.fetch = transport.options.fetch
       this.signal = transport.options.abort
     }
+
+    async getStatus (): Promise<{ response: Record<string, unknown> }> {
+      await this.fetch(`${this.url}/org.dash.platform.dapi.v0.Platform/getStatus`)
+
+      return {
+        response: {
+          version: {
+            oneofKind: 'v0',
+            v0: {
+              version: { protocol: { drive: { current: 14 } } },
+              chain: { catchingUp: false },
+              time: { local: BigInt(Math.floor(Date.now() / 1000)), block: BigInt(Date.now() - 1000) }
+            }
+          }
+        }
+      }
+    }
   }
 }))
 
@@ -83,6 +100,29 @@ describe('GRPCConnectionPool', () => {
       const client = await pool.getClient(abortController) as unknown as MockClient
 
       expect(client.signal).toBe(abortController.signal)
+    })
+  })
+
+  describe('seed bootstrap', () => {
+    it('should check only a small seed window and resolve at the first two healthy nodes', async () => {
+      fetchSpy.mockResolvedValue(OK_RESPONSE)
+
+      const pool = new GRPCConnectionPool('testnet')
+      await pool.getClient()
+
+      expect(pool.dapiUrls).toHaveLength(2)
+      expect(fetchSpy.mock.calls.length).toBeGreaterThanOrEqual(2)
+      expect(fetchSpy.mock.calls.length).toBeLessThanOrEqual(6)
+    })
+
+    it('should fall back to the full seed list when fewer than two seeds are healthy', async () => {
+      fetchSpy.mockRejectedValue(connectError())
+
+      const pool = new GRPCConnectionPool('testnet')
+      await pool.getClient()
+
+      expect(pool.dapiUrls.length).toBeGreaterThan(2)
+      expect(new Set(pool.dapiUrls).size).toBe(pool.dapiUrls.length)
     })
   })
 
