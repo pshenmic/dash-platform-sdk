@@ -1,12 +1,14 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetShieldedNotesCountRequest } from '../../proto/generated/platform.js'
-import { IdentifierLike, IdentifierWASM, verifyShieldedNotesCountProof } from 'pshenmic-dpp'
+import { IdentifierLike, IdentifierWASM } from 'pshenmic-dpp'
+import type { DashPlatformShielded } from 'dash-platform-shielded'
 import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getShieldedNotesCount (
   grpcPool: GRPCPool,
   quorumKeyProvider: QuorumKeyProvider,
+  shielded: DashPlatformShielded,
   tokenIdentifier?: IdentifierLike
 ): Promise<bigint | undefined> {
   const tokenId = tokenIdentifier != null ? new IdentifierWASM(tokenIdentifier) : undefined
@@ -23,7 +25,7 @@ export default async function getShieldedNotesCount (
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getShieldedNotesCount', getShieldedNotesCountRequest)
-    .setProofVerifier(verifyShieldedNotesCountProof, (_, platformVersion) => [true, platformVersion, tokenId])
+    .setProofVerifier(shielded.verifyShieldedNotesCountProof, (_, platformVersion) => [true, platformVersion, tokenId?.bytes()])
     .mapResponse(data => data.proved ? data.verified.count : BigInt(data.result.totalNotesCount))
     .execute()
 }

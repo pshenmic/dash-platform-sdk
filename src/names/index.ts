@@ -16,7 +16,7 @@ import getIdentityByIdentifier from '../identities/getIdentityByIdentifier.js'
 import convertToHomographSafeChars from '../utils/convertToHomographSafeChars.js'
 import testNameContested from './testNameContested.js'
 import getDataContractByIdentifier from '../dataContracts/getDataContractByIdentifier.js'
-import {DPNS_DATA_CONTRACT_ID} from "../constants.js";
+import { DPNS_DATA_CONTRACT_ID } from '../constants.js'
 
 /**
  * Functions related to DPNS names (usernames)
@@ -142,8 +142,8 @@ export class NamesController {
     return validateName(fullName)
   }
 
-  private async getDataContract(): Promise<DataContractWASM> {
-    if(this.dataContract == null) {
+  private async getDataContract (): Promise<DataContractWASM> {
+    if (this.dataContract == null) {
       this.dataContract = await getDataContractByIdentifier(this.grpcPool, this.quorumKeyProvider, DPNS_DATA_CONTRACT_ID)
     }
 
