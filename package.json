@@ -42,7 +42,7 @@
     "tsx": "^4.20.5",
     "typedoc": "^0.28.7",
     "typescript": "^5.8.2",
-    "dash-platform-shielded": "https://github.com/owl352/dash-platform-shielded#87d2068d9f1663ef714f2bdc9fa031a0922dad83"
+    "dash-platform-shielded": "https://github.com/owl352/dash-platform-shielded/archive/87d2068d9f1663ef714f2bdc9fa031a0922dad83.tar.gz"
   },
   "scripts": {
     "build": "tsc && rollup -c rollup.config.js",
@@ -60,6 +60,6 @@
     "@scure/bip32": "^2.0.0",
     "@scure/bip39": "^2.0.0",
     "@scure/btc-signer": "^2.0.1",
-    "pshenmic-dpp": "https://github.com/owl352/pshenmic-dpp#e8c356a310bc347f6226536d1d3161db8719a44c"
+    "pshenmic-dpp": "https://github.com/owl352/pshenmic-dpp/archive/e8c356a310bc347f6226536d1d3161db8719a44c.tar.gz"
   }
 }
