@@ -1,7 +1,6 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import {
-  IdentityCreateFromShieldedPoolParams,
   ShieldedEncryptedNote,
   ShieldedNullifierStatus,
   ShieldedTransitionParamsMap,

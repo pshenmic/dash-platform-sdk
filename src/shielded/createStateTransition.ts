@@ -28,7 +28,7 @@ function memoBytes (memo?: string): Uint8Array {
     : dpp.ShieldedMemoNAPI.fromString(memo).toBytes()
 }
 
-function addressBytes (address: string | Uint8Array | { bytes(): Uint8Array }): Uint8Array {
+function addressBytes (address: string | Uint8Array | { bytes: () => Uint8Array }): Uint8Array {
   if (address instanceof Uint8Array) {
     return address
   }

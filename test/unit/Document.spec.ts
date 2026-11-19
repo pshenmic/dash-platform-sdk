@@ -51,7 +51,6 @@ describe('Document', () => {
     const dataContract = await sdk.dataContracts.getDataContractByIdentifier('GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec')
     const documentType = 'domain'
 
-
     const [document] = await sdk.documents.query(dataContract, documentType)
 
     expect(document.createdAtBlockHeight).toEqual(undefined)
