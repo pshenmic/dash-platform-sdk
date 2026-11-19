@@ -15,18 +15,16 @@ import getShieldedNotesCount from './getShieldedNotesCount.js'
 import getShieldedNullifiers from './getShieldedNullifiers.js'
 import createStateTransition from './createStateTransition.js'
 import {
-  CommitmentTreeWASM,
-  ContractBoundsWASM,
   IdentifierLike,
-  IdentityPublicKeyInCreationWASM,
-  recoverNotes,
-  RecoveredNoteWASM,
   SerializedActionWASM,
-  ShieldedBuilderWASM,
-  ShieldedMemoWASM,
-  SpendableNoteWASM,
   StateTransitionWASM
 } from 'pshenmic-dpp'
+import type {
+  DashPlatformShielded,
+  RecoveredNoteWASM,
+  ShieldedBuilderWASM,
+  SpendableNoteWASM
+} from 'dash-platform-shielded'
 
 /**
  * Shielded controller for requesting information about shielded pool
@@ -38,13 +36,30 @@ export class ShieldedController {
   grpcPool: GRPCPool
   /** @ignore **/
   quorumKeyProvider: QuorumKeyProvider
+  /** @ignore **/
+  shielded?: DashPlatformShielded
 
   /** @ignore **/
   shieldedBuilder?: ShieldedBuilderWASM
 
-  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider) {
+  constructor (grpcPool: GRPCPool, quorumKeyProvider: QuorumKeyProvider, shielded?: DashPlatformShielded) {
     this.grpcPool = grpcPool
     this.quorumKeyProvider = quorumKeyProvider
+    this.shielded = shielded
+  }
+
+  /** @ignore **/
+  setShielded (shielded: DashPlatformShielded): void {
+    this.shielded = shielded
+  }
+
+  /** @ignore **/
+  private requireShielded (): DashPlatformShielded {
+    if (this.shielded == null) {
+      throw new Error('Shielded module is not configured. Pass new DashPlatformShielded() to the SDK.')
+    }
+
+    return this.shielded
   }
 
   /**
@@ -52,7 +67,8 @@ export class ShieldedController {
    * Needed for custom builder load, because ShieldedBuilderWASM inits very slow on old hardware
    */
   async init (builder?: ShieldedBuilderWASM): Promise<ShieldedBuilderWASM> {
-    this.shieldedBuilder = builder ?? new ShieldedBuilderWASM()
+    const shielded = this.requireShielded()
+    this.shieldedBuilder = builder ?? new shielded.ShieldedBuilderWASM()
 
     await this.shieldedBuilder.init()
 
@@ -87,7 +103,7 @@ export class ShieldedController {
    * @return {Promise<ShieldedEncryptedNote[]>}
    */
   async getShieldedEncryptedNotes (startIndex: bigint, count: number, tokenIdentifier?: IdentifierLike): Promise<ShieldedEncryptedNote[]> {
-    return await getShieldedEncryptedNotes(this.grpcPool, this.quorumKeyProvider, startIndex, count, tokenIdentifier)
+    return await getShieldedEncryptedNotes(this.grpcPool, this.quorumKeyProvider, this.requireShielded(), startIndex, count, tokenIdentifier)
   }
 
   /**
@@ -99,7 +115,7 @@ export class ShieldedController {
    * @return {Promise<Uint8Array[]>}
    */
   async getShieldedAnchors (tokenIdentifier?: IdentifierLike): Promise<Uint8Array[]> {
-    return await getShieldedAnchors(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
+    return await getShieldedAnchors(this.grpcPool, this.quorumKeyProvider, this.requireShielded(), tokenIdentifier)
   }
 
   /**
@@ -110,7 +126,7 @@ export class ShieldedController {
    * @return {Promise<Uint8Array>}
    */
   async getMostRecentShieldedAnchor (tokenIdentifier?: IdentifierLike): Promise<Uint8Array | undefined> {
-    return await getMostRecentShieldedAnchor(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
+    return await getMostRecentShieldedAnchor(this.grpcPool, this.quorumKeyProvider, this.requireShielded(), tokenIdentifier)
   }
 
   /**
@@ -121,7 +137,7 @@ export class ShieldedController {
    * @return {Promise<bigint>}
    */
   async getShieldedPoolState (tokenIdentifier?: IdentifierLike): Promise<bigint | undefined> {
-    return await getShieldedPoolState(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
+    return await getShieldedPoolState(this.grpcPool, this.quorumKeyProvider, this.requireShielded(), tokenIdentifier)
   }
 
   /**
@@ -133,7 +149,7 @@ export class ShieldedController {
    * @return {Promise<bigint>}
    */
   async getShieldedNotesCount (tokenIdentifier?: IdentifierLike): Promise<bigint | undefined> {
-    return await getShieldedNotesCount(this.grpcPool, this.quorumKeyProvider, tokenIdentifier)
+    return await getShieldedNotesCount(this.grpcPool, this.quorumKeyProvider, this.requireShielded(), tokenIdentifier)
   }
 
   /**
@@ -148,7 +164,7 @@ export class ShieldedController {
    * @return {Promise<ShieldedNullifierStatus[]>}
    */
   async getShieldedNullifiers (nullifiers: Uint8Array[], tokenIdentifier?: IdentifierLike): Promise<ShieldedNullifierStatus[]> {
-    return await getShieldedNullifiers(this.grpcPool, this.quorumKeyProvider, nullifiers, tokenIdentifier)
+    return await getShieldedNullifiers(this.grpcPool, this.quorumKeyProvider, this.requireShielded(), nullifiers, tokenIdentifier)
   }
 
   /**
@@ -173,7 +189,7 @@ export class ShieldedController {
     const actions = notes.map(note =>
       new SerializedActionWASM(note.nullifier, new Uint8Array(32), note.cmx, note.encryptedNote, note.cvNet, new Uint8Array(64)))
 
-    return recoverNotes(actions, seed, coinType, account)
+    return this.requireShielded().recoverNotes(actions.map(a => a.bytes()), seed, coinType, account)
   }
 
   /**
@@ -199,7 +215,8 @@ export class ShieldedController {
     // only the leaves we intend to witness need to be marked spendable
     const spendableIndices = new Set(recovered.map(note => note.index))
 
-    const tree = new CommitmentTreeWASM()
+    const shielded = this.requireShielded()
+    const tree = new shielded.CommitmentTreeWASM()
     notes.forEach((note, index) => tree.append(note.cmx, spendableIndices.has(index)))
     tree.checkpoint(0)
 
@@ -212,7 +229,7 @@ export class ShieldedController {
         throw new Error(`Failed to witness recovered note at index ${recoveredNote.index}`)
       }
 
-      return new SpendableNoteWASM(recoveredNote.note, merklePath)
+      return new shielded.SpendableNoteWASM(recoveredNote.note, merklePath)
     })
 
     return { spends, anchor }
@@ -241,18 +258,6 @@ export class ShieldedController {
     type: K,
     params: ShieldedTransitionParamsMap[K]
   ): Promise<StateTransitionWASM> {
-    // @ts-expect-error a plain string memo is normalized to ShieldedMemoWASM (empty when omitted)
-    params.memo = typeof params.memo === 'string' ? ShieldedMemoWASM.fromString(params.memo) : ShieldedMemoWASM.empty()
-
-    if (type === 'identityCreateFromShieldedPool') {
-      const identityParams = params as IdentityCreateFromShieldedPoolParams
-
-      // @ts-expect-error builder expects IdentityPublicKeyInCreationWASM instances
-      identityParams.publicKeys = identityParams.publicKeys
-        .map(({ id, purpose, securityLevel, keyType, readOnly, data, signature, contractBounds }) =>
-          new IdentityPublicKeyInCreationWASM(id, purpose, securityLevel, keyType, readOnly, data, signature, (contractBounds != null) ? new ContractBoundsWASM(contractBounds.dataContractId, contractBounds.documentType) : undefined))
-    }
-
-    return await createStateTransition(await this.getShieldedBuilder(), type, params)
+    return await createStateTransition(this.requireShielded(), await this.getShieldedBuilder(), type, params)
   }
 }

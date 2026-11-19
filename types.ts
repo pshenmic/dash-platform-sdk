@@ -8,15 +8,12 @@ import {
   IdentifierWASM,
   InputAddressWASM,
   KeyType,
-  OrchardAddressWASM,
   PlatformAddressLike,
   PlatformAddressWASM,
   PlatformVersionWASM,
   PoolingLike,
   PrivateKeyWASM,
   Purpose, SecurityLevel,
-  ShieldedOutputWASM,
-  SpendableNoteWASM,
   TokenEmergencyActionWASM,
   TokenPricingScheduleWASM,
   AddressWitnessWASM,
@@ -25,6 +22,7 @@ import {
   OutputAddressNullableCreditsWASM,
   VerifiedAddressesTrunkState
 } from 'pshenmic-dpp'
+import type { OrchardAddressWASM, ShieldedOutputWASM, SpendableNoteWASM } from 'dash-platform-shielded'
 import { ResponseMetadata } from './proto/generated/platform.js'
 
 export {

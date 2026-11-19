@@ -1,90 +1,207 @@
 import {
-  IdentityCreateFromShieldedPoolTransitionWASM,
-  ShieldedBuilderWASM,
-  ShieldedWithdrawalResultWASM,
+  ContractBoundsWASM,
+  dpp,
+  IdentifierWASM,
+  IdentityPublicKeyInCreationWASM,
+  PlatformAddressWASM,
+  SerializedActionWASM,
   StateTransitionWASM
 } from 'pshenmic-dpp'
-import { IdentityCreateFromShieldedPoolParams, ShieldedTransitionParamsMap, ShieldedTransitionType } from '../../types.js'
+import type { PlatformVersionWASM } from 'pshenmic-dpp'
+import type { DashPlatformShielded, ShieldedBuilderWASM } from 'dash-platform-shielded'
+import {
+  IdentityCreateFromShieldedPoolParams,
+  ShieldFromAssetLockParams,
+  ShieldParams,
+  ShieldedTransferMultiParams,
+  ShieldedTransferParams,
+  ShieldedTransitionParamsMap,
+  ShieldedTransitionType,
+  ShieldedWithdrawalParams,
+  UnshieldParams
+} from '../../types.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-const shieldedTransitionsMap = {
-  shield: {
-    method: ShieldedBuilderWASM.prototype.shield,
-    arguments: ['recipient', 'shieldAmount', 'inputs', 'privateKeys', 'feeStrategy', 'userFeeIncrease', 'memo'],
-    optionalArguments: ['senderOvk']
-  },
-  shieldFromAssetLock: {
-    method: ShieldedBuilderWASM.prototype.shieldFromAssetLock,
-    arguments: ['recipient', 'shieldAmount', 'assetLockProof', 'privateKey', 'memo', 'dummyOutputs'],
-    optionalArguments: ['senderOvk', 'surplusOutput']
-  },
-  shieldedWithdrawal: {
-    method: ShieldedBuilderWASM.prototype.shieldedWithdrawal,
-    arguments: ['spends', 'withdrawalAmount', 'outputScript', 'coreFeePerByte', 'pooling', 'changeAddress', 'seed', 'coinType', 'account', 'anchor', 'memo'],
-    optionalArguments: []
-  },
-  unshield: {
-    method: ShieldedBuilderWASM.prototype.unshield,
-    arguments: ['spends', 'outputAddress', 'unshieldAmount', 'changeAddress', 'seed', 'coinType', 'account', 'anchor', 'memo'],
-    optionalArguments: []
-  },
-  shieldedTransfer: {
-    method: ShieldedBuilderWASM.prototype.shieldedTransfer,
-    arguments: ['spends', 'recipient', 'transferAmount', 'changeAddress', 'seed', 'coinType', 'account', 'anchor', 'memo'],
-    optionalArguments: []
-  },
-  shieldedTransferMulti: {
-    method: ShieldedBuilderWASM.prototype.shieldedTransferMulti,
-    arguments: ['spends', 'outputs', 'changeAddress', 'seed', 'coinType', 'account', 'anchor'],
-    optionalArguments: []
-  },
-  identityCreateFromShieldedPool: {
-    method: ShieldedBuilderWASM.prototype.identityCreateFromShieldedPool,
-    arguments: ['publicKeys', 'privateKeys', 'denomination', 'sendToAddressOnCreationFailure', 'spends', 'changeAddress', 'seed', 'coinType', 'account', 'anchor', 'memo'],
-    optionalArguments: []
+function memoBytes (memo?: string): Uint8Array {
+  return memo == null || memo === ''
+    ? dpp.ShieldedMemoNAPI.empty().toBytes()
+    : dpp.ShieldedMemoNAPI.fromString(memo).toBytes()
+}
+
+function addressBytes (address: string | Uint8Array | { bytes(): Uint8Array }): Uint8Array {
+  if (address instanceof Uint8Array) {
+    return address
   }
+
+  if (typeof (address as any).bytes === 'function') {
+    return (address as any).bytes()
+  }
+
+  return new PlatformAddressWASM(address as any).bytes()
+}
+
+function platformVersion (version?: PlatformVersionWASM): number {
+  return version ?? LATEST_PLATFORM_VERSION
+}
+
+function identityPublicKeyBytes (key: IdentityCreateFromShieldedPoolParams['publicKeys'][number]): Uint8Array {
+  const { id, purpose, securityLevel, keyType, readOnly, data, signature, contractBounds } = key
+
+  return new IdentityPublicKeyInCreationWASM(
+    id,
+    purpose,
+    securityLevel,
+    keyType,
+    readOnly,
+    data,
+    signature,
+    contractBounds != null ? new ContractBoundsWASM(contractBounds.dataContractId, contractBounds.documentType) : undefined
+  ).bytes()
 }
 
 export default async function createStateTransition<K extends ShieldedTransitionType> (
+  shielded: DashPlatformShielded,
   builder: ShieldedBuilderWASM,
   type: K,
   params: ShieldedTransitionParamsMap[K]
 ): Promise<StateTransitionWASM> {
-  const { method: builderMethod, arguments: classArguments, optionalArguments } = shieldedTransitionsMap[type]
+  switch (type) {
+    case 'shield': {
+      const p = params as ShieldParams
 
-  if (builderMethod == null) {
-    throw new Error(`Unimplemented shielded transition type: ${type}`)
+      return StateTransitionWASM.fromBytes(await builder.shield(
+        p.recipient,
+        p.shieldAmount,
+        p.inputs.map(i => i.bytes()),
+        p.privateKeys.map(k => k.bytes()),
+        p.feeStrategy.map(s => s.bytes()),
+        p.userFeeIncrease,
+        memoBytes(p.memo),
+        p.senderOvk,
+        platformVersion(p.platformVersion)
+      ))
+    }
+
+    case 'shieldFromAssetLock': {
+      const p = params as ShieldFromAssetLockParams
+
+      return StateTransitionWASM.fromBytes(await builder.shieldFromAssetLock(
+        p.recipient,
+        p.shieldAmount,
+        p.assetLockProof.bytes(),
+        p.privateKey.bytes(),
+        memoBytes(p.memo),
+        p.dummyOutputs,
+        p.senderOvk,
+        p.surplusOutput != null ? addressBytes(p.surplusOutput) : undefined,
+        platformVersion(p.platformVersion)
+      ))
+    }
+
+    case 'shieldedWithdrawal': {
+      const p = params as ShieldedWithdrawalParams
+      const result = await builder.shieldedWithdrawal(
+        p.spends,
+        p.withdrawalAmount,
+        p.outputScript.bytes(),
+        p.coreFeePerByte,
+        p.pooling,
+        p.changeAddress,
+        p.seed,
+        p.coinType,
+        p.account,
+        p.anchor,
+        memoBytes(p.memo),
+        platformVersion(p.platformVersion)
+      )
+
+      return StateTransitionWASM.fromBytes(result.stateTransition)
+    }
+
+    case 'unshield': {
+      const p = params as UnshieldParams
+      const result = await builder.unshield(
+        p.spends,
+        addressBytes(p.outputAddress),
+        p.unshieldAmount,
+        p.changeAddress,
+        p.seed,
+        p.coinType,
+        p.account,
+        p.anchor,
+        memoBytes(p.memo),
+        platformVersion(p.platformVersion)
+      )
+
+      return StateTransitionWASM.fromBytes(result.stateTransition)
+    }
+
+    case 'shieldedTransfer': {
+      const p = params as ShieldedTransferParams
+      const result = await builder.shieldedTransfer(
+        p.spends,
+        p.recipient,
+        p.transferAmount,
+        p.changeAddress,
+        p.seed,
+        p.coinType,
+        p.account,
+        p.anchor,
+        memoBytes(p.memo),
+        platformVersion(p.platformVersion)
+      )
+
+      return StateTransitionWASM.fromBytes(result.stateTransition)
+    }
+
+    case 'shieldedTransferMulti': {
+      const p = params as ShieldedTransferMultiParams
+      const result = await builder.shieldedTransferMulti(
+        p.spends,
+        p.outputs,
+        p.changeAddress,
+        p.seed,
+        p.coinType,
+        p.account,
+        p.anchor,
+        platformVersion(p.platformVersion)
+      )
+
+      return StateTransitionWASM.fromBytes(result.stateTransition)
+    }
+
+    case 'identityCreateFromShieldedPool': {
+      const p = params as IdentityCreateFromShieldedPoolParams
+      const result = await builder.identityCreateFromShieldedPool(
+        p.publicKeys.map(identityPublicKeyBytes),
+        p.privateKeys.map(k => k.bytes()),
+        p.denomination,
+        addressBytes(p.sendToAddressOnCreationFailure),
+        p.spends,
+        p.changeAddress,
+        p.seed,
+        p.coinType,
+        p.account,
+        p.anchor,
+        memoBytes(p.memo),
+        platformVersion(p.platformVersion)
+      )
+
+      const raw = new dpp.IdentityCreateFromShieldedPoolTransitionNAPI(
+        result.publicKeys.map(bytes => IdentityPublicKeyInCreationWASM.fromBytes(bytes)._rawKeyInCreation),
+        p.denomination.toString(),
+        result.actions.map(bytes => SerializedActionWASM.fromBytes(bytes)._rawSerializedAction),
+        result.anchor,
+        result.proof,
+        result.bindingsSignature,
+        new PlatformAddressWASM(p.sendToAddressOnCreationFailure as any)._rawPlatformAddress,
+        new IdentifierWASM(result.identityId)._rawIdentifier
+      )
+
+      return StateTransitionWASM.createFromRawInstance(raw.toStateTransition())
+    }
+
+    default:
+      throw new Error(`Unimplemented shielded transition type: ${String(type)}`)
   }
-
-  const [missingArgument] = classArguments
-    .filter((classArgument: string) => params[classArgument as keyof ShieldedTransitionParamsMap[K]] == null)
-
-  if (missingArgument != null) {
-    throw new Error(`Shielded transition param "${missingArgument}" is missing`)
-  }
-
-  const transitionParams = classArguments.concat(optionalArguments).map((classArgument: string) => params[classArgument as keyof ShieldedTransitionParamsMap[K]])
-
-  const result = await builderMethod.apply(builder, [...transitionParams, params.platformVersion ?? LATEST_PLATFORM_VERSION])
-
-  if (result instanceof StateTransitionWASM) {
-    return result
-  }
-
-  if (result instanceof ShieldedWithdrawalResultWASM) {
-    return result.stateTransition
-  }
-
-  const { denomination, sendToAddressOnCreationFailure } = params as IdentityCreateFromShieldedPoolParams
-
-  return new IdentityCreateFromShieldedPoolTransitionWASM(
-    result.publicKeys,
-    denomination,
-    result.actions,
-    result.anchor,
-    result.proof,
-    result.bindingsSignature,
-    sendToAddressOnCreationFailure,
-    result.identityId
-  ).toStateTransition()
 }

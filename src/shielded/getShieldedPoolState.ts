@@ -2,11 +2,13 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetShieldedPoolStateRequest } from '../../proto/generated/platform.js'
 import QueryExecutor from '../QueryExecutor.js'
-import { IdentifierLike, IdentifierWASM, verifyShieldedPoolStateProof } from 'pshenmic-dpp'
+import { IdentifierLike, IdentifierWASM } from 'pshenmic-dpp'
+import type { DashPlatformShielded } from 'dash-platform-shielded'
 
 export default async function getShieldedPoolState (
   grpcPool: GRPCPool,
   quorumKeyProvider: QuorumKeyProvider,
+  shielded: DashPlatformShielded,
   tokenIdentifier?: IdentifierLike
 ): Promise<bigint | undefined> {
   const tokenId = tokenIdentifier != null ? new IdentifierWASM(tokenIdentifier) : undefined
@@ -23,7 +25,7 @@ export default async function getShieldedPoolState (
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getShieldedPoolState', getShieldedPoolStateRequest)
-    .setProofVerifier(verifyShieldedPoolStateProof, (_, platformVersion) => [true, platformVersion, tokenId])
+    .setProofVerifier(shielded.verifyShieldedPoolStateProof, (_, platformVersion) => [true, platformVersion, tokenId?.bytes()])
     .mapResponse(data => data.proved ? data.verified.totalBalance : BigInt(data.result.totalBalance))
     .execute()
 }

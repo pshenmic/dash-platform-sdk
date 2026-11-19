@@ -2,12 +2,14 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetShieldedNullifiersRequest } from '../../proto/generated/platform.js'
 import { ShieldedNullifierStatus } from '../../types.js'
-import { IdentifierLike, IdentifierWASM, verifyShieldedNullifiersProof } from 'pshenmic-dpp'
+import { IdentifierLike, IdentifierWASM } from 'pshenmic-dpp'
+import type { DashPlatformShielded } from 'dash-platform-shielded'
 import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getShieldedNullifiers (
   grpcPool: GRPCPool,
   quorumKeyProvider: QuorumKeyProvider,
+  shielded: DashPlatformShielded,
   nullifiers: Uint8Array[],
   tokenIdentifier?: IdentifierLike
 ): Promise<ShieldedNullifierStatus[]> {
@@ -26,7 +28,7 @@ export default async function getShieldedNullifiers (
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getShieldedNullifiers', getShieldedNullifiersRequest)
-    .setProofVerifier(verifyShieldedNullifiersProof, (_, platformVersion) => [nullifiers, true, platformVersion, tokenId])
+    .setProofVerifier(shielded.verifyShieldedNullifiersProof, (_, platformVersion) => [nullifiers, true, platformVersion, tokenId?.bytes()])
     .mapResponse(data => {
       const nullifiersStatuses = data.proved ? data.verified.nullifiers : data.result.nullifierStatuses.entries
 

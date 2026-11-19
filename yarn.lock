@@ -2686,9 +2686,9 @@ cssstyle@^4.2.1:
     "@asamuzakjp/css-color" "^3.2.0"
     rrweb-cssom "^0.8.0"
 
-"dash-platform-shielded@https://github.com/owl352/dash-platform-shielded#433dd3dd117296c9ffe769092e641ea90c6baf80":
+"dash-platform-shielded@https://github.com/owl352/dash-platform-shielded#87d2068d9f1663ef714f2bdc9fa031a0922dad83":
   version "0.0.0"
-  resolved "https://github.com/owl352/dash-platform-shielded#433dd3dd117296c9ffe769092e641ea90c6baf80"
+  resolved "https://github.com/owl352/dash-platform-shielded#87d2068d9f1663ef714f2bdc9fa031a0922dad83"
   dependencies:
     "@emnapi/core" "1.11.3"
     "@emnapi/runtime" "1.11.3"
@@ -5194,9 +5194,9 @@ protoc@^32.1.0:
   resolved "https://registry.npmjs.org/protoc/-/protoc-32.1.0.tgz"
   integrity sha512-yICJJCGHJLM9ao5W2V4CGp1d7xuBsdHzgVDw6L8mdDtoIcqzN3arNPOm9Jx4Ufp5vfhQfJGkNUDo6mm/SLPdXw==
 
-"pshenmic-dpp@https://github.com/owl352/pshenmic-dpp#b47decf83dd93effedae4c5bbfadcf245d4f5d52":
+"pshenmic-dpp@https://github.com/owl352/pshenmic-dpp#e8c356a310bc347f6226536d1d3161db8719a44c":
   version "3.0.0-dev.0"
-  resolved "https://github.com/owl352/pshenmic-dpp#b47decf83dd93effedae4c5bbfadcf245d4f5d52"
+  resolved "https://github.com/owl352/pshenmic-dpp#e8c356a310bc347f6226536d1d3161db8719a44c"
   dependencies:
     "@emnapi/core" "1.11.3"
     "@emnapi/runtime" "1.11.3"

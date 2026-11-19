@@ -14,8 +14,7 @@ import { Network } from '../types.js'
 import { PlatformAddressesController } from './platformAddresses/index.js'
 import { ShieldedController } from './shielded/index.js'
 import { PlatformExplorerQuorumKeyProvider, QuorumKeyProvider } from './quorumKeyProvider.js'
-import { setShielded } from 'pshenmic-dpp'
-import type { ShieldedProtocol } from 'pshenmic-dpp'
+import type { DashPlatformShielded } from 'dash-platform-shielded'
 
 export type { GRPCOptions, GRPCPool, QuorumKeyProvider }
 
@@ -39,8 +38,8 @@ export interface SDKOptions {
   /** @deprecated Use {GRPCOptions} instead, will be removed in next major version **/
   dapiUrl?: string | string[]
 
-  /**Instance of dash-platform-shielded module **/
-  shielded?: ShieldedProtocol
+  /** Optional shielded module. Create it with `new DashPlatformShielded()` from 'dash-platform-shielded'. **/
+  shielded?: DashPlatformShielded
 }
 
 /**
@@ -80,10 +79,6 @@ export class DashPlatformSDK {
       throw new Error('If options is passed, network must be set (either mainnet or testnet)')
     }
 
-    if(options?.shielded) {
-      setShielded(options.shielded)
-    }
-
     this.network = options?.network ?? 'mainnet'
     this.options = options
 
@@ -108,6 +103,17 @@ export class DashPlatformSDK {
   }
 
   /**
+   * Enables shielded functionality after construction.
+   *
+   * @param shielded {DashPlatformShielded} instance created with `new DashPlatformShielded()`
+   */
+  setShielded (shielded: DashPlatformShielded): void {
+    this.options = { ...(this.options ?? { network: this.network }), shielded }
+    this.shielded.setShielded(shielded)
+    this.keyPair.setShielded(shielded)
+  }
+
+  /**
    * @private
    *
    * Internal function to initialize SDK GRPC connection pool. Is not meant to be used outside the SDK
@@ -127,7 +133,7 @@ export class DashPlatformSDK {
 
     this.contestedResources = new ContestedResourcesController(grpcPool, quorumKeyProvider)
     this.platformAddresses = new PlatformAddressesController(grpcPool, quorumKeyProvider)
-    this.shielded = new ShieldedController(grpcPool, quorumKeyProvider)
+    this.shielded = new ShieldedController(grpcPool, quorumKeyProvider, this.options?.shielded)
     this.stateTransitions = new StateTransitionsController(grpcPool, quorumKeyProvider)
     this.dataContracts = new DataContractsController(grpcPool, quorumKeyProvider)
     this.identities = new IdentitiesController(grpcPool, quorumKeyProvider)
@@ -136,7 +142,7 @@ export class DashPlatformSDK {
     this.node = new NodeController(grpcPool, quorumKeyProvider)
     this.tokens = new TokensController(grpcPool, quorumKeyProvider)
     this.names = new NamesController(grpcPool, quorumKeyProvider)
-    this.keyPair = new KeyPairController()
+    this.keyPair = new KeyPairController(this.options?.shielded)
   }
 
   /**

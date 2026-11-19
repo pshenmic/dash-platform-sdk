@@ -4,7 +4,8 @@ import deriveChild from './deriveChild.js'
 import derivePath from './derivePath.js'
 import { Network } from '../../types.js'
 import { p2pkh } from '@scure/btc-signer'
-import { OrchardAddressWASM, orchardOvkFromSeed, PlatformAddressWASM, PrivateKeyWASM } from 'pshenmic-dpp'
+import { PlatformAddressWASM, PrivateKeyWASM } from 'pshenmic-dpp'
+import type { DashPlatformShielded, OrchardAddressWASM } from 'dash-platform-shielded'
 
 const DASH_VERSIONS = {
   mainnet: { pubKeyHash: 0x4c, scriptHash: 0x10, bech32: 'dc', wif: 0xcc, private: 0x0488ade4, public: 0x0488b21e },
@@ -17,6 +18,13 @@ const DASH_VERSIONS = {
  * @hideconstructor
  */
 export class KeyPairController {
+  /** @ignore **/
+  shielded?: DashPlatformShielded
+
+  constructor (shielded?: DashPlatformShielded) {
+    this.shielded = shielded
+  }
+
   /**
    * Returns seed from mnemonic phrase
    *
@@ -130,7 +138,7 @@ export class KeyPairController {
     // SLIP-44 coin type: 5 = Dash mainnet, 1 = testnets. Orchard derives via ZIP-32
     const coinType = network === 'mainnet' ? 5 : 1
 
-    return OrchardAddressWASM.fromSeed(seed, coinType, account, diversifierIndex)
+    return this.requireShielded().OrchardAddressWASM.fromSeed(seed, coinType, account, diversifierIndex)
   }
 
   /**
@@ -148,7 +156,7 @@ export class KeyPairController {
     // SLIP-44 coin type: 5 = Dash mainnet, 1 = testnets. Orchard derives via ZIP-32
     const coinType = network === 'mainnet' ? 5 : 1
 
-    return orchardOvkFromSeed(seed, coinType, account)
+    return this.requireShielded().orchardOvkFromSeed(seed, coinType, account)
   }
 
   /**
@@ -244,5 +252,19 @@ export class KeyPairController {
     }
 
     return PrivateKeyWASM.fromBytes(privateKey, network)
+  }
+
+  /** @ignore **/
+  setShielded (shielded: DashPlatformShielded): void {
+    this.shielded = shielded
+  }
+
+  /** @ignore **/
+  private requireShielded (): DashPlatformShielded {
+    if (this.shielded == null) {
+      throw new Error('Shielded module is not configured. Pass new DashPlatformShielded() to the SDK.')
+    }
+
+    return this.shielded
   }
 }
