@@ -1,21 +1,24 @@
 import {
   AddressFundsFeeStrategyStepWASM,
   AssetLockProofWASM,
-  CommitmentTreeWASM,
   CoreScriptWASM,
   InputAddressWASM,
   KeyType,
-  NoteWASM,
-  OrchardAddressWASM,
   OutPointWASM,
   PlatformAddressWASM,
   PrivateKeyWASM,
   Purpose,
-  RecoveredNoteWASM,
   SecurityLevel,
-  SpendableNoteWASM,
   StateTransitionWASM
 } from 'pshenmic-dpp'
+import {
+  CommitmentTreeWASM,
+  DashPlatformShielded,
+  NoteWASM,
+  OrchardAddressWASM,
+  RecoveredNoteWASM,
+  SpendableNoteWASM
+} from 'dash-platform-shielded'
 import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 import { IdentityPublicKeyInCreation } from '../../types.js'
 
@@ -69,7 +72,8 @@ function makeSpendableNote (seed: Uint8Array, value: bigint): {
 
 describe('Shielded', () => {
   beforeAll(async () => {
-    sdk = new DashPlatformSDK({ network: 'testnet' })
+    sdk = new DashPlatformSDK({ network: 'testnet', shielded: new DashPlatformShielded() })
+
     await sdk.shielded.init()
   }, 60000)
 

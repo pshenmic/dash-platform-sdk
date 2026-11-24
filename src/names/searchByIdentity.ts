@@ -1,4 +1,4 @@
-import {DataContractWASM, DocumentWASM, IdentifierLike, IdentifierWASM} from 'pshenmic-dpp'
+import { DataContractWASM, DocumentWASM, IdentifierLike, IdentifierWASM } from 'pshenmic-dpp'
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import query from '../documents/query.js'

@@ -1,4 +1,5 @@
-import { OrchardAddressWASM, PlatformAddressWASM } from 'pshenmic-dpp'
+import { PlatformAddressWASM } from 'pshenmic-dpp'
+import { DashPlatformShielded, OrchardAddressWASM } from 'dash-platform-shielded'
 import { DashPlatformSDK } from '../../src/DashPlatformSDK.js'
 
 let sdk: DashPlatformSDK
@@ -6,7 +7,7 @@ let mnemonic: string
 
 describe('KeyPair', () => {
   beforeAll(() => {
-    sdk = new DashPlatformSDK({ network: 'testnet' })
+    sdk = new DashPlatformSDK({ network: 'testnet', shielded: new DashPlatformShielded() })
     mnemonic = 'deliver frame tomato ring tool second dream mutual fade sponsor visa teach'
   })
 

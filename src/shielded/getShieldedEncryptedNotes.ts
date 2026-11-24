@@ -2,13 +2,15 @@ import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetShieldedEncryptedNotesRequest } from '../../proto/generated/platform.js'
 import { ShieldedEncryptedNote } from '../../types.js'
-import { IdentifierLike, IdentifierWASM, verifyShieldedEncryptedNotesProof } from 'pshenmic-dpp'
+import { IdentifierLike, IdentifierWASM } from 'pshenmic-dpp'
+import type { DashPlatformShielded } from 'dash-platform-shielded'
 import { SHIELDED_MAX_NOTES_PER_QUERY } from '../constants.js'
 import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getShieldedEncryptedNotes (
   grpcPool: GRPCPool,
   quorumKeyProvider: QuorumKeyProvider,
+  shielded: DashPlatformShielded,
   startIndex: bigint,
   count: number,
   tokenIdentifier?: IdentifierLike
@@ -29,7 +31,7 @@ export default async function getShieldedEncryptedNotes (
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getShieldedEncryptedNotes', getShieldedEncryptedNotesRequest)
-    .setProofVerifier(verifyShieldedEncryptedNotesProof, (_, platformVersion) => [startIndex, count, SHIELDED_MAX_NOTES_PER_QUERY, true, platformVersion, tokenId])
+    .setProofVerifier(shielded.verifyShieldedEncryptedNotesProof, (_, platformVersion) => [startIndex, count, SHIELDED_MAX_NOTES_PER_QUERY, true, platformVersion, tokenId?.bytes()])
     .mapResponse(data => {
       const notes = data.proved ? data.verified.notes : data.result.encryptedNotes.entries
 

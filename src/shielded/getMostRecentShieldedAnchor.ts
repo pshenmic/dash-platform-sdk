@@ -1,12 +1,14 @@
 import { GRPCPool } from '../grpcConnectionPool.js'
 import { QuorumKeyProvider } from '../quorumKeyProvider.js'
 import { GetMostRecentShieldedAnchorRequest } from '../../proto/generated/platform.js'
-import { IdentifierLike, IdentifierWASM, verifyMostRecentShieldedAnchorProof } from 'pshenmic-dpp'
+import { IdentifierLike, IdentifierWASM } from 'pshenmic-dpp'
+import type { DashPlatformShielded } from 'dash-platform-shielded'
 import QueryExecutor from '../QueryExecutor.js'
 
 export default async function getMostRecentShieldedAnchor (
   grpcPool: GRPCPool,
   quorumKeyProvider: QuorumKeyProvider,
+  shielded: DashPlatformShielded,
   tokenIdentifier?: IdentifierLike
 ): Promise<Uint8Array | undefined> {
   const tokenId = tokenIdentifier != null ? new IdentifierWASM(tokenIdentifier) : undefined
@@ -23,7 +25,7 @@ export default async function getMostRecentShieldedAnchor (
 
   return await QueryExecutor.build(grpcPool, quorumKeyProvider)
     .setGrpcRequest('getMostRecentShieldedAnchor', getMostRecentShieldedAnchorRequest)
-    .setProofVerifier(verifyMostRecentShieldedAnchorProof, (_, platformVersion) => [true, platformVersion, tokenId])
+    .setProofVerifier(shielded.verifyMostRecentShieldedAnchorProof, (_, platformVersion) => [true, platformVersion, tokenId?.bytes()])
     .mapResponse(data => data.proved ? data.verified.anchor : data.result.anchor)
     .execute()
 }
