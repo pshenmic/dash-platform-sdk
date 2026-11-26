@@ -11,6 +11,7 @@ import type { PlatformVersionWASM } from 'pshenmic-dpp'
 import type { DashPlatformShielded, ShieldedBuilderWASM } from 'dash-platform-shielded'
 import {
   IdentityCreateFromShieldedPoolParams,
+  PrivateDocumentCreateFromShieldedPoolParams,
   ShieldFromAssetLockParams,
   ShieldParams,
   ShieldedTransferMultiParams,
@@ -22,7 +23,16 @@ import {
 } from '../../types.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
 
-function memoBytes (memo?: string): Uint8Array {
+function memoBytes (memo?: string, paymentRef?: Uint8Array): Uint8Array {
+  if (paymentRef != null) {
+    if (memo != null && memo !== '') {
+      throw new Error('memo and paymentRef are mutually exclusive')
+    }
+
+    // protocol v15 payment reference: a value the payee chose and gave to the payer
+    return dpp.ShieldedMemoNAPI.fromPaymentRef(paymentRef).toBytes()
+  }
+
   return memo == null || memo === ''
     ? dpp.ShieldedMemoNAPI.empty().toBytes()
     : dpp.ShieldedMemoNAPI.fromString(memo).toBytes()
@@ -76,7 +86,7 @@ export default async function createStateTransition<K extends ShieldedTransition
         p.privateKeys.map(k => k.bytes()),
         p.feeStrategy.map(s => s.bytes()),
         p.userFeeIncrease,
-        memoBytes(p.memo),
+        memoBytes(p.memo, p.paymentRef),
         p.senderOvk,
         platformVersion(p.platformVersion)
       ))
@@ -90,7 +100,7 @@ export default async function createStateTransition<K extends ShieldedTransition
         p.shieldAmount,
         p.assetLockProof.bytes(),
         p.privateKey.bytes(),
-        memoBytes(p.memo),
+        memoBytes(p.memo, p.paymentRef),
         p.dummyOutputs,
         p.senderOvk,
         p.surplusOutput != null ? addressBytes(p.surplusOutput) : undefined,
@@ -111,7 +121,7 @@ export default async function createStateTransition<K extends ShieldedTransition
         p.coinType,
         p.account,
         p.anchor,
-        memoBytes(p.memo),
+        memoBytes(p.memo, p.paymentRef),
         platformVersion(p.platformVersion)
       )
 
@@ -129,7 +139,7 @@ export default async function createStateTransition<K extends ShieldedTransition
         p.coinType,
         p.account,
         p.anchor,
-        memoBytes(p.memo),
+        memoBytes(p.memo, p.paymentRef),
         platformVersion(p.platformVersion)
       )
 
@@ -147,7 +157,7 @@ export default async function createStateTransition<K extends ShieldedTransition
         p.coinType,
         p.account,
         p.anchor,
-        memoBytes(p.memo),
+        memoBytes(p.memo, p.paymentRef),
         platformVersion(p.platformVersion)
       )
 
@@ -183,7 +193,7 @@ export default async function createStateTransition<K extends ShieldedTransition
         p.coinType,
         p.account,
         p.anchor,
-        memoBytes(p.memo),
+        memoBytes(p.memo, p.paymentRef),
         platformVersion(p.platformVersion)
       )
 
@@ -199,6 +209,24 @@ export default async function createStateTransition<K extends ShieldedTransition
       )
 
       return StateTransitionWASM.createFromRawInstance(raw.toStateTransition())
+    }
+
+    case 'privateDocumentCreateFromShieldedPool': {
+      const p = params as PrivateDocumentCreateFromShieldedPoolParams
+      const result = await builder.privateDocumentCreateFromShieldedPool(
+        p.spends,
+        new IdentifierWASM(p.dataContractId).bytes(),
+        p.documentTypeName,
+        p.entries,
+        p.changeAddress,
+        p.seed,
+        p.coinType,
+        p.account,
+        p.anchor,
+        platformVersion(p.platformVersion)
+      )
+
+      return StateTransitionWASM.fromBytes(result.stateTransition)
     }
 
     default:

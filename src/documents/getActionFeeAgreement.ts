@@ -9,6 +9,7 @@ const BATCH_TYPES: Record<DocumentTransitionType, BatchTypeLike> = {
   create: 'Create',
   replace: 'Replace',
   delete: 'Delete',
+  erase: 'Erase',
   updatePrice: 'UpdatePrice',
   transfer: 'Transfer',
   purchase: 'Purchase'

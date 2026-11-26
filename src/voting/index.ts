@@ -4,7 +4,7 @@ import {
   IdentifierWASM, MasternodeVoteTransitionWASM, ResourceVoteChoiceWASM, StateTransitionWASM, VoteWASM
 } from 'pshenmic-dpp'
 import { createVoterIdentityId } from '../utils/createVoterIdentityId.js'
-import { ResourceVoteChoice } from '../../types.js'
+import { ResourceVoteChoice, YesNoVoteChoice } from '../../types.js'
 
 /**
  * Voting controller for performing masternode votes
@@ -45,6 +45,17 @@ export class VotingController {
     }
 
     return createVote(new IdentifierWASM(dataContractId), documentTypeName, indexName, indexValues, resourceVoteChoice)
+  }
+
+  /**
+   * Creates a {VoteWASM} for a yes/no vote poll (protocol v15+), such as the poll
+   * a decision proposal opens. Unlike resource votes, the poll is referenced by its id
+   *
+   * @param pollId {IdentifierLike} identifier of the yes/no vote poll
+   * @param choice {'yes' | 'no' | 'abstain'}
+   */
+  createYesNoVote (pollId: IdentifierLike, choice: YesNoVoteChoice): VoteWASM {
+    return VoteWASM.fromYesNo(pollId, choice)
   }
 
   /**

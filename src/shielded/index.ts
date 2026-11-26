@@ -13,17 +13,32 @@ import getShieldedPoolState from './getShieldedPoolState.js'
 import getShieldedNotesCount from './getShieldedNotesCount.js'
 import getShieldedNullifiers from './getShieldedNullifiers.js'
 import createStateTransition from './createStateTransition.js'
+import { LATEST_PLATFORM_VERSION } from '../constants.js'
 import {
+  DataContractWASM,
   IdentifierLike,
+  IdentityWASM,
   SerializedActionWASM,
   StateTransitionWASM
 } from 'pshenmic-dpp'
+import type { PlatformVersionWASM } from 'pshenmic-dpp'
 import type {
   DashPlatformShielded,
+  PrivateDocumentSenderAuth,
   RecoveredNoteWASM,
   ShieldedBuilderWASM,
   SpendableNoteWASM
 } from 'dash-platform-shielded'
+
+function identityBytes (identity: IdentityWASM | Uint8Array): Uint8Array {
+  return identity instanceof Uint8Array ? identity : identity.bytes()
+}
+
+function contractBytes (dataContract: DataContractWASM | Uint8Array, platformVersion?: PlatformVersionWASM): Uint8Array {
+  return dataContract instanceof Uint8Array
+    ? dataContract
+    : dataContract.bytes(platformVersion ?? LATEST_PLATFORM_VERSION)
+}
 
 /**
  * Shielded controller for requesting information about shielded pool
@@ -235,8 +250,123 @@ export class ShieldedController {
   }
 
   /**
+   * Encodes, encrypts and pads one entry of a private document type (protocol v15+), ready to
+   * pass in `entries` of the `privateDocumentCreateFromShieldedPool` transition.
+   *
+   * The entry is exactly the type's `private.entrySize` bytes: the standard private document
+   * envelope (v1) wrapping the encrypted payload. The chain never reads inside it, recipients
+   * find their entries by trial-decrypting.
+   *
+   * - `dataContract` - the contract instance or its serialized bytes
+   * - `documentTypeName` - the private document type
+   * - `properties` - the document fields, as a JSON object or JSON string; byte arrays are
+   *   hex/base64 and identifiers base58/hex
+   * - `sender` / `senderEncryptionKeyId` / `senderEncryptionPrivateKey` - the sender and its
+   *   enabled ECDSA_SECP256K1 ENCRYPTION key
+   * - `recipient` / `recipientKeyId` - the recipient and its enabled ECDSA_SECP256K1
+   *   DECRYPTION or ENCRYPTION key
+   * - `auth` - `'anonymous'` (default) or `'deniableMac'`
+   * - `eskSeed` - optional fresh 32-byte seed, drawn randomly when omitted
+   * - `platformVersion` - protocol version (defaults to the latest)
+   *
+   * Sender and recipient are full identities (e.g. from {IdentitiesController.getIdentityByIdentifier}),
+   * since their keys are read from them, not just their identifiers.
+   *
+   * @return {Uint8Array}
+   */
+  sealPrivateDocumentEntry (
+    dataContract: DataContractWASM | Uint8Array,
+    documentTypeName: string,
+    properties: string | Record<string, unknown>,
+    sender: IdentityWASM | Uint8Array,
+    senderEncryptionKeyId: number,
+    senderEncryptionPrivateKey: Uint8Array,
+    recipient: IdentityWASM | Uint8Array,
+    recipientKeyId: number,
+    auth: PrivateDocumentSenderAuth = 'anonymous',
+    eskSeed?: Uint8Array,
+    platformVersion?: PlatformVersionWASM
+  ): Uint8Array {
+    return this.requireShielded().sealPrivateDocumentEntry(
+      contractBytes(dataContract, platformVersion),
+      documentTypeName,
+      properties,
+      identityBytes(sender),
+      senderEncryptionKeyId,
+      senderEncryptionPrivateKey,
+      identityBytes(recipient),
+      recipientKeyId,
+      auth,
+      eskSeed,
+      platformVersion
+    )
+  }
+
+  /**
+   * Opens a sealed private document entry with the recipient's secret keys, returning the
+   * document properties it carries.
+   *
+   * Returns `null` when none of the keys opens the entry, the normal case for an entry
+   * sealed to someone else.
+   *
+   * - `dataContract` - the contract instance or its serialized bytes
+   * - `documentTypeName` - the private document type
+   * - `entry` - a sealed entry, as produced by {sealPrivateDocumentEntry} or read from the network
+   * - `recipient` - the recipient identity (full identity, not just its id)
+   * - `recipientSecretKeys` - the recipient's ECDSA_SECP256K1 secret keys, tried in order
+   *
+   * @return {Record<string, unknown> | null}
+   */
+  openPrivateDocumentEntry (
+    dataContract: DataContractWASM | Uint8Array,
+    documentTypeName: string,
+    entry: Uint8Array,
+    recipient: IdentityWASM | Uint8Array,
+    recipientSecretKeys: Uint8Array[],
+    platformVersion?: PlatformVersionWASM
+  ): Record<string, unknown> | null {
+    return this.requireShielded().openPrivateDocumentEntry(
+      contractBytes(dataContract, platformVersion),
+      documentTypeName,
+      entry,
+      identityBytes(recipient),
+      recipientSecretKeys,
+      platformVersion
+    )
+  }
+
+  /**
+   * Recovers an entry the sender sealed, using the outgoing viewing key derived from the
+   * sender's encryption private key, returning the document properties it carries.
+   *
+   * Returns `null` when the entry was not sealed with that key.
+   *
+   * - `dataContract` - the contract instance or its serialized bytes
+   * - `documentTypeName` - the private document type
+   * - `entry` - a sealed entry
+   * - `senderEncryptionPrivateKey` - the secret key of the ENCRYPTION key the entry was sealed with
+   *
+   * @return {Record<string, unknown> | null}
+   */
+  recoverSentPrivateDocumentEntry (
+    dataContract: DataContractWASM | Uint8Array,
+    documentTypeName: string,
+    entry: Uint8Array,
+    senderEncryptionPrivateKey: Uint8Array,
+    platformVersion?: PlatformVersionWASM
+  ): Record<string, unknown> | null {
+    return this.requireShielded().recoverSentPrivateDocumentEntry(
+      contractBytes(dataContract, platformVersion),
+      documentTypeName,
+      entry,
+      senderEncryptionPrivateKey,
+      platformVersion
+    )
+  }
+
+  /**
    * Helper function for building and proving shielded (Orchard) transitions.
-   * It may be used to create any of 7 shielded transition actions:
+   * It may be used to create any of 8 shielded transition actions:
    *
    * 1) shield - transparent platform addresses -> pool (deposit)
    * 2) shieldFromAssetLock - asset lock -> pool (deposit)
@@ -245,10 +375,11 @@ export class ShieldedController {
    * 5) shieldedTransfer - pool -> pool (spend)
    * 6) shieldedTransferMulti - pool -> pool, several recipients, each with its own memo (spend)
    * 7) identityCreateFromShieldedPool - pool -> new identity (spend)
+   * 8) privateDocumentCreateFromShieldedPool - pool -> private document entries (spend, protocol v15+)
    *
    * Spends require a {SpendableNoteWASM} witnessed against an on-chain anchor.
    *
-   * @param type {string} Type of the shielded transition, must be one of ('shield' | 'shieldFromAssetLock' | 'shieldedWithdrawal' | 'unshield' | 'shieldedTransfer' | 'shieldedTransferMulti' | 'identityCreateFromShieldedPool')
+   * @param type {string} Type of the shielded transition, must be one of ('shield' | 'shieldFromAssetLock' | 'shieldedWithdrawal' | 'unshield' | 'shieldedTransfer' | 'shieldedTransferMulti' | 'identityCreateFromShieldedPool' | 'privateDocumentCreateFromShieldedPool')
    * @param params {ShieldedTransitionParams} params
    *
    * @return {StateTransitionWASM}

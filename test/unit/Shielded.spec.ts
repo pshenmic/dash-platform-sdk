@@ -2,6 +2,9 @@ import {
   AddressFundsFeeStrategyStepWASM,
   AssetLockProofWASM,
   CoreScriptWASM,
+  DataContractWASM,
+  IdentityPublicKeyWASM,
+  IdentityWASM,
   InputAddressWASM,
   KeyType,
   OutPointWASM,
@@ -41,6 +44,23 @@ function platformAddress (keyHash: Uint8Array = randomBytes(20)): PlatformAddres
   bytes[0] = 0x00
   bytes.set(keyHash, 1)
   return PlatformAddressWASM.fromBytes(bytes)
+}
+
+// Builds an identity holding an enabled ECDSA_SECP256K1 key of `purpose` and that key's private key.
+function identityWithKey (purpose: Purpose): { identity: IdentityWASM, privateKey: PrivateKeyWASM } {
+  const privateKey = new PrivateKeyWASM(randomBytes(32), 'testnet')
+  const publicKey = new IdentityPublicKeyWASM(
+    0,
+    purpose,
+    SecurityLevel.MEDIUM,
+    KeyType.ECDSA_SECP256K1,
+    false,
+    Buffer.from(privateKey.getPublicKey().bytes()).toString('hex')
+  )
+  const identity = new IdentityWASM(Buffer.from(randomBytes(32)).toString('hex'))
+  identity.addPublicKey(publicKey)
+
+  return { identity, privateKey }
 }
 
 // Builds a spendable note owned by `seed` and a matching anchor by inserting its
@@ -187,6 +207,80 @@ describe('Shielded', () => {
   }, 60000)
 
   describe('should be able to create state transition', () => {
+    test('should be able to seal and open a private document entry', () => {
+      const owner = identityWithKey(Purpose.ENCRYPTION)
+      const sender = identityWithKey(Purpose.ENCRYPTION)
+      const recipient = identityWithKey(Purpose.DECRYPTION)
+
+      const contract = new DataContractWASM(owner.identity.id, BigInt(1), {
+        note: {
+          type: 'object',
+          private: { entrySize: 500 },
+          documentsMutable: false,
+          canBeDeleted: false,
+          properties: {
+            message: { type: 'string', maxLength: 100, position: 0 }
+          },
+          additionalProperties: false
+        }
+      })
+
+      const entry = sdk.shielded.sealPrivateDocumentEntry(
+        contract,
+        'note',
+        { message: 'hello' },
+        sender.identity,
+        0,
+        sender.privateKey.bytes(),
+        recipient.identity,
+        0
+      )
+
+      expect(entry).toBeInstanceOf(Uint8Array)
+      expect(entry.length).toEqual(500)
+
+      const opened = sdk.shielded.openPrivateDocumentEntry(contract, 'note', entry, recipient.identity, [recipient.privateKey.bytes()])
+
+      expect(opened).toEqual({ message: 'hello' })
+
+      const recovered = sdk.shielded.recoverSentPrivateDocumentEntry(contract, 'note', entry, sender.privateKey.bytes())
+
+      expect(recovered).toEqual({ message: 'hello' })
+    })
+
+    test('should not open a private document entry with a foreign key', () => {
+      const owner = identityWithKey(Purpose.ENCRYPTION)
+      const sender = identityWithKey(Purpose.ENCRYPTION)
+      const recipient = identityWithKey(Purpose.DECRYPTION)
+      const stranger = identityWithKey(Purpose.DECRYPTION)
+
+      const contract = new DataContractWASM(owner.identity.id, BigInt(1), {
+        note: {
+          type: 'object',
+          private: { entrySize: 500 },
+          documentsMutable: false,
+          canBeDeleted: false,
+          properties: {
+            message: { type: 'string', maxLength: 100, position: 0 }
+          },
+          additionalProperties: false
+        }
+      })
+
+      const entry = sdk.shielded.sealPrivateDocumentEntry(
+        contract,
+        'note',
+        { message: 'hello' },
+        sender.identity,
+        0,
+        sender.privateKey.bytes(),
+        recipient.identity,
+        0
+      )
+
+      expect(sdk.shielded.openPrivateDocumentEntry(contract, 'note', entry, stranger.identity, [stranger.privateKey.bytes()])).toBeNull()
+    })
+
     test('should be able to create a shield transition', async () => {
       const seed = randomBytes(32)
       const recipient = OrchardAddressWASM.fromSeed(seed, COIN_TYPE, ACCOUNT)
@@ -201,6 +295,25 @@ describe('Shielded', () => {
         feeStrategy: [AddressFundsFeeStrategyStepWASM.DeductFromInput(0)],
         userFeeIncrease: 0
         // memo omitted -> defaults to an empty memo
+      })
+
+      expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
+    }, 60000)
+
+    test('should be able to create a shield transition with a payment reference memo', async () => {
+      const seed = randomBytes(32)
+      const recipient = OrchardAddressWASM.fromSeed(seed, COIN_TYPE, ACCOUNT)
+      const privateKey = new PrivateKeyWASM(randomBytes(32), 'testnet')
+      const address = platformAddress(privateKey.getPublicKey().hash160())
+
+      const stateTransition = await sdk.shielded.createStateTransition('shield', {
+        recipient,
+        shieldAmount: BigInt(50000000),
+        inputs: [new InputAddressWASM(address, 0, BigInt(100000000))],
+        privateKeys: [privateKey],
+        feeStrategy: [AddressFundsFeeStrategyStepWASM.DeductFromInput(0)],
+        userFeeIncrease: 0,
+        paymentRef: new Uint8Array([0x01, 0x02, 0x03, 0x04])
       })
 
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
@@ -317,6 +430,26 @@ describe('Shielded', () => {
       })
 
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
+    }, 60000)
+
+    test('should be able to create a privateDocumentCreateFromShieldedPool transition', async () => {
+      const seed = randomBytes(32)
+      const { spend, anchor, owner } = makeSpendableNote(seed, BigInt(10000000000))
+
+      const stateTransition = await sdk.shielded.createStateTransition('privateDocumentCreateFromShieldedPool', {
+        spends: [spend],
+        dataContractId: randomBytes(32),
+        documentTypeName: 'privateNote',
+        entries: [randomBytes(64)],
+        changeAddress: owner,
+        seed,
+        coinType: COIN_TYPE,
+        account: ACCOUNT,
+        anchor
+      })
+
+      expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
+      expect(stateTransition.getActionTypeNumber()).toEqual(29)
     }, 60000)
   })
 })
