@@ -3,6 +3,7 @@ import {
   BatchTransitionWASM,
   DocumentCreateTransitionWASM,
   DocumentDeleteTransitionWASM,
+  DocumentEraseTransitionWASM,
   DocumentPurchaseTransitionWASM,
   DocumentReplaceTransitionWASM,
   DocumentTransferTransitionWASM,
@@ -25,6 +26,11 @@ const documentTransitionsMap = {
   },
   delete: {
     class: DocumentDeleteTransitionWASM,
+    arguments: ['identityContractNonce'],
+    optionalArguments: ['tokenPaymentInfo', 'actionFeeAgreement']
+  },
+  erase: {
+    class: DocumentEraseTransitionWASM,
     arguments: ['identityContractNonce'],
     optionalArguments: ['tokenPaymentInfo', 'actionFeeAgreement']
   },

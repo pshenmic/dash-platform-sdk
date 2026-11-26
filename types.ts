@@ -65,7 +65,7 @@ export { DashPlatformSDK } from './src/DashPlatformSDK.js'
 
 export type MasternodeList = Record<string, MasternodeInfo>
 
-export type DocumentTransitionType = 'create' | 'replace' | 'delete' | 'updatePrice' | 'transfer' | 'purchase'
+export type DocumentTransitionType = 'create' | 'replace' | 'delete' | 'erase' | 'updatePrice' | 'transfer' | 'purchase'
 
 /**
  * The action fee a document transition agrees to pay to the contract fee pots (protocol v14).
@@ -119,6 +119,11 @@ export interface ShieldedSpendParams extends ShieldedTransitionBaseParams {
   anchor: Uint8Array
   /** optional UTF-8 memo string (defaults to an empty memo) */
   memo?: string
+  /**
+   * optional payment reference memo (protocol v15), 1 to 32 bytes, e.g. an invoice or order number
+   * the payee gave to the payer. Mutually exclusive with `memo`
+   */
+  paymentRef?: Uint8Array
 }
 
 /** Transparent platform addresses -> pool (deposit). */
@@ -131,6 +136,8 @@ export interface ShieldParams extends ShieldedTransitionBaseParams {
   userFeeIncrease: number
   /** optional UTF-8 memo string (defaults to an empty memo) */
   memo?: string
+  /** optional payment reference memo (protocol v15), 1 to 32 bytes. Mutually exclusive with `memo` */
+  paymentRef?: Uint8Array
   senderOvk?: Uint8Array
 }
 
@@ -142,6 +149,8 @@ export interface ShieldFromAssetLockParams extends ShieldedTransitionBaseParams 
   privateKey: PrivateKeyWASM
   /** optional UTF-8 memo string (defaults to an empty memo) */
   memo?: string
+  /** optional payment reference memo (protocol v15), 1 to 32 bytes. Mutually exclusive with `memo` */
+  paymentRef?: Uint8Array
   dummyOutputs: number
   senderOvk?: Uint8Array
   surplusOutput?: PlatformAddressLike
@@ -168,7 +177,7 @@ export interface ShieldedTransferParams extends ShieldedSpendParams {
 }
 
 /** Pool -> pool, several recipients (spend). Each output carries its own memo. */
-export interface ShieldedTransferMultiParams extends Omit<ShieldedSpendParams, 'memo'> {
+export interface ShieldedTransferMultiParams extends Omit<ShieldedSpendParams, 'memo' | 'paymentRef'> {
   outputs: ShieldedOutputWASM[]
 }
 
@@ -180,6 +189,24 @@ export interface IdentityCreateFromShieldedPoolParams extends ShieldedSpendParam
   sendToAddressOnCreationFailure: PlatformAddressLike
 }
 
+/**
+ * Pool -> private document entries (spend, protocol v15+). No identity signs: the data contract,
+ * document type and entries are bound into the bundle's sighash, and the fee is pinned by consensus
+ * to the bundle's value balance.
+ */
+export interface PrivateDocumentCreateFromShieldedPoolParams extends Omit<ShieldedSpendParams, 'memo' | 'paymentRef'> {
+  /** contract owning the private document type */
+  dataContractId: IdentifierLike
+  /** private document type to create entries in */
+  documentTypeName: string
+  /**
+   * Already-built entries, 1 to 16, each exactly the private document type's `private.entrySize`
+   * bytes: the standard private document envelope (v1) wrapping the encrypted plaintext payload.
+   * These are not plain document bodies — build them with {ShieldedController.sealPrivateDocumentEntry}
+   */
+  entries: Uint8Array[]
+}
+
 /** Maps each shielded transition type to the params it requires. */
 export interface ShieldedTransitionParamsMap {
   shield: ShieldParams
@@ -189,6 +216,7 @@ export interface ShieldedTransitionParamsMap {
   shieldedTransfer: ShieldedTransferParams
   shieldedTransferMulti: ShieldedTransferMultiParams
   identityCreateFromShieldedPool: IdentityCreateFromShieldedPoolParams
+  privateDocumentCreateFromShieldedPool: PrivateDocumentCreateFromShieldedPoolParams
 }
 
 export type ShieldedTransitionType = keyof ShieldedTransitionParamsMap
@@ -402,6 +430,9 @@ export interface TokenDirectPurchasePrices {
 }
 
 export type ResourceVoteChoice = IdentifierLike | 'lock' | 'abstain'
+
+/** The answer of a yes/no vote (protocol v15), used by decision proposal polls */
+export type YesNoVoteChoice = 'yes' | 'no' | 'abstain'
 
 export interface PlatformAddressInfo {
   address: PlatformAddressWASM

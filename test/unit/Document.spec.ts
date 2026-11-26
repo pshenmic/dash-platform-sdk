@@ -173,6 +173,15 @@ describe('Document', () => {
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
     })
 
+    test('should be able to create an erase transition', async () => {
+      const identityContractNonce = BigInt(1)
+      const document = sdk.documents.create(dataContract, documentType, data, identity, identityContractNonce, revision + BigInt(1))
+
+      const stateTransition = sdk.documents.createStateTransition(document, 'erase', { identityContractNonce })
+
+      expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
+    })
+
     test('should be able to create a transfer transition', async () => {
       const identityContractNonce = BigInt(1)
       const document = sdk.documents.create(dataContract, documentType, data, identity, identityContractNonce, revision + BigInt(1))

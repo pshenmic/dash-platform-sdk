@@ -1,6 +1,6 @@
 {
   "name": "dash-platform-sdk",
-  "version": "1.7.0-dev.1",
+  "version": "1.7.0",
   "main": "index.js",
   "description": "Lightweight SDK for accessing Dash Platform blockchain",
   "repository": {
@@ -42,7 +42,7 @@
     "tsx": "^4.20.5",
     "typedoc": "^0.28.7",
     "typescript": "^5.8.2",
-    "dash-platform-shielded": "0.0.1"
+    "dash-platform-shielded": "0.0.3"
   },
   "scripts": {
     "build": "tsc && rollup -c rollup.config.js",
@@ -60,6 +60,6 @@
     "@scure/bip32": "^2.0.0",
     "@scure/bip39": "^2.0.0",
     "@scure/btc-signer": "^2.0.1",
-    "pshenmic-dpp": "2.1.0-dev.1"
+    "pshenmic-dpp": "2.1.0"
   }
 }

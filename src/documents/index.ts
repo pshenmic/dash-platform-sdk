@@ -177,17 +177,18 @@ export class DocumentsController {
   }
 
   /**
-   * Helper function for creating {StateTransitionWASM} from documents. It may be used to create any of 6 Document Transition actions:
+   * Helper function for creating {StateTransitionWASM} from documents. It may be used to create any of 7 Document Transition actions:
    *
    * 1) Create - creates a document
    * 2) Replace - replaces a document
    * 3) Delete - deletes a document
-   * 4) Transfer - transfer a document from one identity to another
+   * 4) Erase - purges the retained revisions of a deleted keep-history document (protocol v15+)
    * 5) SetPrice - set a price for a document in credits
    * 6) Purchase - purchase a document from identity (if price was set)
+   * 7) Transfer - transfer a document from one identity to another
    *
    * @param document {DocumentWASM} Instance of the document to make transition with
-   * @param type {string} Type of the document transition, must be a one of ('create' | 'replace' | 'delete' | 'updatePrice' |'transfer' | 'purchase')
+   * @param type {string} Type of the document transition, must be a one of ('create' | 'replace' | 'delete' | 'erase' | 'updatePrice' |'transfer' | 'purchase')
    * @param params {DocumentTransitionParams} params
    */
   createStateTransition (document: DocumentWASM, type: DocumentTransitionType, params: DocumentTransitionParams): StateTransitionWASM {
@@ -238,7 +239,7 @@ export class DocumentsController {
    *
    * @param dataContractId {IdentifierLike} Identifier of the Data Contract
    * @param documentType {string} Document type of the data contract
-   * @param action {string} Type of the document transition ('create' | 'replace' | 'delete' | 'updatePrice' | 'transfer' | 'purchase')
+   * @param action {string} Type of the document transition ('create' | 'replace' | 'delete' | 'erase' | 'updatePrice' | 'transfer' | 'purchase')
    * @param increaseTolerancePercent {number=} How far the fee multiplier may grow before execution, in percent (defaults to 0).
    * The network refuses the transition when the multiplier of the executing epoch is higher
    *
