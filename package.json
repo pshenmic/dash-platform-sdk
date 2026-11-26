@@ -1,6 +1,6 @@
 {
   "name": "dash-platform-sdk",
-  "version": "1.7.0-dev.2",
+  "version": "1.7.0-dev.3",
   "main": "index.js",
   "description": "Lightweight SDK for accessing Dash Platform blockchain",
   "repository": {
@@ -60,6 +60,6 @@
     "@scure/bip32": "^2.0.0",
     "@scure/bip39": "^2.0.0",
     "@scure/btc-signer": "^2.0.1",
-    "pshenmic-dpp": "2.1.0"
+    "pshenmic-dpp": "2.1.1"
   }
 }
