@@ -17,6 +17,7 @@ export interface QuorumKeyProvider {
 
 /**
  * Default quorum key provider, fetches quorum public keys from Platform Explorer API
+ * and falls back to the DCG quorum service when Platform Explorer is unavailable
  */
 export class PlatformExplorerQuorumKeyProvider implements QuorumKeyProvider {
   network: Network
@@ -27,12 +28,40 @@ export class PlatformExplorerQuorumKeyProvider implements QuorumKeyProvider {
   }
 
   async getQuorumPublicKey (quorumType: number, quorumHash: string): Promise<string> {
-    const cached = this.#cache[`${quorumType}_${quorumHash}`]
+    const cacheKey = `${quorumType}_${quorumHash}`
+    const cached = this.#cache[cacheKey]
 
     if (cached != null) {
       return cached
     }
 
+    let platformExplorerError: unknown
+
+    try {
+      const quorumPublicKey = await this.#getPlatformExplorerQuorumPublicKey(quorumType, quorumHash)
+
+      this.#cache[cacheKey] = quorumPublicKey
+
+      return quorumPublicKey
+    } catch (e) {
+      platformExplorerError = e
+    }
+
+    try {
+      const quorumPublicKey = await this.#getDCGQuorumPublicKey(quorumHash)
+
+      this.#cache[cacheKey] = quorumPublicKey
+
+      return quorumPublicKey
+    } catch (e) {
+      throw new AggregateError(
+        [platformExplorerError, e],
+        `Failed to query quorum public key for quorum ${quorumHash} (type ${quorumType}) from Platform Explorer and DCG quorum service`
+      )
+    }
+  }
+
+  async #getPlatformExplorerQuorumPublicKey (quorumType: number, quorumHash: string): Promise<string> {
     const url = `https://${this.network === 'mainnet' ? '' : 'testnet.'}platform-explorer.pshenmic.dev/quorum/info?quorumType=${quorumType}&quorumHash=${quorumHash}`
 
     const resp = await fetchWithDetails(url, {
@@ -40,15 +69,35 @@ export class PlatformExplorerQuorumKeyProvider implements QuorumKeyProvider {
     })
 
     if (resp.status !== 200) {
-      throw new Error('Failed to query Platform Explorer for quorum public keys')
+      throw new Error(`Platform Explorer responded with HTTP ${resp.status}`)
     }
 
-    const data = await resp.json()
+    const { quorumPublicKey }: { quorumPublicKey?: string } = await resp.json()
 
-    const { quorumPublicKey } = data
-
-    this.#cache[`${quorumType}_${quorumHash}`] = quorumPublicKey
+    if (typeof quorumPublicKey !== 'string') {
+      throw new Error('Platform Explorer response does not contain quorum public key')
+    }
 
     return quorumPublicKey
+  }
+
+  async #getDCGQuorumPublicKey (quorumHash: string): Promise<string> {
+    const url = `https://quorums.${this.network}.networks.dash.org/quorums/${quorumHash}`
+
+    const resp = await fetchWithDetails(url, {
+      method: 'GET'
+    })
+
+    if (resp.status !== 200) {
+      throw new Error(`DCG quorum service responded with HTTP ${resp.status}`)
+    }
+
+    const { success, data, message }: { success?: boolean, data?: { key?: string } | null, message?: string | null } = await resp.json()
+
+    if (success !== true || typeof data?.key !== 'string') {
+      throw new Error(`DCG quorum service did not return quorum public key${message != null ? `: ${message}` : ''}`)
+    }
+
+    return data.key
   }
 }
