@@ -4,8 +4,9 @@ import {
   CoreScriptWASM,
   DocumentActionFeeAgreementWASM,
   DocumentWASM,
-  GasFeesPaidByWASM, IdentifierLike,
+  GasFeesPaidByWASM, GroupStateTransitionInfoWASM, IdentifierLike,
   IdentifierWASM,
+  IdentityPublicKeyWASM,
   InputAddressWASM,
   KeyType,
   PlatformAddressLike,
@@ -207,6 +208,141 @@ export interface PrivateDocumentCreateFromShieldedPoolParams extends Omit<Shield
   entries: Uint8Array[]
 }
 
+/**
+ * The token shielded pool a token action is bound to. The credit pool is one per network;
+ * a token pool belongs to one token of one data contract, so every token action names it.
+ */
+export interface TokenPoolParams extends ShieldedTransitionBaseParams {
+  tokenId: IdentifierLike
+  dataContractId: IdentifierLike
+  tokenContractPosition: number
+  /** optional UTF-8 memo string (defaults to an empty memo) */
+  memo?: string
+  /** optional payment reference memo (protocol v15), 1 to 32 bytes. Mutually exclusive with `memo` */
+  paymentRef?: Uint8Array
+}
+
+/**
+ * What a token action signed by the owner identity needs beyond its pool: the identity that
+ * signs the batch transition and pays its fee out of its own credit balance.
+ */
+export interface TokenOwnerSignedParams extends TokenPoolParams {
+  ownerId: IdentifierLike
+  identityPublicKey: IdentityPublicKeyWASM
+  privateKey: PrivateKeyWASM
+  identityContractNonce: bigint
+  userFeeIncrease: number
+}
+
+/** Spend inputs of a token pool spend, witnessed against that token pool's own anchor. */
+export interface TokenSpendParams {
+  spends: SpendableNoteWASM[]
+  changeAddress: OrchardAddressWASM
+  seed: Uint8Array
+  coinType: number
+  account: number
+  anchor: Uint8Array
+}
+
+/**
+ * Spend inputs of an action that spends token notes and credit notes at once: the token pool
+ * moves the tokens and the credit pool pays the fee, each witnessed against its own anchor.
+ * No identity signs and no identity balance is touched.
+ */
+export interface TokenAndFeeSpendParams {
+  tokenSpends: SpendableNoteWASM[]
+  tokenChangeAddress: OrchardAddressWASM
+  tokenAnchor: Uint8Array
+  feeSpends: SpendableNoteWASM[]
+  feeChangeAddress: OrchardAddressWASM
+  feeAnchor: Uint8Array
+  seed: Uint8Array
+  coinType: number
+  account: number
+}
+
+/** Owner token balance -> token pool (deposit). */
+export interface TokenShieldParams extends TokenOwnerSignedParams {
+  recipient: OrchardAddressWASM
+  amount: bigint
+  senderOvk?: Uint8Array
+}
+
+/** Token pool -> `recipientId`'s token balance (spend). */
+export interface TokenUnshieldParams extends TokenOwnerSignedParams, TokenSpendParams {
+  recipientId: IdentifierLike
+  amount: bigint
+}
+
+/** Token pool -> token pool (spend). */
+export interface TokenShieldedTransferParams extends TokenOwnerSignedParams, TokenSpendParams {
+  recipient: OrchardAddressWASM
+  transferAmount: bigint
+}
+
+/** Newly minted tokens -> token pool. */
+export interface TokenMintToPoolParams extends TokenOwnerSignedParams {
+  recipient: OrchardAddressWASM
+  amount: bigint
+  senderOvk?: Uint8Array
+  /** optional public note recorded with the action */
+  publicNote?: string
+  /** pass it when the contract requires a group to authorize the action */
+  usingGroupInfo?: GroupStateTransitionInfoWASM
+}
+
+/** Tokens burned out of the token pool (spend). */
+export interface TokenBurnFromPoolParams extends TokenOwnerSignedParams, TokenSpendParams {
+  amount: bigint
+  /** optional public note recorded with the action */
+  publicNote?: string
+  /** pass it when the contract requires a group to authorize the action */
+  usingGroupInfo?: GroupStateTransitionInfoWASM
+}
+
+/** A claimed token distribution -> token pool. */
+export interface TokenClaimToPoolParams extends TokenOwnerSignedParams {
+  recipient: OrchardAddressWASM
+  amount: bigint
+  distributionType: string | number
+  /** upper bound of the distribution moment being claimed, for a perpetual distribution */
+  claimUpTo?: bigint
+  senderOvk?: Uint8Array
+  /** optional public note recorded with the action */
+  publicNote?: string
+}
+
+/** Tokens bought at their direct purchase price -> token pool. */
+export interface TokenDirectPurchaseToPoolParams extends TokenOwnerSignedParams {
+  recipient: OrchardAddressWASM
+  tokenCount: bigint
+  totalAgreedPrice: bigint
+  senderOvk?: Uint8Array
+}
+
+/** Token pool -> token pool, fee paid from the credit pool (spend). */
+export interface TokenShieldedTransferWithShieldedFeeParams extends TokenPoolParams, TokenAndFeeSpendParams {
+  recipient: OrchardAddressWASM
+  transferAmount: bigint
+}
+
+/** Token pool -> `recipientId`'s token balance, fee paid from the credit pool (spend). */
+export interface TokenUnshieldWithShieldedFeeParams extends TokenPoolParams, TokenAndFeeSpendParams {
+  recipientId: IdentifierLike
+  amount: bigint
+}
+
+/**
+ * Tokens bought at their direct purchase price -> token pool, price and fee both paid from
+ * the credit pool (spend). Nothing is spent out of a token pool, so there is no token anchor.
+ */
+export interface TokenPurchaseFromShieldedPoolParams extends TokenPoolParams,
+  Omit<TokenAndFeeSpendParams, 'tokenSpends' | 'tokenChangeAddress' | 'tokenAnchor'> {
+  recipient: OrchardAddressWASM
+  tokenCount: bigint
+  totalAgreedPrice: bigint
+}
+
 /** Maps each shielded transition type to the params it requires. */
 export interface ShieldedTransitionParamsMap {
   shield: ShieldParams
@@ -217,6 +353,16 @@ export interface ShieldedTransitionParamsMap {
   shieldedTransferMulti: ShieldedTransferMultiParams
   identityCreateFromShieldedPool: IdentityCreateFromShieldedPoolParams
   privateDocumentCreateFromShieldedPool: PrivateDocumentCreateFromShieldedPoolParams
+  tokenShield: TokenShieldParams
+  tokenUnshield: TokenUnshieldParams
+  tokenShieldedTransfer: TokenShieldedTransferParams
+  tokenMintToPool: TokenMintToPoolParams
+  tokenBurnFromPool: TokenBurnFromPoolParams
+  tokenClaimToPool: TokenClaimToPoolParams
+  tokenDirectPurchaseToPool: TokenDirectPurchaseToPoolParams
+  tokenShieldedTransferWithShieldedFee: TokenShieldedTransferWithShieldedFeeParams
+  tokenUnshieldWithShieldedFee: TokenUnshieldWithShieldedFeeParams
+  tokenPurchaseFromShieldedPool: TokenPurchaseFromShieldedPoolParams
 }
 
 export type ShieldedTransitionType = keyof ShieldedTransitionParamsMap

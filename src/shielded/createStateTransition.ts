@@ -1,6 +1,7 @@
 import {
   ContractBoundsWASM,
   dpp,
+  IdentifierLike,
   IdentifierWASM,
   IdentityPublicKeyInCreationWASM,
   PlatformAddressWASM,
@@ -19,6 +20,17 @@ import {
   ShieldedTransitionParamsMap,
   ShieldedTransitionType,
   ShieldedWithdrawalParams,
+  TokenBurnFromPoolParams,
+  TokenClaimToPoolParams,
+  TokenDirectPurchaseToPoolParams,
+  TokenMintToPoolParams,
+  TokenOwnerSignedParams,
+  TokenPurchaseFromShieldedPoolParams,
+  TokenShieldParams,
+  TokenShieldedTransferParams,
+  TokenShieldedTransferWithShieldedFeeParams,
+  TokenUnshieldParams,
+  TokenUnshieldWithShieldedFeeParams,
   UnshieldParams
 } from '../../types.js'
 import { LATEST_PLATFORM_VERSION } from '../constants.js'
@@ -67,6 +79,21 @@ function identityPublicKeyBytes (key: IdentityCreateFromShieldedPoolParams['publ
     signature,
     contractBounds != null ? new ContractBoundsWASM(contractBounds.dataContractId, contractBounds.documentType) : undefined
   ).bytes()
+}
+
+function identifierBytes (identifier: IdentifierLike): Uint8Array {
+  return new IdentifierWASM(identifier).bytes()
+}
+
+// The token pool an action is bound to, and the identity that signs it. Every owner-signed
+// token action starts with the same six arguments, in this order.
+function tokenPoolArguments (p: TokenOwnerSignedParams): [Uint8Array, Uint8Array, Uint8Array, number] {
+  return [
+    identifierBytes(p.tokenId),
+    identifierBytes(p.ownerId),
+    identifierBytes(p.dataContractId),
+    p.tokenContractPosition
+  ]
 }
 
 export default async function createStateTransition<K extends ShieldedTransitionType> (
@@ -223,6 +250,217 @@ export default async function createStateTransition<K extends ShieldedTransition
         p.coinType,
         p.account,
         p.anchor,
+        platformVersion(p.platformVersion)
+      )
+
+      return StateTransitionWASM.fromBytes(result.stateTransition)
+    }
+
+    case 'tokenShield': {
+      const p = params as TokenShieldParams
+
+      return StateTransitionWASM.fromBytes(await builder.tokenShield(
+        ...tokenPoolArguments(p),
+        p.recipient,
+        p.amount,
+        memoBytes(p.memo, p.paymentRef),
+        p.senderOvk,
+        p.identityPublicKey.bytes(),
+        p.privateKey.bytes(),
+        p.identityContractNonce,
+        p.userFeeIncrease,
+        platformVersion(p.platformVersion)
+      ))
+    }
+
+    case 'tokenUnshield': {
+      const p = params as TokenUnshieldParams
+
+      return StateTransitionWASM.fromBytes(await builder.tokenUnshield(
+        ...tokenPoolArguments(p),
+        p.spends,
+        identifierBytes(p.recipientId),
+        p.amount,
+        p.changeAddress,
+        p.seed,
+        p.coinType,
+        p.account,
+        p.anchor,
+        memoBytes(p.memo, p.paymentRef),
+        p.identityPublicKey.bytes(),
+        p.privateKey.bytes(),
+        p.identityContractNonce,
+        p.userFeeIncrease,
+        platformVersion(p.platformVersion)
+      ))
+    }
+
+    case 'tokenShieldedTransfer': {
+      const p = params as TokenShieldedTransferParams
+
+      return StateTransitionWASM.fromBytes(await builder.tokenShieldedTransfer(
+        ...tokenPoolArguments(p),
+        p.spends,
+        p.recipient,
+        p.transferAmount,
+        p.changeAddress,
+        p.seed,
+        p.coinType,
+        p.account,
+        p.anchor,
+        memoBytes(p.memo, p.paymentRef),
+        p.identityPublicKey.bytes(),
+        p.privateKey.bytes(),
+        p.identityContractNonce,
+        p.userFeeIncrease,
+        platformVersion(p.platformVersion)
+      ))
+    }
+
+    case 'tokenMintToPool': {
+      const p = params as TokenMintToPoolParams
+
+      return StateTransitionWASM.fromBytes(await builder.tokenMintToPool(
+        ...tokenPoolArguments(p),
+        p.recipient,
+        p.amount,
+        memoBytes(p.memo, p.paymentRef),
+        p.senderOvk,
+        p.publicNote,
+        p.usingGroupInfo?.bytes(),
+        p.identityPublicKey.bytes(),
+        p.privateKey.bytes(),
+        p.identityContractNonce,
+        p.userFeeIncrease,
+        platformVersion(p.platformVersion)
+      ))
+    }
+
+    case 'tokenBurnFromPool': {
+      const p = params as TokenBurnFromPoolParams
+
+      return StateTransitionWASM.fromBytes(await builder.tokenBurnFromPool(
+        ...tokenPoolArguments(p),
+        p.spends,
+        p.amount,
+        p.changeAddress,
+        p.seed,
+        p.coinType,
+        p.account,
+        p.anchor,
+        memoBytes(p.memo, p.paymentRef),
+        p.publicNote,
+        p.usingGroupInfo?.bytes(),
+        p.identityPublicKey.bytes(),
+        p.privateKey.bytes(),
+        p.identityContractNonce,
+        p.userFeeIncrease,
+        platformVersion(p.platformVersion)
+      ))
+    }
+
+    case 'tokenClaimToPool': {
+      const p = params as TokenClaimToPoolParams
+
+      return StateTransitionWASM.fromBytes(await builder.tokenClaimToPool(
+        ...tokenPoolArguments(p),
+        p.recipient,
+        p.amount,
+        p.distributionType,
+        p.claimUpTo,
+        memoBytes(p.memo, p.paymentRef),
+        p.senderOvk,
+        p.publicNote,
+        p.identityPublicKey.bytes(),
+        p.privateKey.bytes(),
+        p.identityContractNonce,
+        p.userFeeIncrease,
+        platformVersion(p.platformVersion)
+      ))
+    }
+
+    case 'tokenDirectPurchaseToPool': {
+      const p = params as TokenDirectPurchaseToPoolParams
+
+      return StateTransitionWASM.fromBytes(await builder.tokenDirectPurchaseToPool(
+        ...tokenPoolArguments(p),
+        p.recipient,
+        p.tokenCount,
+        p.totalAgreedPrice,
+        memoBytes(p.memo, p.paymentRef),
+        p.senderOvk,
+        p.identityPublicKey.bytes(),
+        p.privateKey.bytes(),
+        p.identityContractNonce,
+        p.userFeeIncrease,
+        platformVersion(p.platformVersion)
+      ))
+    }
+
+    case 'tokenShieldedTransferWithShieldedFee': {
+      const p = params as TokenShieldedTransferWithShieldedFeeParams
+      const result = await builder.tokenShieldedTransferWithShieldedFee(
+        identifierBytes(p.tokenId),
+        identifierBytes(p.dataContractId),
+        p.tokenContractPosition,
+        p.tokenSpends,
+        p.tokenChangeAddress,
+        p.tokenAnchor,
+        p.recipient,
+        p.transferAmount,
+        p.feeSpends,
+        p.feeChangeAddress,
+        p.feeAnchor,
+        p.seed,
+        p.coinType,
+        p.account,
+        memoBytes(p.memo, p.paymentRef),
+        platformVersion(p.platformVersion)
+      )
+
+      return StateTransitionWASM.fromBytes(result.stateTransition)
+    }
+
+    case 'tokenUnshieldWithShieldedFee': {
+      const p = params as TokenUnshieldWithShieldedFeeParams
+      const result = await builder.tokenUnshieldWithShieldedFee(
+        identifierBytes(p.tokenId),
+        identifierBytes(p.dataContractId),
+        p.tokenContractPosition,
+        p.tokenSpends,
+        p.tokenChangeAddress,
+        p.tokenAnchor,
+        identifierBytes(p.recipientId),
+        p.amount,
+        p.feeSpends,
+        p.feeChangeAddress,
+        p.feeAnchor,
+        p.seed,
+        p.coinType,
+        p.account,
+        memoBytes(p.memo, p.paymentRef),
+        platformVersion(p.platformVersion)
+      )
+
+      return StateTransitionWASM.fromBytes(result.stateTransition)
+    }
+
+    case 'tokenPurchaseFromShieldedPool': {
+      const p = params as TokenPurchaseFromShieldedPoolParams
+      const result = await builder.tokenPurchaseFromShieldedPool(
+        identifierBytes(p.tokenId),
+        identifierBytes(p.dataContractId),
+        p.tokenContractPosition,
+        p.recipient,
+        p.tokenCount,
+        p.totalAgreedPrice,
+        p.feeSpends,
+        p.feeChangeAddress,
+        p.feeAnchor,
+        p.seed,
+        p.coinType,
+        p.account,
+        memoBytes(p.memo, p.paymentRef),
         platformVersion(p.platformVersion)
       )
 
