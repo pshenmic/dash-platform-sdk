@@ -1,8 +1,11 @@
 import {
   AddressFundsFeeStrategyStepWASM,
   AssetLockProofWASM,
+  BatchTransitionWASM,
   CoreScriptWASM,
   DataContractWASM,
+  GroupStateTransitionInfoWASM,
+  IdentifierWASM,
   IdentityPublicKeyWASM,
   IdentityWASM,
   InputAddressWASM,
@@ -12,7 +15,11 @@ import {
   PrivateKeyWASM,
   Purpose,
   SecurityLevel,
-  StateTransitionWASM
+  StateTransitionWASM,
+  TokenPurchaseFromShieldedPoolTransitionWASM,
+  TokenShieldedTransferWithShieldedFeeTransitionWASM,
+  TokenTransitionWASM,
+  TokenUnshieldWithShieldedFeeTransitionWASM
 } from 'pshenmic-dpp'
 import {
   CommitmentTreeWASM,
@@ -450,6 +457,209 @@ describe('Shielded', () => {
 
       expect(stateTransition).toEqual(expect.any(StateTransitionWASM))
       expect(stateTransition.getActionTypeNumber()).toEqual(29)
+    }, 60000)
+  })
+
+  describe('should be able to create a token shielded state transition', () => {
+    const tokenId = new IdentifierWASM(randomBytes(32)).base58()
+    const dataContractId = new IdentifierWASM(randomBytes(32)).base58()
+    const ownerId = new IdentifierWASM(randomBytes(32)).base58()
+
+    const privateKey = new PrivateKeyWASM(randomBytes(32), 'testnet')
+    // token batch transitions are signed with a critical key
+    const identityPublicKey = new IdentityPublicKeyWASM(
+      1, Purpose.AUTHENTICATION, SecurityLevel.CRITICAL, KeyType.ECDSA_SECP256K1, false,
+      Buffer.from(privateKey.getPublicKey().bytes()).toString('hex'))
+
+    // The token pool every action below is bound to.
+    const poolParams = { tokenId, dataContractId, tokenContractPosition: 0 }
+
+    // The same pool, for the actions the owner identity signs and pays for.
+    const signedParams = { ...poolParams, ownerId, identityPublicKey, privateKey, identityContractNonce: BigInt(1), userFeeIncrease: 0 }
+
+    // Reads the token transition back out of the batch the builder wrapped it in, which is
+    // what tells that the positional arguments went to the right parameters.
+    function tokenTransitionType (stateTransition: StateTransitionWASM): string {
+      const batch = BatchTransitionWASM.fromStateTransition(StateTransitionWASM.fromBytes(stateTransition.bytes()))
+
+      return (batch.transitions[0].toTransition() as TokenTransitionWASM).getTransitionType()
+    }
+
+    test('should be able to create a tokenShield transition', async () => {
+      const stateTransition = await sdk.shielded.createStateTransition('tokenShield', {
+        ...signedParams,
+        recipient: OrchardAddressWASM.fromSeed(randomBytes(32), COIN_TYPE, ACCOUNT),
+        amount: BigInt(10)
+        // senderOvk omitted -> the builder is still called with it in its own position
+      })
+
+      expect(tokenTransitionType(stateTransition)).toEqual('Shield')
+    }, 60000)
+
+    test('should be able to create a tokenUnshield transition', async () => {
+      const seed = randomBytes(32)
+      const { spend, anchor, owner } = makeSpendableNote(seed, BigInt(1000))
+
+      const stateTransition = await sdk.shielded.createStateTransition('tokenUnshield', {
+        ...signedParams,
+        spends: [spend],
+        recipientId: ownerId,
+        amount: BigInt(10),
+        changeAddress: owner,
+        seed,
+        coinType: COIN_TYPE,
+        account: ACCOUNT,
+        anchor,
+        memo: 'shielded-memo-padded-to-32-bytes'
+      })
+
+      expect(tokenTransitionType(stateTransition)).toEqual('Unshield')
+    }, 60000)
+
+    test('should be able to create a tokenShieldedTransfer transition', async () => {
+      const seed = randomBytes(32)
+      const { spend, anchor, owner } = makeSpendableNote(seed, BigInt(1000))
+
+      const stateTransition = await sdk.shielded.createStateTransition('tokenShieldedTransfer', {
+        ...signedParams,
+        spends: [spend],
+        recipient: OrchardAddressWASM.fromSeed(randomBytes(32), COIN_TYPE, ACCOUNT),
+        transferAmount: BigInt(10),
+        changeAddress: owner,
+        seed,
+        coinType: COIN_TYPE,
+        account: ACCOUNT,
+        anchor
+      })
+
+      expect(tokenTransitionType(stateTransition)).toEqual('ShieldedTransfer')
+    }, 60000)
+
+    test('should be able to create a tokenMintToPool transition', async () => {
+      const stateTransition = await sdk.shielded.createStateTransition('tokenMintToPool', {
+        ...signedParams,
+        recipient: OrchardAddressWASM.fromSeed(randomBytes(32), COIN_TYPE, ACCOUNT),
+        amount: BigInt(10),
+        publicNote: 'minted',
+        usingGroupInfo: new GroupStateTransitionInfoWASM(0, ownerId, true)
+      })
+
+      expect(tokenTransitionType(stateTransition)).toEqual('MintToPool')
+    }, 60000)
+
+    test('should be able to create a tokenBurnFromPool transition', async () => {
+      const seed = randomBytes(32)
+      const { spend, anchor, owner } = makeSpendableNote(seed, BigInt(1000))
+
+      const stateTransition = await sdk.shielded.createStateTransition('tokenBurnFromPool', {
+        ...signedParams,
+        spends: [spend],
+        amount: BigInt(10),
+        changeAddress: owner,
+        seed,
+        coinType: COIN_TYPE,
+        account: ACCOUNT,
+        anchor,
+        publicNote: 'burned'
+      })
+
+      expect(tokenTransitionType(stateTransition)).toEqual('BurnFromPool')
+    }, 60000)
+
+    test('should be able to create a tokenClaimToPool transition', async () => {
+      const stateTransition = await sdk.shielded.createStateTransition('tokenClaimToPool', {
+        ...signedParams,
+        recipient: OrchardAddressWASM.fromSeed(randomBytes(32), COIN_TYPE, ACCOUNT),
+        amount: BigInt(10),
+        distributionType: 'perpetual',
+        claimUpTo: BigInt(1700000000000)
+      })
+
+      expect(tokenTransitionType(stateTransition)).toEqual('ClaimToPool')
+    }, 60000)
+
+    test('should be able to create a tokenDirectPurchaseToPool transition', async () => {
+      const stateTransition = await sdk.shielded.createStateTransition('tokenDirectPurchaseToPool', {
+        ...signedParams,
+        recipient: OrchardAddressWASM.fromSeed(randomBytes(32), COIN_TYPE, ACCOUNT),
+        tokenCount: BigInt(10),
+        totalAgreedPrice: BigInt(1000)
+      })
+
+      expect(tokenTransitionType(stateTransition)).toEqual('DirectPurchaseToPool')
+    }, 60000)
+
+    test('should be able to create a tokenShieldedTransferWithShieldedFee transition', async () => {
+      const seed = randomBytes(32)
+      const tokenPool = makeSpendableNote(seed, BigInt(1000))
+      const feePool = makeSpendableNote(seed, BigInt(100000000000))
+
+      const stateTransition = await sdk.shielded.createStateTransition('tokenShieldedTransferWithShieldedFee', {
+        ...poolParams,
+        tokenSpends: [tokenPool.spend],
+        tokenChangeAddress: tokenPool.owner,
+        tokenAnchor: tokenPool.anchor,
+        recipient: OrchardAddressWASM.fromSeed(randomBytes(32), COIN_TYPE, ACCOUNT),
+        transferAmount: BigInt(10),
+        feeSpends: [feePool.spend],
+        feeChangeAddress: feePool.owner,
+        feeAnchor: feePool.anchor,
+        seed,
+        coinType: COIN_TYPE,
+        account: ACCOUNT
+      })
+
+      const transition = TokenShieldedTransferWithShieldedFeeTransitionWASM.fromStateTransition(stateTransition)
+
+      expect(transition.tokenAnchor).toEqual(tokenPool.anchor)
+      expect(transition.feeAnchor).toEqual(feePool.anchor)
+    }, 60000)
+
+    test('should be able to create a tokenUnshieldWithShieldedFee transition', async () => {
+      const seed = randomBytes(32)
+      const tokenPool = makeSpendableNote(seed, BigInt(1000))
+      const feePool = makeSpendableNote(seed, BigInt(100000000000))
+
+      const stateTransition = await sdk.shielded.createStateTransition('tokenUnshieldWithShieldedFee', {
+        ...poolParams,
+        tokenSpends: [tokenPool.spend],
+        tokenChangeAddress: tokenPool.owner,
+        tokenAnchor: tokenPool.anchor,
+        recipientId: ownerId,
+        amount: BigInt(10),
+        feeSpends: [feePool.spend],
+        feeChangeAddress: feePool.owner,
+        feeAnchor: feePool.anchor,
+        seed,
+        coinType: COIN_TYPE,
+        account: ACCOUNT
+      })
+
+      const transition = TokenUnshieldWithShieldedFeeTransitionWASM.fromStateTransition(stateTransition)
+
+      expect(transition.recipientId.base58()).toEqual(ownerId)
+    }, 60000)
+
+    test('should be able to create a tokenPurchaseFromShieldedPool transition', async () => {
+      const seed = randomBytes(32)
+      const feePool = makeSpendableNote(seed, BigInt(100000000000))
+
+      const stateTransition = await sdk.shielded.createStateTransition('tokenPurchaseFromShieldedPool', {
+        ...poolParams,
+        recipient: OrchardAddressWASM.fromSeed(seed, COIN_TYPE, ACCOUNT),
+        tokenCount: BigInt(5),
+        totalAgreedPrice: BigInt(5000),
+        feeSpends: [feePool.spend],
+        feeChangeAddress: feePool.owner,
+        feeAnchor: feePool.anchor,
+        seed,
+        coinType: COIN_TYPE,
+        account: ACCOUNT
+      })
+
+      const transition = TokenPurchaseFromShieldedPoolTransitionWASM.fromStateTransition(stateTransition)
+
+      expect(transition.tokenCount).toEqual(BigInt(5))
     }, 60000)
   })
 })
